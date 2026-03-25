@@ -75,66 +75,6 @@ body {
   color: var(--error);
 }
 
-/* ─── Step Nav ───────────────────────────────────────────── */
-.steps-nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px 28px;
-  gap: 12px;
-  border-bottom: 1px solid var(--border);
-}
-
-.step-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  opacity: 0.4;
-  transition: opacity 0.3s;
-}
-
-.step-item.active {
-  opacity: 1;
-}
-
-.step-item.completed {
-  opacity: 0.8;
-}
-
-.step-number {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.step-item.active .step-number {
-  background: var(--primary);
-  color: white;
-}
-
-.step-item.completed .step-number {
-  background: var(--success);
-  color: white;
-}
-
-.step-label {
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.step-divider {
-  width: 40px;
-  height: 2px;
-  background: var(--border);
-  border-radius: 1px;
-}
-
 /* ─── Content Area ───────────────────────────────────────── */
 .content {
   flex: 1;
@@ -331,6 +271,22 @@ body {
   margin-top: 2px;
 }
 
+.tool-deps-badge {
+  font-size: 11px;
+  color: var(--warning);
+  margin-top: 2px;
+}
+
+.tool-card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tool-card.disabled:hover {
+  background: var(--bg-card);
+  border-color: var(--border);
+}
+
 .tool-version-select {
   background: var(--bg);
   color: var(--text);
@@ -429,6 +385,18 @@ body {
   background: linear-gradient(90deg, var(--primary), var(--success));
   border-radius: 4px;
   transition: width 0.4s ease;
+}
+
+/* Animated shimmer shown while an operation is actively running */
+.progress-fill--active {
+  background-size: 200% 100%;
+  background-image: linear-gradient(90deg, var(--primary) 0%, var(--success) 40%, var(--primary) 100%);
+  animation: progressShimmer 1.4s linear infinite;
+}
+
+@keyframes progressShimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position:   0% center; }
 }
 
 .install-items {

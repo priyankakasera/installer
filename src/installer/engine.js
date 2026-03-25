@@ -43,21 +43,22 @@ class InstallerEngine {
 
     // Read fresh env vars from the system — the Electron process.env is stale
     // after we set Machine-scope variables during installation.
-    const freshEnv = this._getFreshEnv();
+    const freshEnv = await this._getFreshEnv();
 
-    try {
-      // Use spawnSync with shell:true to find .cmd files (e.g. mvn.cmd).
-      // Pass the full command as a single string to avoid deprecation warning.
-      const result = require('child_process').spawnSync(
-        tool.verifyCommand,
-        { encoding: 'utf8', timeout: 10000, stdio: ['pipe', 'pipe', 'pipe'], env: freshEnv, windowsHide: true, shell: true }
-      );
-      const combined = (result.stdout || '') + (result.stderr || '');
-      const match = combined.match(new RegExp(tool.verifyRegex));
-      return { installed: !!match, version: match ? match[0] : null, output: combined.trim().split('\n')[0] };
-    } catch (err) {
-      return { installed: false, version: null, output: '' };
-    }
+    return new Promise((resolve) => {
+      // Use shell:true to find .cmd files (e.g. mvn.cmd).
+      exec(tool.verifyCommand, {
+        encoding: 'utf8', timeout: 10000, env: freshEnv, windowsHide: true, shell: true
+      }, (err, stdout, stderr) => {
+        try {
+          const combined = (stdout || '') + (stderr || '');
+          const match = combined.match(new RegExp(tool.verifyRegex));
+          resolve({ installed: !!match, version: match ? match[0] : null, output: combined.trim().split('\n')[0] });
+        } catch {
+          resolve({ installed: false, version: null, output: '' });
+        }
+      });
+    });
   }
 
   async installAll(selections, progressCallback) {
@@ -72,7 +73,7 @@ class InstallerEngine {
       const selectedVersion = version || tool.defaultVersion;
 
       try {
-        await this._installTool(tool, selectedVersion, (step, detail) => {
+        const configResult = await this._installTool(tool, selectedVersion, (step, detail) => {
           progressCallback({
             toolId,
             toolName: tool.name,
@@ -85,7 +86,7 @@ class InstallerEngine {
         });
 
         results.push({ toolId, success: true });
-        this._saveHistory(toolId, selectedVersion, true);
+        this._saveHistory(toolId, selectedVersion, true, null, configResult);
       } catch (err) {
         this._log(`ERROR installing ${tool.name}: ${err.message}`);
         results.push({ toolId, success: false, error: err.message });
@@ -135,7 +136,7 @@ class InstallerEngine {
       } catch { /* directory may not exist yet */ }
     }
 
-    await this._installTool(tool, selectedVersion, (step, detail) => {
+    const configResult = await this._installTool(tool, selectedVersion, (step, detail) => {
       progressCallback({
         toolId,
         toolName: tool.name,
@@ -147,7 +148,7 @@ class InstallerEngine {
       });
     });
 
-    this._saveHistory(toolId, selectedVersion, true);
+    this._saveHistory(toolId, selectedVersion, true, null, configResult);
   }
 
   getHistory() {
@@ -193,7 +194,7 @@ class InstallerEngine {
 
     // Step 3: Configure
     onStep('configuring', 'Setting environment variables...');
-    await this._configure(tool, version);
+    const configResult = await this._configure(tool, version);
     onStep('configuring', 'Environment configured');
 
     // Step 4: Verify
@@ -207,6 +208,7 @@ class InstallerEngine {
     }
 
     this._log(`${tool.name} installed successfully`);
+    return configResult;
   }
 
   _download(tool, version, onProgress) {
@@ -641,47 +643,74 @@ class InstallerEngine {
   async _configure(tool, version) {
     const installDir = tool.defaultInstallDir.replace('{version}', version);
     const isAdmin = this.isAdmin();
+    const configuredPaths = [];
+    const configuredEnvVars = {};
 
-    // Build a PowerShell script that sets env vars and updates PATH (system-wide)
+    // Build a PowerShell script that idempotently sets env vars and updates PATH.
+    // PowerShell single-quoted strings treat backslashes literally — no extra escaping needed.
     const psLines = [];
 
     for (const [varName, varValue] of Object.entries(tool.envVars)) {
       const resolved = varValue.replace('{installDir}', installDir);
-      psLines.push(`[System.Environment]::SetEnvironmentVariable('${varName}', '${resolved}', [System.EnvironmentVariableTarget]::Machine)`);
-      this._log(`Will set env var: ${varName} = ${resolved}`);
+      // Only set if the current value is different
+      psLines.push(
+        `$cur = [System.Environment]::GetEnvironmentVariable('${varName}', [System.EnvironmentVariableTarget]::Machine)`,
+        `if ($cur -ne '${resolved}') {`,
+        `    [System.Environment]::SetEnvironmentVariable('${varName}', '${resolved}', [System.EnvironmentVariableTarget]::Machine)`,
+        `}`
+      );
+      configuredEnvVars[varName] = resolved;
+      this._log(`Will set env var (if changed): ${varName} = ${resolved}`);
     }
 
     if (tool.pathEntries && tool.pathEntries.length > 0) {
-      for (const entry of tool.pathEntries) {
-        const resolvedPath = entry.replace('{installDir}', installDir);
-        psLines.push(`$p = [System.Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::Machine); if ($p -notlike '*${resolvedPath.replace(/\\/g, '\\\\')}*') { [System.Environment]::SetEnvironmentVariable('Path', $p + ';${resolvedPath}', [System.EnvironmentVariableTarget]::Machine) }`);
-        this._log(`Will add to PATH: ${resolvedPath}`);
-      }
+      // Resolve all path entries for this install; strip any trailing backslash.
+      const rawPaths = tool.pathEntries.map(entry =>
+        entry.replace('{installDir}', installDir).replace(/\\+$/, '')
+      );
+      rawPaths.forEach(p => configuredPaths.push(p));
+      const psRawArray   = rawPaths.map(p => `'${p}'`).join(', ');
+      const psLowerArray = rawPaths.map(p => `'${p.toLowerCase()}'`).join(', ');
+
+      // Single consolidated read → deduplicate → append → write.
+      // Filter normalises each existing entry: strip trailing \, collapse \\→\, lowercase.
+      psLines.push(
+        `$toAdd      = @(${psRawArray})`,
+        `$lowerToAdd = @(${psLowerArray})`,
+        `$rawPath    = [System.Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::Machine)`,
+        `$parts      = ($rawPath -split ';') | Where-Object {`,
+        `    $t = $_.TrimEnd('\\').Replace('\\\\', '\\').ToLower()`,
+        `    $_ -and $lowerToAdd -notcontains $t`,
+        `}`,
+        `$parts = @($parts) + $toAdd`,
+        `[System.Environment]::SetEnvironmentVariable('Path', ($parts -join ';'), [System.EnvironmentVariableTarget]::Machine)`
+      );
+      this._log(`Will add to PATH (deduplicated): ${rawPaths.join(', ')}`);
     }
 
-    if (psLines.length === 0) return;
+    if (psLines.length === 0) return { paths: configuredPaths, envVars: configuredEnvVars };
 
     // Write the PS script to a file
     const psScriptPath = path.join(this.downloadDir, `${tool.id}-config.ps1`);
     fs.writeFileSync(psScriptPath, psLines.join('\r\n') + '\r\n');
 
+    // Use async exec (not execSync) so the main-process IPC thread stays
+    // responsive during potentially slow PowerShell elevation prompts.
+    const runAsync = (cmd) => new Promise((resolve) => {
+      exec(cmd, { timeout: 120000, windowsHide: true }, (err) => {
+        if (err) this._log(`Warning configuring env: ${err.message}`);
+        resolve();
+      });
+    });
+
     if (isAdmin) {
-      // Run directly
-      try {
-        execSync(`powershell -NoProfile -ExecutionPolicy Bypass -File "${psScriptPath}"`, { timeout: 120000, windowsHide: true });
-        this._log('Environment configured (admin)');
-      } catch (err) {
-        this._log(`Warning configuring env: ${err.message}`);
-      }
+      await runAsync(`powershell -NoProfile -ExecutionPolicy Bypass -File "${psScriptPath}"`);
+      this._log('Environment configured (admin)');
     } else {
-      // Elevate the PS script
-      try {
-        execSync(`powershell -NoProfile -Command "Start-Process powershell -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File \\"${psScriptPath}\\"' -Verb RunAs -Wait -WindowStyle Hidden"`, { timeout: 120000, windowsHide: true });
-        this._log('Environment configured (elevated)');
-      } catch (err) {
-        this._log(`Warning configuring env (elevated): ${err.message}`);
-      }
+      await runAsync(`powershell -NoProfile -Command "Start-Process powershell -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File \\"${psScriptPath}\\"' -Verb RunAs -Wait -WindowStyle Hidden"`);
+      this._log('Environment configured (elevated)');
     }
+    return { paths: configuredPaths, envVars: configuredEnvVars };
   }
 
   // ─── Uninstall ──────────────────────────────────────────────
@@ -733,10 +762,12 @@ class InstallerEngine {
       // Identify where the command is still found
       let remainingSource = '';
       try {
-        const freshEnv = this._getFreshEnv();
-        const whereOutput = execSync(`where.exe ${tool.id}`, {
-          encoding: 'utf8', timeout: 10000, windowsHide: true, env: freshEnv, stdio: ['pipe', 'pipe', 'pipe']
-        }).trim();
+        const freshEnv = await this._getFreshEnv();
+        const whereOutput = await new Promise((resolve) => {
+          exec(`where.exe ${tool.id}`, {
+            encoding: 'utf8', timeout: 10000, windowsHide: true, env: freshEnv
+          }, (err, stdout) => resolve(err ? '' : (stdout || '').trim()));
+        });
         if (whereOutput) {
           remainingSource = whereOutput.split(/\r?\n/)[0].trim();
           this._log(`Warning: ${tool.name} still detected at: ${remainingSource}`);
@@ -767,9 +798,11 @@ class InstallerEngine {
         .join(' -or ');
       try {
         const ps = `Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*' -ErrorAction SilentlyContinue | Where-Object { ${whereClause} } | Select-Object PSChildName, DisplayName, UninstallString, InstallLocation | ConvertTo-Json -Compress`;
-        const output = execSync(`powershell -NoProfile -Command "${ps}"`, {
-          encoding: 'utf8', timeout: 15000, windowsHide: true
-        }).trim();
+        const output = await new Promise((resolve) => {
+          exec(`powershell -NoProfile -Command "${ps}"`, {
+            encoding: 'utf8', timeout: 15000, windowsHide: true
+          }, (err, stdout) => resolve(err ? '' : (stdout || '').trim()));
+        });
         if (output && (output.startsWith('{') || output.startsWith('['))) {
           const parsed = JSON.parse(output);
           const products = (Array.isArray(parsed) ? parsed : [parsed]).filter(p => p.DisplayName);
@@ -832,10 +865,12 @@ class InstallerEngine {
 
       // 2. Find additional copies via where.exe
       try {
-        const freshEnv = this._getFreshEnv();
-        const whereOutput = execSync(`where.exe ${tool.id}`, {
-          encoding: 'utf8', timeout: 10000, windowsHide: true, env: freshEnv, stdio: ['pipe', 'pipe', 'pipe']
-        }).trim();
+        const freshEnv = await this._getFreshEnv();
+        const whereOutput = await new Promise((resolve) => {
+          exec(`where.exe ${tool.id}`, {
+            encoding: 'utf8', timeout: 10000, windowsHide: true, env: freshEnv
+          }, (err, stdout) => resolve(err ? '' : (stdout || '').trim()));
+        });
         if (whereOutput) {
           for (const line of whereOutput.split(/\r?\n/)) {
             const loc = line.trim();
@@ -1046,106 +1081,152 @@ class InstallerEngine {
 
   async _unconfigure(tool) {
     const isAdmin = this.isAdmin();
-    const psLines = [];
 
-    // Remove env vars
-    for (const varName of Object.keys(tool.envVars)) {
-      psLines.push(`[System.Environment]::SetEnvironmentVariable('${varName}', $null, [System.EnvironmentVariableTarget]::Machine)`);
-      this._log(`Will remove env var: ${varName}`);
-    }
+    // Gather every PATH entry that should be removed.
+    // Source 1 — install history: the exact paths recorded at install time (most reliable).
+    // Source 2 — template expansion across all known versions: catches installs that
+    //            pre-date history tracking and handles version-specific install dirs.
+    // Both sources are union-merged, normalised to lowercase with no trailing backslash.
+    const entriesToRemove = new Set();
 
-    // Remove PATH entries for all versions
-    if (tool.pathEntries && tool.pathEntries.length > 0) {
-      for (const entry of tool.pathEntries) {
-        for (const ver of tool.versions) {
-          const resolvedPath = entry
-            .replace('{installDir}', tool.defaultInstallDir.replace('{version}', ver))
-            .replace(/\\/g, '\\');
-          psLines.push(`$p = [System.Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::Machine); $paths = $p -split ';' | Where-Object { $_ -and $_.TrimEnd('\\') -ne '${resolvedPath}'.TrimEnd('\\') }; [System.Environment]::SetEnvironmentVariable('Path', ($paths -join ';'), [System.EnvironmentVariableTarget]::Machine)`);
-          this._log(`Will remove from PATH: ${resolvedPath}`);
+    const history = this.getHistory();
+    for (const record of history) {
+      if (record.toolId === tool.id && record.success && Array.isArray(record.configuredPaths)) {
+        for (const p of record.configuredPaths) {
+          entriesToRemove.add(p.replace(/\\+$/, '').toLowerCase());
         }
       }
     }
 
-    if (psLines.length === 0) return;
+    for (const entry of (tool.pathEntries || [])) {
+      if (!entry.includes('{installDir}')) {
+        entriesToRemove.add(entry.replace(/\\+$/, '').toLowerCase());
+      } else {
+        for (const ver of tool.versions) {
+          const resolved = entry
+            .replace('{installDir}', tool.defaultInstallDir.replace('{version}', ver))
+            .replace(/\\+$/, '');
+          entriesToRemove.add(resolved.toLowerCase());
+        }
+      }
+    }
+
+    const envVarsToRemove = Object.keys(tool.envVars);
+    if (entriesToRemove.size === 0 && envVarsToRemove.length === 0) return;
+
+    const psLines = [];
+
+    // Remove environment variables (idempotent — setting to $null is a no-op if already absent).
+    for (const varName of envVarsToRemove) {
+      psLines.push(`[System.Environment]::SetEnvironmentVariable('${varName}', $null, [System.EnvironmentVariableTarget]::Machine)`);
+      this._log(`Will remove env var: ${varName}`);
+    }
+
+    // Single consolidated PATH read → filter → write.
+    // Each existing entry is normalised before comparison:
+    //   TrimEnd('\')     — strips a trailing backslash
+    //   Replace('\\','\')— collapses double-backslashes left by a previous buggy install
+    //   ToLower()        — case-insensitive match
+    // Empty segments are also dropped, eliminating stale semicolons.
+    if (entriesToRemove.size > 0) {
+      const psRemoveArray = [...entriesToRemove].map(p => `'${p}'`).join(', ');
+      psLines.push(
+        `$removeSet = @(${psRemoveArray})`,
+        `$rawPath   = [System.Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::Machine)`,
+        `$parts     = ($rawPath -split ';') | Where-Object {`,
+        `    $t = $_.TrimEnd('\\').Replace('\\\\', '\\').ToLower()`,
+        `    $_ -and $removeSet -notcontains $t`,
+        `}`,
+        `[System.Environment]::SetEnvironmentVariable('Path', ($parts -join ';'), [System.EnvironmentVariableTarget]::Machine)`
+      );
+      this._log(`Will remove from PATH: ${[...entriesToRemove].join(', ')}`);
+    }
 
     const psScriptPath = path.join(this.downloadDir, `${tool.id}-unconfig.ps1`);
     fs.writeFileSync(psScriptPath, psLines.join('\r\n') + '\r\n');
 
+    // Use async exec (not execSync) so the main-process IPC thread stays
+    // responsive during potentially slow PowerShell elevation prompts.
+    const runAsync = (cmd) => new Promise((resolve) => {
+      exec(cmd, { timeout: 120000, windowsHide: true }, (err) => {
+        if (err) this._log(`Warning cleaning up env: ${err.message}`);
+        resolve();
+      });
+    });
+
     if (isAdmin) {
-      try {
-        execSync(`powershell -NoProfile -ExecutionPolicy Bypass -File "${psScriptPath}"`, { timeout: 120000, windowsHide: true });
-        this._log('Environment cleaned up (admin)');
-      } catch (err) {
-        this._log(`Warning cleaning up env: ${err.message}`);
-      }
+      await runAsync(`powershell -NoProfile -ExecutionPolicy Bypass -File "${psScriptPath}"`);
+      this._log('Environment cleaned up (admin)');
     } else {
-      try {
-        execSync(`powershell -NoProfile -Command "Start-Process powershell -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File \\"${psScriptPath}\\"' -Verb RunAs -Wait -WindowStyle Hidden"`, { timeout: 120000, windowsHide: true });
-        this._log('Environment cleaned up (elevated)');
-      } catch (err) {
-        this._log(`Warning cleaning up env (elevated): ${err.message}`);
-      }
+      await runAsync(`powershell -NoProfile -Command "Start-Process powershell -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File \\"${psScriptPath}\\"' -Verb RunAs -Wait -WindowStyle Hidden"`);
+      this._log('Environment cleaned up (elevated)');
     }
   }
 
   // ─── Fresh Environment ─────────────────────────────────────
 
   _getFreshEnv() {
-    try {
-      const varNames = new Set();
-      for (const tool of this._allTools) {
-        for (const v of Object.keys(tool.envVars)) varNames.add(v);
-      }
-
-      // Build a PS1 script that outputs all needed env vars
-      const lines = [
-        `$m = [Environment]::GetEnvironmentVariable('Path','Machine')`,
-        `$u = [Environment]::GetEnvironmentVariable('Path','User')`,
-        `Write-Output "FRESHPATH=$m;$u"`
-      ];
-      for (const v of varNames) {
-        lines.push(`$val = [Environment]::GetEnvironmentVariable('${v}','Machine'); if ($val) { Write-Output "${v}=$val" }`);
-      }
-
-      const psScript = path.join(this.downloadDir, '_freshenv.ps1');
-      fs.writeFileSync(psScript, lines.join('\r\n'));
-
-      const output = execSync(
-        `powershell -NoProfile -ExecutionPolicy Bypass -File "${psScript}"`,
-        { encoding: 'utf8', timeout: 10000, windowsHide: true }
-      );
-
-      const env = { ...process.env };
-      for (const line of output.split(/\r?\n/)) {
-        const idx = line.indexOf('=');
-        if (idx > 0) {
-          const key = line.substring(0, idx).trim();
-          const val = line.substring(idx + 1).trim();
-          if (key === 'FRESHPATH') {
-            env.Path = val;
-            env.PATH = val;
-          } else if (val) {
-            env[key] = val;
-          }
+    return new Promise((resolve) => {
+      try {
+        const varNames = new Set();
+        for (const tool of this._allTools) {
+          for (const v of Object.keys(tool.envVars)) varNames.add(v);
         }
+
+        // Build a PS1 script that outputs all needed env vars
+        const lines = [
+          `$m = [Environment]::GetEnvironmentVariable('Path','Machine')`,
+          `$u = [Environment]::GetEnvironmentVariable('Path','User')`,
+          `Write-Output "FRESHPATH=$m;$u"`
+        ];
+        for (const v of varNames) {
+          lines.push(`$val = [Environment]::GetEnvironmentVariable('${v}','Machine'); if ($val) { Write-Output "${v}=$val" }`);
+        }
+
+        const psScript = path.join(this.downloadDir, '_freshenv.ps1');
+        fs.writeFileSync(psScript, lines.join('\r\n'));
+
+        // Use async exec so the main-process event loop stays responsive.
+        exec(
+          `powershell -NoProfile -ExecutionPolicy Bypass -File "${psScript}"`,
+          { encoding: 'utf8', timeout: 10000, windowsHide: true },
+          (err, output) => {
+            if (err) { resolve({ ...process.env }); return; }
+            const env = { ...process.env };
+            for (const line of (output || '').split(/\r?\n/)) {
+              const idx = line.indexOf('=');
+              if (idx > 0) {
+                const key = line.substring(0, idx).trim();
+                const val = line.substring(idx + 1).trim();
+                if (key === 'FRESHPATH') {
+                  env.Path = val;
+                  env.PATH = val;
+                } else if (val) {
+                  env[key] = val;
+                }
+              }
+            }
+            resolve(env);
+          }
+        );
+      } catch {
+        resolve({ ...process.env });
       }
-      return env;
-    } catch {
-      return process.env;
-    }
+    });
   }
 
   // ─── Persistence ───────────────────────────────────────────
 
-  _saveHistory(toolId, version, success, error) {
+  _saveHistory(toolId, version, success, error, configResult) {
     let history = this.getHistory();
     history.push({
       toolId,
       version,
       success,
       error: error || null,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      configuredPaths: configResult ? (configResult.paths || []) : [],
+      configuredEnvVars: configResult ? (configResult.envVars || {}) : {}
     });
     fs.writeFileSync(this.historyPath, JSON.stringify(history, null, 2));
   }

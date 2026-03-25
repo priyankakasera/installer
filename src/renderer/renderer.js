@@ -40,18 +40,25 @@ function getAllTools() {
 async function init() {
   config = await window.api.getToolsConfig();
 
-  // Check admin
+  // Check admin status
   const isAdmin = await window.api.checkAdmin();
   adminBadge.textContent = isAdmin ? '🔒 Admin' : '⚠ No Admin';
   adminBadge.className = 'admin-badge ' + (isAdmin ? 'admin' : 'no-admin');
 
-  // Detect installed tools
-  const toolIds = getAllTools().map((t) => t.id);
-  detectedTools = await window.api.detectInstalled(toolIds);
-
+  // Render UI immediately with no detection data so the window appears fast
   renderBundles();
   renderCategories();
   setupListeners();
+
+  // Run detection in the background after first paint
+  requestAnimationFrame(() => {
+    setTimeout(async () => {
+      const toolIds = getAllTools().map((t) => t.id);
+      detectedTools = await window.api.detectInstalled(toolIds);
+      renderCategories();
+      updateInstallButton();
+    }, 0);
+  });
 }
 
 // ─── Render Bundles ──────────────────────────────────────────
@@ -104,9 +111,23 @@ function renderCategories() {
       const detected = detectedTools[tool.id];
       const isDetected = detected && detected.installed;
 
+      // Check if this tool's dependencies are satisfied
+      const unmetDeps = (tool.dependsOn || []).filter((depId) => {
+        const depDetected = detectedTools[depId];
+        return !depDetected || !depDetected.installed;
+      });
+      const hasUnmetDeps = unmetDeps.length > 0;
+      const depNames = unmetDeps.map((depId) => {
+        const depTool = getAllTools().find((t) => t.id === depId);
+        return depTool ? depTool.name : depId;
+      });
+
       const card = document.createElement('div');
-      card.className = 'tool-card' + (selectedTools.has(tool.id) ? ' selected' : '') + (isDetected ? ' detected' : '');
+      card.className = 'tool-card' + (selectedTools.has(tool.id) ? ' selected' : '') + (isDetected ? ' detected' : '') + (hasUnmetDeps ? ' disabled' : '');
       card.dataset.toolId = tool.id;
+      if (hasUnmetDeps) {
+        card.title = `Requires: ${depNames.join(', ')} (not installed)`;
+      }
 
       let versionOptions = tool.versions
         .map((v) => `<option value="${escapeHtml(v)}"${v === (selectedTools.get(tool.id) || tool.defaultVersion) ? ' selected' : ''}>${escapeHtml(v)}</option>`)
@@ -114,6 +135,10 @@ function renderCategories() {
 
       const detectedBadge = isDetected
         ? `<div class="tool-detected-badge">✓ Installed: ${escapeHtml(detected.output || detected.version || '')}</div>`
+        : '';
+
+      const depsBadge = hasUnmetDeps
+        ? `<div class="tool-deps-badge">⚠ Requires: ${escapeHtml(depNames.join(', '))}</div>`
         : '';
 
       const uninstallBtn = isDetected
@@ -127,14 +152,16 @@ function renderCategories() {
           <div class="tool-name">${escapeHtml(tool.name)}</div>
           <div class="tool-desc">${escapeHtml(tool.description)}</div>
           ${detectedBadge}
+          ${depsBadge}
         </div>
         <div class="tool-actions">
           ${uninstallBtn}
-          <select class="tool-version-select" data-tool-id="${escapeHtml(tool.id)}">${versionOptions}</select>
+          <select class="tool-version-select" data-tool-id="${escapeHtml(tool.id)}"${hasUnmetDeps ? ' disabled' : ''}>${versionOptions}</select>
         </div>
       `;
 
       card.addEventListener('click', (e) => {
+        if (hasUnmetDeps) return;
         if (e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
         toggleTool(tool.id);
       });
@@ -253,28 +280,42 @@ function updateInstallButton() {
 // ─── Navigation ──────────────────────────────────────────────
 function showPage(pageName) {
   $$('.page').forEach((p) => p.classList.remove('active'));
-  $$('.step-item').forEach((s) => {
-    s.classList.remove('active');
-    s.classList.remove('completed');
-  });
 
   if (pageName === 'select') {
     pageSelect.classList.add('active');
-    $('[data-step="select"]').classList.add('active');
   } else if (pageName === 'install') {
     pageInstall.classList.add('active');
-    $('[data-step="select"]').classList.add('completed');
-    $('[data-step="install"]').classList.add('active');
   } else if (pageName === 'done') {
     pageDone.classList.add('active');
-    $('[data-step="select"]').classList.add('completed');
-    $('[data-step="install"]').classList.add('completed');
-    $('[data-step="done"]').classList.add('active');
   }
 }
 
 // ─── Installation ────────────────────────────────────────────
 async function startInstallation() {
+  // Guard: check all selected tools have their dependencies met
+  const allTools = getAllTools();
+  const unmetMessages = [];
+  for (const [toolId] of selectedTools) {
+    const tool = allTools.find((t) => t.id === toolId);
+    if (!tool || !tool.dependsOn) continue;
+    const missing = tool.dependsOn.filter((depId) => {
+      // Dep is satisfied if it's detected OR if it's also being installed now
+      const depDetected = detectedTools[depId];
+      return (!depDetected || !depDetected.installed) && !selectedTools.has(depId);
+    });
+    if (missing.length > 0) {
+      const missingNames = missing.map((depId) => {
+        const dep = allTools.find((t) => t.id === depId);
+        return dep ? dep.name : depId;
+      });
+      unmetMessages.push(`${tool.name} requires: ${missingNames.join(', ')}`);
+    }
+  }
+  if (unmetMessages.length > 0) {
+    alert(`Cannot install — unmet dependencies:\n\n${unmetMessages.join('\n')}\n\nPlease select the required tools first.`);
+    return;
+  }
+
   installing = true;
   showPage('install');
   logContent.textContent = '';
@@ -467,20 +508,32 @@ async function performUninstall() {
 
   const stepPcts = { finding: 10, uninstalling: 40, cleaning: 70, verifying: 90, completed: 100 };
 
+  const fillEl = document.getElementById('uninstallFill');
+  const activeSteps = new Set(['finding', 'uninstalling', 'cleaning', 'verifying']);
+
   window.api.onUninstallProgress((data) => {
     if (data.toolId !== toolId) return;
     const pct = stepPcts[data.step] || 0;
-    document.getElementById('uninstallFill').style.width = pct + '%';
+    fillEl.style.width = pct + '%';
     document.getElementById('uninstallStatus').textContent = data.detail || data.step;
+    // Show shimmer while work is ongoing; stop it when done or errored
+    if (activeSteps.has(data.step)) {
+      fillEl.classList.add('progress-fill--active');
+    } else {
+      fillEl.classList.remove('progress-fill--active');
+    }
   });
 
   const detected = detectedTools[toolId] || null;
   const result = await window.api.uninstallTool(toolId, detected);
   window.api.removeUninstallProgressListener();
 
+  // Always stop the shimmer once the operation resolves
+  fillEl.classList.remove('progress-fill--active');
+
   if (result.success) {
     document.getElementById('uninstallStatus').textContent = 'Uninstalled successfully!';
-    document.getElementById('uninstallFill').style.width = '100%';
+    fillEl.style.width = '100%';
 
     // Refresh detection state
     const toolIds = getAllTools().map((t) => t.id);
@@ -491,8 +544,8 @@ async function performUninstall() {
     setTimeout(hideUninstallModal, 1200);
   } else {
     const errorMsg = result.error || 'Unknown error';
-    document.getElementById('uninstallFill').style.width = '100%';
-    document.getElementById('uninstallFill').style.background = 'var(--error)';
+    fillEl.style.width = '100%';
+    fillEl.style.background = 'var(--error)';
     document.getElementById('uninstallStatus').innerHTML = `
       <div class="error-panel">
         <div class="error-panel-title">\u274C Uninstall Failed</div>
@@ -509,17 +562,22 @@ async function performUninstall() {
 function setupListeners() {
   btnInstall.addEventListener('click', startInstallation);
 
-  btnBackToSelect.addEventListener('click', async () => {
+  btnBackToSelect.addEventListener('click', () => {
     selectedTools.clear();
-
-    // Re-detect tools to show updated status
-    const toolIds = getAllTools().map((t) => t.id);
-    detectedTools = await window.api.detectInstalled(toolIds);
-
-    renderCategories();
     updateInstallButton();
     updateBundleHighlights();
+    renderCategories();
     showPage('select');
+
+    // Re-detect in background so the page appears immediately
+    requestAnimationFrame(() => {
+      setTimeout(async () => {
+        const toolIds = getAllTools().map((t) => t.id);
+        detectedTools = await window.api.detectInstalled(toolIds);
+        renderCategories();
+        updateInstallButton();
+      }, 0);
+    });
   });
 
   logToggle.addEventListener('click', () => {

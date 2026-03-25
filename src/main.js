@@ -1,9 +1,26 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
+const { execSync, exec } = require('child_process');
 
-// ─── Admin Check (info only — elevation happens per-command) ─────
-// The app doesn't need to run as admin itself; install commands
-// are elevated individually via Start-Process -Verb RunAs.
+// ─── Self-elevation ───────────────────────────────────────────────
+// If not already running as administrator, relaunch the process elevated
+// via PowerShell Start-Process -Verb RunAs, then quit this instance.
+// This runs before app.whenReady() so the window never opens unelevated.
+function isAdmin() {
+  try { execSync('net session', { stdio: 'ignore' }); return true; } catch { return false; }
+}
+
+if (process.platform === 'win32' && !isAdmin()) {
+  // Build the relaunch command.
+  // app.getPath('exe') gives the Electron executable; process.argv[1] is the
+  // app entry point (e.g. the .js file when running in dev, or absent in prod).
+  const exe = process.execPath;
+  const args = process.argv.slice(1).map(a => `'${a.replace(/'/g, "''")}'`).join(', ');
+  const argList = args ? `, ${args}` : '';
+  const psCmd = `Start-Process -FilePath '${exe.replace(/'/g, "''")}' -ArgumentList @(${argList}) -Verb RunAs`;
+  exec(`powershell -NoProfile -Command "${psCmd.replace(/"/g, '\\"')}"`, () => {});
+  app.exit(0);
+}
 
 let mainWindow;
 let installerEngine;
