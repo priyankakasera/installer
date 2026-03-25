@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'">
+  <title>DevTools Installer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <h1>🛠️ DevTools Installer</h1>
+        <p class="subtitle">One-click developer environment setup</p>
+      </div>
+      <div class="admin-badge" id="adminBadge"></div>
+    </header>
+
+    <!-- Step Indicator -->
+    <nav class="steps-nav">
+      <div class="step-item active" data-step="select">
+        <span class="step-number">1</span>
+        <span class="step-label">Select Tools</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-item" data-step="install">
+        <span class="step-number">2</span>
+        <span class="step-label">Install</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-item" data-step="done">
+        <span class="step-number">3</span>
+        <span class="step-label">Done</span>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="content">
+
+      <!-- ─── Step 1: Select Tools ─── -->
+      <section class="page active" id="pageSelect">
+
+        <!-- Bundles -->
+        <div class="section-title">Quick Setup Bundles</div>
+        <div class="bundles-grid" id="bundlesGrid"></div>
+
+        <!-- Tools List -->
+        <div class="section-title" style="margin-top: 24px;">Individual Tools</div>
+        <div class="tools-list" id="toolsList"></div>
+
+        <div class="actions">
+          <button class="btn btn-primary" id="btnInstall" disabled>
+            Install Selected
+          </button>
+        </div>
+      </section>
+
+      <!-- ─── Step 2: Installation Progress ─── -->
+      <section class="page" id="pageInstall">
+        <div class="overall-progress">
+          <div class="progress-header">
+            <span id="overallLabel">Installing...</span>
+            <span id="overallPercent">0%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="overallFill"></div>
+          </div>
+        </div>
+
+        <div class="install-items" id="installItems"></div>
+
+        <!-- Log Panel -->
+        <div class="log-panel">
+          <div class="log-header" id="logToggle">
+            <span>📋 Logs</span>
+            <span class="log-arrow">▼</span>
+          </div>
+          <div class="log-body" id="logBody">
+            <pre id="logContent"></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─── Step 3: Done ─── -->
+      <section class="page" id="pageDone">
+        <div class="done-icon" id="doneIcon">✅</div>
+        <h2 class="done-title" id="doneTitle">Installation Complete!</h2>
+        <p class="done-subtitle" id="doneSubtitle">Your development environment is ready.</p>
+
+        <div class="results-list" id="resultsList"></div>
+
+        <div class="actions">
+          <button class="btn btn-secondary" id="btnBackToSelect">Install More Tools</button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Uninstall Confirmation Modal -->
+    <div class="modal-overlay" id="uninstallModal">
+      <div class="modal">
+        <div class="modal-title">Uninstall <span id="uninstallToolName"></span>?</div>
+        <p class="modal-desc">This will remove the software, delete associated environment variables, and clean PATH entries.</p>
+        <div class="modal-progress" id="uninstallProgress" style="display:none;">
+          <div class="progress-bar"><div class="progress-fill" id="uninstallFill"></div></div>
+          <div class="modal-status" id="uninstallStatus">Uninstalling...</div>
+        </div>
+        <div class="modal-actions" id="uninstallActions">
+          <button class="btn btn-secondary btn-sm" id="btnCancelUninstall">Cancel</button>
+          <button class="btn btn-sm btn-danger" id="btnConfirmUninstall">Uninstall</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

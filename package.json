@@ -1,0 +1,27 @@
+{
+  "name": "dev-tools-installer",
+  "version": "1.0.0",
+  "description": "One-click developer tools installer for Windows",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win"
+  },
+  "author": "DevTools Installer",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.devtools.installer",
+    "productName": "DevTools Installer",
+    "win": {
+      "target": "nsis",
+      "requestedExecutionLevel": "requireAdministrator"
+    }
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16"
+  }
+}

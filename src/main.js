@@ -1,0 +1,103 @@
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const path = require('path');
+
+// ─── Admin Check (info only — elevation happens per-command) ─────
+// The app doesn't need to run as admin itself; install commands
+// are elevated individually via Start-Process -Verb RunAs.
+
+let mainWindow;
+let installerEngine;
+
+// Lazy-require after elevation check
+const InstallerEngine = require('./installer/engine');
+
+function createWindow() {
+  mainWindow = new BrowserWindow({
+    width: 960,
+    height: 700,
+    minWidth: 800,
+    minHeight: 600,
+    resizable: true,
+    icon: path.join(__dirname, 'renderer', 'icon.png'),
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false
+    },
+    titleBarStyle: 'default',
+    title: 'DevTools Installer'
+  });
+
+  mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+  mainWindow.setMenuBarVisibility(false);
+}
+
+app.whenReady().then(() => {
+  createWindow();
+  installerEngine = new InstallerEngine();
+
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  });
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});
+
+// ─── IPC Handlers ────────────────────────────────────────────────
+
+ipcMain.handle('get-tools-config', async () => {
+  return installerEngine.getToolsConfig();
+});
+
+ipcMain.handle('detect-installed', async (event, toolIds) => {
+  const results = {};
+  for (const id of toolIds) {
+    results[id] = await installerEngine.detectInstalled(id);
+  }
+  return results;
+});
+
+ipcMain.handle('start-installation', async (event, selections) => {
+  // selections: [{ toolId, version }]
+  try {
+    await installerEngine.installAll(selections, (progress) => {
+      mainWindow.webContents.send('install-progress', progress);
+    });
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('retry-tool', async (event, toolId, version) => {
+  try {
+    await installerEngine.installSingle(toolId, version, (progress) => {
+      mainWindow.webContents.send('install-progress', progress);
+    });
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('check-admin', async () => {
+  return installerEngine.isAdmin();
+});
+
+ipcMain.handle('get-install-history', async () => {
+  return installerEngine.getHistory();
+});
+
+ipcMain.handle('uninstall-tool', async (event, toolId, detectedInfo) => {
+  try {
+    await installerEngine.uninstallTool(toolId, detectedInfo, (progress) => {
+      mainWindow.webContents.send('uninstall-progress', { toolId, ...progress });
+    });
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});

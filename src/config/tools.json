@@ -1,0 +1,129 @@
+{
+  "tools": [
+    {
+      "id": "java",
+      "name": "Java (JDK 21)",
+      "description": "Java Development Kit 21 — Required for Java development",
+      "category": "runtime",
+      "versions": ["21.0.10", "17.0.18", "11.0.30"],
+      "defaultVersion": "21.0.10",
+      "downloadUrls": {
+        "21.0.10": "https://download.oracle.com/java/21/latest/jdk-21_windows-x64_bin.msi",
+        "17.0.18": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.18%2B8/OpenJDK17U-jdk_x64_windows_hotspot_17.0.18_8.msi",
+        "11.0.30": "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.30%2B7/OpenJDK11U-jdk_x64_windows_hotspot_11.0.30_7.msi"
+      },
+      "installCommand": {
+        "msi": "msiexec /i \"{installerPath}\" INSTALLDIR=\"{installDir}\" /quiet /norestart /log \"{logPath}\"",
+        "exe": "\"{installerPath}\" /s INSTALLDIR=\"{installDir}\""
+      },
+      "uninstallSearch": ["Java", "Temurin", "OpenJDK"],
+      "defaultInstallDir": "C:\\Program Files\\Java\\jdk-{version}",
+      "envVars": {
+        "JAVA_HOME": "{installDir}"
+      },
+      "pathEntries": ["{installDir}\\bin"],
+      "verifyCommand": "java -version",
+      "verifyRegex": "version \"[\\d.]+",
+      "icon": "☕"
+    },
+    {
+      "id": "nodejs",
+      "name": "Node.js",
+      "description": "JavaScript runtime — Required for frontend and JS development",
+      "category": "runtime",
+      "versions": ["24.12.0", "22.15.0", "20.11.0", "18.19.0"],
+      "defaultVersion": "24.12.0",
+      "downloadUrls": {
+        "24.12.0": "https://nodejs.org/dist/v24.12.0/node-v24.12.0-x64.msi",
+        "22.15.0": "https://nodejs.org/dist/v22.15.0/node-v22.15.0-x64.msi",
+        "20.11.0": "https://nodejs.org/dist/v20.11.0/node-v20.11.0-x64.msi",
+        "18.19.0": "https://nodejs.org/dist/v18.19.0/node-v18.19.0-x64.msi"
+      },
+      "uninstallSearch": "Node.js",
+      "installCommand": {
+        "msi": "msiexec /i \"{installerPath}\" /quiet /norestart /log \"{logPath}\""
+      },
+      "defaultInstallDir": "C:\\Program Files\\nodejs",
+      "envVars": {},
+      "pathEntries": ["C:\\Program Files\\nodejs"],
+      "verifyCommand": "node -v",
+      "verifyRegex": "v[\\d.]+",
+      "icon": "🟢"
+    },
+    {
+      "id": "git",
+      "name": "Git",
+      "description": "Distributed version control system",
+      "category": "vcs",
+      "versions": ["2.49.0", "2.43.0"],
+      "defaultVersion": "2.49.0",
+      "downloadUrls": {
+        "2.49.0": "https://github.com/git-for-windows/git/releases/download/v2.49.0.windows.1/Git-2.49.0-64-bit.exe",
+        "2.43.0": "https://github.com/git-for-windows/git/releases/download/v2.43.0.windows.1/Git-2.43.0-64-bit.exe"
+      },
+      "installCommand": {
+        "exe": "\"{installerPath}\" /VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /COMPONENTS=\"icons,ext\\reg\\shellhere,assoc,assoc_sh\""
+      },
+      "uninstallSearch": "Git",
+      "defaultInstallDir": "C:\\Program Files\\Git",
+      "envVars": {},
+      "pathEntries": ["C:\\Program Files\\Git\\cmd"],
+      "verifyCommand": "git --version",
+      "verifyRegex": "git version [\\d.]+",
+      "icon": "🔀"
+    },
+    {
+      "id": "maven",
+      "name": "Apache Maven",
+      "description": "Build automation tool for Java projects",
+      "category": "build",
+      "versions": ["3.9.14"],
+      "defaultVersion": "3.9.14",
+      "downloadUrls": {
+        "3.9.14": "https://dlcdn.apache.org/maven/maven-3/3.9.14/binaries/apache-maven-3.9.14-bin.zip"
+      },
+      "installCommand": {
+        "zip": "extract"
+      },
+      "defaultInstallDir": "C:\\Program Files\\Maven\\apache-maven-{version}",
+      "envVars": {
+        "MAVEN_HOME": "{installDir}",
+        "M2_HOME": "{installDir}"
+      },
+      "pathEntries": ["{installDir}\\bin"],
+      "verifyCommand": "mvn -version",
+      "verifyRegex": "Apache Maven [\\d.]+",
+      "icon": "🪶",
+      "dependsOn": ["java"]
+    }
+  ],
+  "bundles": [
+    {
+      "id": "java-dev",
+      "name": "Java Developer Setup",
+      "description": "Complete Java development environment",
+      "tools": ["java", "maven", "git"],
+      "icon": "☕"
+    },
+    {
+      "id": "fullstack-dev",
+      "name": "Full-Stack Developer Setup",
+      "description": "Java backend + Node.js frontend + Git",
+      "tools": ["java", "nodejs", "maven", "git"],
+      "icon": "🚀"
+    },
+    {
+      "id": "frontend-dev",
+      "name": "Frontend Developer Setup",
+      "description": "Node.js + Git for frontend development",
+      "tools": ["nodejs", "git"],
+      "icon": "🎨"
+    }
+  ],
+  "settings": {
+    "downloadDir": "{temp}\\devtools-installer",
+    "logFile": "{userData}\\install.log",
+    "maxRetries": 3,
+    "retryDelayMs": 2000
+  }
+}
