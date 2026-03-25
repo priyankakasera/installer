@@ -35,14 +35,14 @@
           "id": "nodejs",
           "name": "Node.js",
           "description": "JavaScript runtime — Required for frontend and JS development",
-          "versions": ["25.8.2", "24.12.0", "22.15.0", "20.11.0", "18.19.0"],
+          "versions": ["25.8.2", "24.14.1", "22.22.2", "20.20.2", "18.20.8"],
           "defaultVersion": "25.8.2",
           "downloadUrls": {
             "25.8.2": "https://nodejs.org/dist/v25.8.2/node-v25.8.2-x64.msi",
-            "24.12.0": "https://nodejs.org/dist/v24.12.0/node-v24.12.0-x64.msi",
-            "22.15.0": "https://nodejs.org/dist/v22.15.0/node-v22.15.0-x64.msi",
-            "20.11.0": "https://nodejs.org/dist/v20.11.0/node-v20.11.0-x64.msi",
-            "18.19.0": "https://nodejs.org/dist/v18.19.0/node-v18.19.0-x64.msi"
+            "24.14.1": "https://nodejs.org/dist/v24.14.1/node-v24.14.1-x64.msi",
+            "22.22.2": "https://nodejs.org/dist/v22.22.2/node-v22.22.2-x64.msi",
+            "20.20.2": "https://nodejs.org/dist/v20.20.2/node-v20.20.2-x64.msi",
+            "18.20.8": "https://nodejs.org/dist/v18.20.8/node-v18.20.8-x64.msi"
           },
           "uninstallSearch": "Node.js",
           "installCommand": {
@@ -77,8 +77,17 @@
           "pathEntries": ["{installDir}", "{installDir}\\Scripts"],
           "verifyCommand": "python --version",
           "verifyRegex": "Python [\\d.]+",
-          "icon": "🐍"
-        },
+          "icon": "🐍",
+          "iconUrl": "icons/python.svg"
+        }
+      ]
+    },
+    {
+      "id": "package-managers",
+      "name": "Package Managers",
+      "description": "Build and dependency management tools for your projects",
+      "icon": "📦",
+      "tools": [
         {
           "id": "maven",
           "name": "Apache Maven",

@@ -167,7 +167,7 @@ function renderCategories() {
 
       card.innerHTML = `
         <div class="tool-checkbox"></div>
-        <div class="tool-icon">${escapeHtml(tool.icon)}</div>
+        <div class="tool-icon">${tool.iconUrl ? `<img class="tool-icon-img" src="${escapeHtml(tool.iconUrl)}" alt="${escapeHtml(tool.name)}">` : escapeHtml(tool.icon)}</div>
         <div class="tool-info">
           <div class="tool-name">${escapeHtml(tool.name)}</div>
           <div class="tool-desc">${escapeHtml(tool.description)}</div>
