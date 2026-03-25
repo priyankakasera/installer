@@ -10,6 +10,13 @@
 <body>
   <div class="app">
 
+    <!-- Full-screen startup loader — visible until init() completes -->
+    <div class="startup-loader" id="startupLoader">
+      <div class="loader-spinner loader-spinner--lg"></div>
+      <div class="loader-text">Loading DevTools Installer...</div>
+      <div class="loader-subtext">Detecting installed tools…</div>
+    </div>
+
     <!-- Header -->
     <header class="header">
       <div class="header-content">
@@ -25,17 +32,28 @@
       <!-- ─── Step 1: Select Tools ─── -->
       <section class="page active" id="pageSelect">
 
-        <!-- Bundles -->
-        <div class="section-title">Quick Setup Bundles</div>
-        <div class="bundles-grid" id="bundlesGrid"></div>
+        <!-- In-page loader: shown while refreshing detection after "Install More Tools" -->
+        <div class="page-content-loader" id="selectRefreshLoader" style="display:none;">
+          <div class="loader-spinner loader-spinner--lg"></div>
+          <div class="loader-text">Refreshing tool status...</div>
+        </div>
 
-        <!-- Tool Categories -->
-        <div id="categoriesContainer"></div>
+        <!-- Main content: hidden while refresh loader is active -->
+        <div id="selectMainContent">
 
-        <div class="actions">
-          <button class="btn btn-primary" id="btnInstall" disabled>
-            Install Selected
-          </button>
+          <!-- Bundles -->
+          <div class="section-title">Quick Setup Bundles</div>
+          <div class="bundles-grid" id="bundlesGrid"></div>
+
+          <!-- Tool Categories -->
+          <div id="categoriesContainer"></div>
+
+          <div class="actions">
+            <button class="btn btn-primary" id="btnInstall" disabled>
+              Install Selected
+            </button>
+          </div>
+
         </div>
       </section>
 

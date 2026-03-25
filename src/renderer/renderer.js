@@ -36,29 +36,49 @@ function getAllTools() {
   return config.categories.flatMap((cat) => cat.tools);
 }
 
+// ─── Loader Helpers ──────────────────────────────────────────
+function hideStartupLoader() {
+  const loader = document.getElementById('startupLoader');
+  if (!loader) return;
+  loader.classList.add('loader-fade-out');
+  loader.addEventListener('animationend', () => loader.remove(), { once: true });
+  // Safety fallback: remove if animationend never fires (e.g. prefers-reduced-motion)
+  setTimeout(() => { if (loader.parentNode) loader.remove(); }, 500);
+}
+
+function showSelectLoader(show) {
+  document.getElementById('selectRefreshLoader').style.display = show ? 'flex' : 'none';
+  document.getElementById('selectMainContent').style.display = show ? 'none' : '';
+}
+
 // ─── Initialization ──────────────────────────────────────────
 async function init() {
-  config = await window.api.getToolsConfig();
+  try {
+    // Step 1: fetch config (needed to know tool IDs)
+    config = await window.api.getToolsConfig();
 
-  // Check admin status
-  const isAdmin = await window.api.checkAdmin();
-  adminBadge.textContent = isAdmin ? '🔒 Admin' : '⚠ No Admin';
-  adminBadge.className = 'admin-badge ' + (isAdmin ? 'admin' : 'no-admin');
+    // Step 2: admin check + detection in parallel — no reason to serialise these
+    const toolIds = config.categories.flatMap((cat) => cat.tools.map((t) => t.id));
+    const [isAdmin, detected] = await Promise.all([
+      window.api.checkAdmin(),
+      window.api.detectInstalled(toolIds)
+    ]);
 
-  // Render UI immediately with no detection data so the window appears fast
-  renderBundles();
-  renderCategories();
-  setupListeners();
+    detectedTools = detected;
+    adminBadge.textContent = isAdmin ? '🔒 Admin' : '⚠ No Admin';
+    adminBadge.className = 'admin-badge ' + (isAdmin ? 'admin' : 'no-admin');
 
-  // Run detection in the background after first paint
-  requestAnimationFrame(() => {
-    setTimeout(async () => {
-      const toolIds = getAllTools().map((t) => t.id);
-      detectedTools = await window.api.detectInstalled(toolIds);
-      renderCategories();
-      updateInstallButton();
-    }, 0);
-  });
+    // Step 3: render with complete data — no partial render, no deferred update
+    renderBundles();
+    renderCategories();
+    updateInstallButton();
+    setupListeners();
+  } catch (err) {
+    console.error('Initialisation failed:', err);
+  } finally {
+    // Always remove the startup loader so the UI is never permanently blocked
+    hideStartupLoader();
+  }
 }
 
 // ─── Render Bundles ──────────────────────────────────────────
@@ -562,22 +582,22 @@ async function performUninstall() {
 function setupListeners() {
   btnInstall.addEventListener('click', startInstallation);
 
-  btnBackToSelect.addEventListener('click', () => {
+  btnBackToSelect.addEventListener('click', async () => {
     selectedTools.clear();
-    updateInstallButton();
-    updateBundleHighlights();
-    renderCategories();
     showPage('select');
+    showSelectLoader(true);
 
-    // Re-detect in background so the page appears immediately
-    requestAnimationFrame(() => {
-      setTimeout(async () => {
-        const toolIds = getAllTools().map((t) => t.id);
-        detectedTools = await window.api.detectInstalled(toolIds);
-        renderCategories();
-        updateInstallButton();
-      }, 0);
-    });
+    try {
+      const toolIds = getAllTools().map((t) => t.id);
+      detectedTools = await window.api.detectInstalled(toolIds);
+      renderCategories();
+      updateBundleHighlights();
+      updateInstallButton();
+    } catch (err) {
+      console.error('Failed to refresh tool status:', err);
+    } finally {
+      showSelectLoader(false);
+    }
   });
 
   logToggle.addEventListener('click', () => {
