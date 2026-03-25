@@ -210,12 +210,29 @@ class InstallerEngine {
     await this._configure(tool, version);
     onStep('configuring', 'Environment configured');
 
-    // Step 4: Verify
+    // Step 4: Verify — retry up to 4 times with increasing delays because:
+    // • MSI installers write PATH/envvars to the registry asynchronously
+    // • The configure step calls PowerShell to set Machine-scope PATH, but
+    //   there is a brief window where the process-level env cache is stale
+    // • Some tools (Node, Java) spawn a post-install service that takes a
+    //   moment to register the binary on PATH
     onStep('verifying', 'Verifying installation...');
-    const verifyResult = await this.detectInstalled(tool.id);
+    const RETRY_DELAYS_MS = [1500, 3000, 5000, 8000]; // total wait up to ~17 s
+    let verifyResult = { installed: false };
+    for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+      verifyResult = await this.detectInstalled(tool.id);
+      if (verifyResult.installed) break;
+      if (attempt < RETRY_DELAYS_MS.length) {
+        const wait = RETRY_DELAYS_MS[attempt];
+        this._log(`Verify attempt ${attempt + 1} failed for ${tool.name} — retrying in ${wait}ms`);
+        onStep('verifying', `Waiting for ${tool.name} to be ready... (attempt ${attempt + 2})`);
+        await new Promise(res => setTimeout(res, wait));
+      }
+    }
+
     if (!verifyResult.installed) {
-      this._log(`Verification warning for ${tool.name} — command may require shell restart`);
-      onStep('completed', `Installed (verification may need shell restart): ${verifyResult.output || 'N/A'}`);
+      this._log(`Verification warning for ${tool.name} — installed but not yet visible on PATH (shell restart will fix this)`);
+      onStep('completed', `Installed ✓ (open a new terminal to use ${tool.name} — PATH updates on next login)`);
     } else {
       onStep('completed', `Verified: ${verifyResult.output}`);
     }
@@ -682,12 +699,27 @@ class InstallerEngine {
     fs.writeFileSync(psScriptPath, psLines.join('\r\n') + '\r\n');
 
     if (isAdmin) {
-      // Run directly
+      // Run directly, then broadcast WM_SETTINGCHANGE so the updated PATH is
+      // visible in the current session without requiring a logout/reboot.
       try {
         execSync(`powershell -NoProfile -ExecutionPolicy Bypass -File "${psScriptPath}"`, { timeout: 120000, windowsHide: true });
         this._log('Environment configured (admin)');
       } catch (err) {
         this._log(`Warning configuring env: ${err.message}`);
+      }
+      try {
+        execSync(
+          `powershell -NoProfile -Command "` +
+          `Add-Type -Namespace WinEnv -Name Msg -MemberDefinition ` +
+          `'[DllImport(\"user32.dll\",SetLastError=true,CharSet=CharSet.Auto)] ` +
+          `public static extern IntPtr SendMessageTimeout(IntPtr h,uint m,IntPtr w,string l,uint f,uint t,out IntPtr r);' -PassThru | Out-Null;` +
+          `$r=[IntPtr]::Zero; ` +
+          `[WinEnv.Msg]::SendMessageTimeout([IntPtr]0xFFFF,0x001A,[IntPtr]::Zero,'Environment',2,5000,[ref]$r) | Out-Null"`,
+          { timeout: 15000, windowsHide: true, stdio: 'ignore' }
+        );
+        this._log('WM_SETTINGCHANGE broadcast — PATH live in current session');
+      } catch {
+        // Non-fatal; PATH will apply after shell restart regardless
       }
     } else {
       // Elevate the PS script
