@@ -401,10 +401,13 @@ function showDone(result) {
 
     const resultItem = document.createElement('div');
     resultItem.className = 'result-item';
+    const statusDetail = item.querySelector('.install-item-status');
+    const errorDetail = isError && statusDetail ? statusDetail.textContent : '';
     resultItem.innerHTML = `
-      <span class="result-status">${isError ? '❌' : '✅'}</span>
+      <span class="result-status">${isError ? '\u274C' : '\u2705'}</span>
       <span class="result-name">${escapeHtml(tool ? tool.name : toolId)}</span>
       <span class="result-detail">${isError ? 'Failed' : 'Installed'}</span>
+      ${isError && errorDetail ? `<div class="result-error-detail">${escapeHtml(errorDetail)}</div>` : ''}
     `;
     resultsList.appendChild(resultItem);
   });
@@ -460,6 +463,7 @@ async function performUninstall() {
   document.getElementById('uninstallProgress').style.display = 'block';
   document.getElementById('uninstallStatus').textContent = 'Starting uninstall...';
   document.getElementById('uninstallFill').style.width = '0%';
+  document.getElementById('uninstallFill').style.background = '';
 
   const stepPcts = { finding: 10, uninstalling: 40, cleaning: 70, verifying: 90, completed: 100 };
 
@@ -486,7 +490,16 @@ async function performUninstall() {
 
     setTimeout(hideUninstallModal, 1200);
   } else {
-    document.getElementById('uninstallStatus').textContent = 'Failed: ' + (result.error || 'Unknown error');
+    const errorMsg = result.error || 'Unknown error';
+    document.getElementById('uninstallFill').style.width = '100%';
+    document.getElementById('uninstallFill').style.background = 'var(--error)';
+    document.getElementById('uninstallStatus').innerHTML = `
+      <div class="error-panel">
+        <div class="error-panel-title">\u274C Uninstall Failed</div>
+        <div class="error-panel-message">${escapeHtml(errorMsg)}</div>
+        <div class="error-panel-hint">Check the application log for full details.</div>
+      </div>
+    `;
     document.getElementById('uninstallActions').style.display = 'flex';
     document.getElementById('btnConfirmUninstall').textContent = 'Retry';
   }

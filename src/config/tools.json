@@ -152,6 +152,7 @@
             "exe": "\"{installerPath}\" install --quiet --accept-license"
           },
           "uninstallSearch": ["Docker Desktop"],
+          "silentUninstallArgs": "--quiet",
           "defaultInstallDir": "C:\\Program Files\\Docker\\Docker",
           "envVars": {},
           "pathEntries": ["C:\\Program Files\\Docker\\Docker\\resources\\bin"],

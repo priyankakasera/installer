@@ -509,7 +509,14 @@ class InstallerEngine {
         exec(cmd, { timeout: 600000, windowsHide: true }, (err, stdout, stderr) => {
           if (err) {
             this._handleInstallError(err, stdout, stderr, msiLogPath);
-            if (err.code === 3010) return resolve();
+            if (err.code === 3010 || err.code === 3) {
+              this._log(`Exit code ${err.code}: success (reboot recommended)`);
+              return resolve();
+            }
+            if (err.code === 1 && ext === '.exe') {
+              this._log('Exit code 1 from EXE installer — treating as success (common with Inno Setup when app is already installed or reboot needed)');
+              return resolve();
+            }
             if (err.code === 1620 || err.code === 1603) {
               // 1620 = package could not be opened (corrupt/incomplete)
               // 1603 = fatal error during installation
@@ -563,12 +570,17 @@ class InstallerEngine {
         this._log(`Elevated install finished. Exit code from file: ${exitCode}, PS error: ${err ? err.message : 'none'}`);
 
         // Only log MSI errors on actual failure
-        if (exitCode !== 0 && exitCode !== 3010) {
+        if (exitCode !== 0 && exitCode !== 3010 && exitCode !== 3 && !(exitCode === 1 && ext === '.exe')) {
           this._handleInstallError({ code: exitCode }, '', '', msiLogPath);
         }
 
-        if (exitCode === 0 || exitCode === 3010) {
-          if (exitCode === 3010) this._log('Exit code 3010: success (reboot recommended)');
+        if (exitCode === 0 || exitCode === 3010 || exitCode === 3) {
+          if (exitCode === 3010 || exitCode === 3) this._log(`Exit code ${exitCode}: success (reboot recommended)`);
+          return resolve();
+        }
+
+        if (exitCode === 1 && ext === '.exe') {
+          this._log('Exit code 1 from EXE installer — treating as success (common with Inno Setup when app is already installed or reboot needed)');
           return resolve();
         }
 
@@ -881,6 +893,28 @@ class InstallerEngine {
       let cmd = productInfo.uninstallString;
       if (cmd.includes('MsiExec')) {
         cmd = cmd.replace('/I', '/X') + ' /quiet /norestart';
+      } else {
+        // Verify the uninstall exe actually exists
+        const exeMatch = cmd.match(/"([^"]+\.exe)"/i);
+        const uninstallExe = exeMatch ? exeMatch[1] : null;
+
+        if (uninstallExe && !fs.existsSync(uninstallExe)) {
+          this._log(`Registry uninstall exe not found: ${uninstallExe}`);
+
+          // Fall back to cached installer if available
+          const cachedInstaller = this._findCachedInstaller(tool);
+          if (cachedInstaller) {
+            this._log(`Falling back to cached installer for uninstall: ${cachedInstaller}`);
+            // Replace the missing exe path with our cached installer
+            cmd = cmd.replace(exeMatch[0], `"${cachedInstaller}"`);
+          } else {
+            throw new Error(`Uninstaller not found at ${uninstallExe} and no cached installer available. Please reinstall and try again, or uninstall manually from Windows Settings > Apps.`);
+          }
+        }
+
+        if (tool.silentUninstallArgs) {
+          cmd += ' ' + tool.silentUninstallArgs;
+        }
       }
       this._log(`Running uninstall string: ${cmd}`);
       return this._runElevatedCommand(tool.id, 'uninstall', cmd, isAdmin);
@@ -939,8 +973,15 @@ class InstallerEngine {
     if (isAdmin) {
       return new Promise((resolve, reject) => {
         exec(cmd, { timeout: 300000, windowsHide: true }, (err) => {
-          if (err && err.code !== 3010 && err.code !== 0) {
-            return reject(new Error(`${purpose} failed (exit code ${err.code})`));
+          if (err) {
+            if (err.killed) {
+              return reject(new Error(`${purpose} timed out after 5 minutes. The process may be waiting for user interaction or is still running in the background. Try closing the application first and retry.`));
+            }
+            if (err.code === 0 || err.code === 3010 || err.code === 3) {
+              if (err.code !== 0) this._log(`${purpose} exit code ${err.code}: success (reboot recommended)`);
+              return resolve();
+            }
+            return reject(new Error(`${purpose} failed — ${this._describeExitCode(err.code)}`));
           }
           resolve();
         });
@@ -961,11 +1002,46 @@ class InstallerEngine {
           try { exitCode = parseInt(fs.readFileSync(exitCodeFile, 'utf8').trim(), 10); } catch {}
         }
         this._log(`Elevated ${purpose} finished. Exit code: ${exitCode}`);
-        if (exitCode === 0 || exitCode === 3010) return resolve();
-        if (exitCode === null && err) return reject(new Error(`${purpose} cancelled (UAC denied)`));
-        return reject(new Error(`${purpose} failed (exit code ${exitCode})`));
+        if (exitCode === 0 || exitCode === 3010 || exitCode === 3) {
+          if (exitCode && exitCode !== 0) this._log(`${purpose} exit code ${exitCode}: success (reboot recommended)`);
+          return resolve();
+        }
+        if (err && err.killed) {
+          return reject(new Error(`${purpose} timed out after 5 minutes. The process may be waiting for user interaction or is still running in the background. Try closing the application first and retry.`));
+        }
+        if (exitCode === null && err) return reject(new Error(`${purpose} cancelled — UAC prompt was denied or the process failed to start. Please try again and accept the administrator prompt.`));
+        return reject(new Error(`${purpose} failed — ${this._describeExitCode(exitCode)}`));
       });
     });
+  }
+
+  _findCachedInstaller(tool) {
+    const prefix = `${tool.id}-`;
+    try {
+      const files = fs.readdirSync(this.downloadDir);
+      const match = files.find(f => f.startsWith(prefix) && /\.(exe|msi)$/i.test(f) && !f.endsWith('.size'));
+      return match ? path.join(this.downloadDir, match) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  _describeExitCode(code) {
+    const descriptions = {
+      1: `Exit code 1 — the process reported an error. The application may already be uninstalled, or files may be locked by a running process. Close the application and retry.`,
+      2: `Exit code 2 — file not found. The uninstaller executable may have been moved or deleted.`,
+      3: `Exit code 3 — the operation requires a system reboot to complete.`,
+      5: `Exit code 5 — access denied. Run this application as administrator.`,
+      87: `Exit code 87 — invalid parameter passed to the uninstaller.`,
+      1602: `Exit code 1602 — the user cancelled the operation.`,
+      1603: `Exit code 1603 — fatal error during uninstall. Files may be in use — close all related applications and retry.`,
+      1605: `Exit code 1605 — this product is not currently installed.`,
+      1618: `Exit code 1618 — another installation is in progress. Wait for it to finish and retry.`,
+      1620: `Exit code 1620 — the installer package could not be opened. The file may be corrupt.`,
+      3010: `Exit code 3010 — success, but a reboot is required to complete the operation.`,
+    };
+    if (code === null || code === undefined) return 'The process exited unexpectedly without reporting a result. It may still be running in the background.';
+    return descriptions[code] || `Exit code ${code} — an unexpected error occurred. Check the install log for details.`;
   }
 
   async _unconfigure(tool) {
