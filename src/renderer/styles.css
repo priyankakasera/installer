@@ -463,6 +463,7 @@ body {
 }
 
 .badge-waiting { background: var(--border); color: var(--text-muted); }
+.badge-checking-prerequisites { background: rgba(79, 140, 255, 0.12); color: var(--primary); }
 .badge-downloading { background: rgba(79, 140, 255, 0.12); color: var(--primary); }
 .badge-installing { background: rgba(251, 191, 36, 0.12); color: var(--warning); }
 .badge-configuring { background: rgba(251, 191, 36, 0.12); color: var(--warning); }

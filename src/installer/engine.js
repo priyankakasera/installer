@@ -165,7 +165,7 @@ class InstallerEngine {
   }
 
   _stepPercent(step) {
-    const map = { downloading: 10, installing: 50, configuring: 80, verifying: 90, completed: 100, 'reboot-required': 100, error: 100 };
+    const map = { 'checking-prerequisites': 5, downloading: 10, installing: 50, configuring: 80, verifying: 90, completed: 100, 'reboot-required': 100, error: 100 };
     return map[step] || 0;
   }
 
@@ -175,6 +175,12 @@ class InstallerEngine {
 
   async _installTool(tool, version, onStep) {
     this._log(`\n${'='.repeat(50)}\nInstalling ${tool.name} v${version}\n${'='.repeat(50)}`);
+
+    // Step 0: Pre-install prerequisite checks
+    if (tool.prerequisiteChecks && tool.prerequisiteChecks.length > 0) {
+      onStep('checking-prerequisites', 'Checking system requirements...');
+      await this._runPrerequisiteChecks(tool, onStep);
+    }
 
     // Step 1: Download
     onStep('downloading', 'Starting download...');
@@ -1164,6 +1170,52 @@ class InstallerEngine {
     const ts = new Date().toISOString();
     const line = `[${ts}] ${message}\n`;
     fs.appendFileSync(this.logPath, line);
+  }
+
+  // ─── Prerequisite Checks ─────────────────────────────────────
+
+  async _runPrerequisiteChecks(tool, onStep) {
+    const failed = [];
+
+    for (const check of tool.prerequisiteChecks) {
+      onStep('checking-prerequisites', `Checking: ${check.name}...`);
+      this._log(`Prerequisite check: ${check.name}`);
+
+      try {
+        const raw = execSync(check.command, {
+          encoding: 'utf8',
+          timeout: 15000,
+          windowsHide: true,
+          stdio: ['pipe', 'pipe', 'pipe']
+        }).trim();
+
+        this._log(`  Result: ${raw}`);
+
+        let passed = true;
+        if (check.expectedRegex) {
+          passed = new RegExp(check.expectedRegex, 'i').test(raw);
+        } else if (check.minIntValue !== undefined) {
+          const val = parseInt(raw, 10);
+          passed = !isNaN(val) && val >= check.minIntValue;
+        }
+
+        if (!passed) {
+          this._log(`  FAILED: ${check.failMessage}`);
+          if (check.required) failed.push({ name: check.name, message: check.failMessage });
+        } else {
+          this._log(`  PASSED`);
+        }
+      } catch (err) {
+        // If the check command itself fails to run (e.g. needs elevation),
+        // log a warning but do not block the install.
+        this._log(`  Could not run check "${check.name}": ${err.message} — skipping`);
+      }
+    }
+
+    if (failed.length > 0) {
+      const msg = failed.map(f => `• ${f.name}:\n  ${f.message}`).join('\n');
+      throw new Error(`System requirements not met for ${tool.name}:\n\n${msg}`);
+    }
   }
 }
 
