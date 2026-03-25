@@ -1,100 +1,227 @@
 {
-  "tools": [
+  "categories": [
     {
-      "id": "java",
-      "name": "Java (JDK 21)",
-      "description": "Java Development Kit 21 — Required for Java development",
-      "category": "runtime",
-      "versions": ["21.0.10", "17.0.18", "11.0.30"],
-      "defaultVersion": "21.0.10",
-      "downloadUrls": {
-        "21.0.10": "https://download.oracle.com/java/21/latest/jdk-21_windows-x64_bin.msi",
-        "17.0.18": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.18%2B8/OpenJDK17U-jdk_x64_windows_hotspot_17.0.18_8.msi",
-        "11.0.30": "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.30%2B7/OpenJDK11U-jdk_x64_windows_hotspot_11.0.30_7.msi"
-      },
-      "installCommand": {
-        "msi": "msiexec /i \"{installerPath}\" INSTALLDIR=\"{installDir}\" /quiet /norestart /log \"{logPath}\"",
-        "exe": "\"{installerPath}\" /s INSTALLDIR=\"{installDir}\""
-      },
-      "uninstallSearch": ["Java", "Temurin", "OpenJDK"],
-      "defaultInstallDir": "C:\\Program Files\\Java\\jdk-{version}",
-      "envVars": {
-        "JAVA_HOME": "{installDir}"
-      },
-      "pathEntries": ["{installDir}\\bin"],
-      "verifyCommand": "java -version",
-      "verifyRegex": "version \"[\\d.]+",
-      "icon": "☕"
+      "id": "runtimes",
+      "name": "Core Programming Runtimes",
+      "description": "Foundational tools required to run and develop applications",
+      "icon": "🚀",
+      "tools": [
+        {
+          "id": "java",
+          "name": "Java (JDK 21)",
+          "description": "Java Development Kit 21 — Required for Java development",
+          "versions": ["21.0.10", "17.0.18", "11.0.30"],
+          "defaultVersion": "21.0.10",
+          "downloadUrls": {
+            "21.0.10": "https://download.oracle.com/java/21/latest/jdk-21_windows-x64_bin.msi",
+            "17.0.18": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.18%2B8/OpenJDK17U-jdk_x64_windows_hotspot_17.0.18_8.msi",
+            "11.0.30": "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.30%2B7/OpenJDK11U-jdk_x64_windows_hotspot_11.0.30_7.msi"
+          },
+          "installCommand": {
+            "msi": "msiexec /i \"{installerPath}\" INSTALLDIR=\"{installDir}\" /quiet /norestart /log \"{logPath}\"",
+            "exe": "\"{installerPath}\" /s INSTALLDIR=\"{installDir}\""
+          },
+          "uninstallSearch": ["Java", "Temurin", "OpenJDK"],
+          "defaultInstallDir": "C:\\Program Files\\Java\\jdk-{version}",
+          "envVars": {
+            "JAVA_HOME": "{installDir}"
+          },
+          "pathEntries": ["{installDir}\\bin"],
+          "verifyCommand": "java -version",
+          "verifyRegex": "version \"[\\d.]+",
+          "icon": "☕"
+        },
+        {
+          "id": "nodejs",
+          "name": "Node.js",
+          "description": "JavaScript runtime — Required for frontend and JS development",
+          "versions": ["25.8.2", "24.12.0", "22.15.0", "20.11.0", "18.19.0"],
+          "defaultVersion": "25.8.2",
+          "downloadUrls": {
+            "25.8.2": "https://nodejs.org/dist/v25.8.2/node-v25.8.2-x64.msi",
+            "24.12.0": "https://nodejs.org/dist/v24.12.0/node-v24.12.0-x64.msi",
+            "22.15.0": "https://nodejs.org/dist/v22.15.0/node-v22.15.0-x64.msi",
+            "20.11.0": "https://nodejs.org/dist/v20.11.0/node-v20.11.0-x64.msi",
+            "18.19.0": "https://nodejs.org/dist/v18.19.0/node-v18.19.0-x64.msi"
+          },
+          "uninstallSearch": "Node.js",
+          "installCommand": {
+            "msi": "msiexec /i \"{installerPath}\" /quiet /norestart /log \"{logPath}\""
+          },
+          "defaultInstallDir": "C:\\Program Files\\nodejs",
+          "envVars": {},
+          "pathEntries": ["C:\\Program Files\\nodejs"],
+          "verifyCommand": "node -v",
+          "verifyRegex": "v[\\d.]+",
+          "icon": "🟢"
+        },
+        {
+          "id": "python",
+          "name": "Python",
+          "description": "Python runtime — Required for scripting and data development",
+          "versions": ["3.14.3", "3.13.12", "3.12.13", "3.11.15", "3.10.20"],
+          "defaultVersion": "3.14.3",
+          "downloadUrls": {
+            "3.14.3": "https://www.python.org/ftp/python/3.14.3/python-3.14.3-amd64.exe",
+            "3.13.12": "https://www.python.org/ftp/python/3.13.12/python-3.13.12-amd64.exe",
+            "3.12.13": "https://www.python.org/ftp/python/3.12.13/python-3.12.13-amd64.exe",
+            "3.11.15": "https://www.python.org/ftp/python/3.11.15/python-3.11.15-amd64.exe",
+            "3.10.20": "https://www.python.org/ftp/python/3.10.20/python-3.10.20-amd64.exe"
+          },
+          "installCommand": {
+            "exe": "\"{installerPath}\" /quiet InstallAllUsers=1 PrependPath=1 TargetDir=\"{installDir}\""
+          },
+          "uninstallSearch": ["Python"],
+          "defaultInstallDir": "C:\\Program Files\\Python{version}",
+          "envVars": {},
+          "pathEntries": ["{installDir}", "{installDir}\\Scripts"],
+          "verifyCommand": "python --version",
+          "verifyRegex": "Python [\\d.]+",
+          "icon": "🐍"
+        },
+        {
+          "id": "maven",
+          "name": "Apache Maven",
+          "description": "Build automation tool for Java projects",
+          "versions": ["3.9.14"],
+          "defaultVersion": "3.9.14",
+          "downloadUrls": {
+            "3.9.14": "https://dlcdn.apache.org/maven/maven-3/3.9.14/binaries/apache-maven-3.9.14-bin.zip"
+          },
+          "installCommand": {
+            "zip": "extract"
+          },
+          "defaultInstallDir": "C:\\Program Files\\Maven\\apache-maven-{version}",
+          "envVars": {
+            "MAVEN_HOME": "{installDir}",
+            "M2_HOME": "{installDir}"
+          },
+          "pathEntries": ["{installDir}\\bin"],
+          "verifyCommand": "mvn -version",
+          "verifyRegex": "Apache Maven [\\d.]+",
+          "icon": "🪶",
+          "dependsOn": ["java"]
+        }
+      ]
     },
     {
-      "id": "nodejs",
-      "name": "Node.js",
-      "description": "JavaScript runtime — Required for frontend and JS development",
-      "category": "runtime",
-      "versions": ["24.12.0", "22.15.0", "20.11.0", "18.19.0"],
-      "defaultVersion": "24.12.0",
-      "downloadUrls": {
-        "24.12.0": "https://nodejs.org/dist/v24.12.0/node-v24.12.0-x64.msi",
-        "22.15.0": "https://nodejs.org/dist/v22.15.0/node-v22.15.0-x64.msi",
-        "20.11.0": "https://nodejs.org/dist/v20.11.0/node-v20.11.0-x64.msi",
-        "18.19.0": "https://nodejs.org/dist/v18.19.0/node-v18.19.0-x64.msi"
-      },
-      "uninstallSearch": "Node.js",
-      "installCommand": {
-        "msi": "msiexec /i \"{installerPath}\" /quiet /norestart /log \"{logPath}\""
-      },
-      "defaultInstallDir": "C:\\Program Files\\nodejs",
-      "envVars": {},
-      "pathEntries": ["C:\\Program Files\\nodejs"],
-      "verifyCommand": "node -v",
-      "verifyRegex": "v[\\d.]+",
-      "icon": "🟢"
+      "id": "vcs",
+      "name": "Version Control",
+      "description": "Tools used for source code management — essential for all developers",
+      "icon": "🔧",
+      "tools": [
+        {
+          "id": "git",
+          "name": "Git",
+          "description": "Distributed version control system",
+          "versions": ["2.53.0"],
+          "defaultVersion": "2.53.0",
+          "downloadUrls": {
+            "2.53.0": "https://github.com/git-for-windows/git/releases/download/v2.53.0.windows.1/Git-2.53.0-64-bit.exe"
+          },
+          "installCommand": {
+            "exe": "\"{installerPath}\" /VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /COMPONENTS=\"icons,ext\\reg\\shellhere,assoc,assoc_sh\""
+          },
+          "uninstallSearch": "Git",
+          "defaultInstallDir": "C:\\Program Files\\Git",
+          "envVars": {},
+          "pathEntries": ["C:\\Program Files\\Git\\cmd"],
+          "verifyCommand": "git --version",
+          "verifyRegex": "git version [\\d.]+",
+          "icon": "🔀"
+        }
+      ]
     },
     {
-      "id": "git",
-      "name": "Git",
-      "description": "Distributed version control system",
-      "category": "vcs",
-      "versions": ["2.49.0", "2.43.0"],
-      "defaultVersion": "2.49.0",
-      "downloadUrls": {
-        "2.49.0": "https://github.com/git-for-windows/git/releases/download/v2.49.0.windows.1/Git-2.49.0-64-bit.exe",
-        "2.43.0": "https://github.com/git-for-windows/git/releases/download/v2.43.0.windows.1/Git-2.43.0-64-bit.exe"
-      },
-      "installCommand": {
-        "exe": "\"{installerPath}\" /VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /COMPONENTS=\"icons,ext\\reg\\shellhere,assoc,assoc_sh\""
-      },
-      "uninstallSearch": "Git",
-      "defaultInstallDir": "C:\\Program Files\\Git",
-      "envVars": {},
-      "pathEntries": ["C:\\Program Files\\Git\\cmd"],
-      "verifyCommand": "git --version",
-      "verifyRegex": "git version [\\d.]+",
-      "icon": "🔀"
-    },
-    {
-      "id": "maven",
-      "name": "Apache Maven",
-      "description": "Build automation tool for Java projects",
-      "category": "build",
-      "versions": ["3.9.14"],
-      "defaultVersion": "3.9.14",
-      "downloadUrls": {
-        "3.9.14": "https://dlcdn.apache.org/maven/maven-3/3.9.14/binaries/apache-maven-3.9.14-bin.zip"
-      },
-      "installCommand": {
-        "zip": "extract"
-      },
-      "defaultInstallDir": "C:\\Program Files\\Maven\\apache-maven-{version}",
-      "envVars": {
-        "MAVEN_HOME": "{installDir}",
-        "M2_HOME": "{installDir}"
-      },
-      "pathEntries": ["{installDir}\\bin"],
-      "verifyCommand": "mvn -version",
-      "verifyRegex": "Apache Maven [\\d.]+",
-      "icon": "🪶",
-      "dependsOn": ["java"]
+      "id": "cloud-devops",
+      "name": "Cloud & DevOps Tools",
+      "description": "Tools for containerization, cloud interaction, and infrastructure management",
+      "icon": "☁️",
+      "tools": [
+        {
+          "id": "docker-desktop",
+          "name": "Docker Desktop",
+          "description": "Bundled container platform — includes Docker Engine, CLI, and Compose",
+          "versions": ["4.66.0", "4.51.0"],
+          "defaultVersion": "4.66.0",
+          "downloadUrls": {
+            "4.66.0": "https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe",
+            "4.51.0": "https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe"
+          },
+          "installCommand": {
+            "exe": "\"{installerPath}\" install --quiet --accept-license"
+          },
+          "uninstallSearch": ["Docker Desktop"],
+          "defaultInstallDir": "C:\\Program Files\\Docker\\Docker",
+          "envVars": {},
+          "pathEntries": ["C:\\Program Files\\Docker\\Docker\\resources\\bin"],
+          "verifyCommand": "docker --version",
+          "verifyRegex": "Docker version [\\d.]+",
+          "icon": "🐳"
+        },
+        {
+          "id": "kubectl",
+          "name": "Kubernetes CLI (kubectl)",
+          "description": "Command-line tool for controlling Kubernetes clusters",
+          "versions": ["1.35.3", "1.34.6", "1.33.10"],
+          "defaultVersion": "1.35.3",
+          "downloadUrls": {
+            "1.35.3": "https://dl.k8s.io/release/v1.35.3/bin/windows/amd64/kubectl.exe",
+            "1.34.6": "https://dl.k8s.io/release/v1.34.6/bin/windows/amd64/kubectl.exe",
+            "1.33.10": "https://dl.k8s.io/release/v1.33.10/bin/windows/amd64/kubectl.exe"
+          },
+          "installCommand": {
+            "exe": "copy"
+          },
+          "uninstallSearch": [],
+          "defaultInstallDir": "C:\\Program Files\\kubectl",
+          "envVars": {},
+          "pathEntries": ["C:\\Program Files\\kubectl"],
+          "verifyCommand": "kubectl version --client",
+          "verifyRegex": "Client Version: v[\\d.]+",
+          "icon": "☸️"
+        },
+        {
+          "id": "awscli",
+          "name": "AWS CLI",
+          "description": "Command-line interface for Amazon Web Services",
+          "versions": ["2:latest"],
+          "defaultVersion": "2:latest",
+          "downloadUrls": {
+            "2:latest": "https://awscli.amazonaws.com/AWSCLIV2.msi"
+          },
+          "installCommand": {
+            "msi": "msiexec /i \"{installerPath}\" /quiet /norestart /log \"{logPath}\""
+          },
+          "uninstallSearch": ["AWS Command Line Interface"],
+          "defaultInstallDir": "C:\\Program Files\\Amazon\\AWSCLIV2",
+          "envVars": {},
+          "pathEntries": ["C:\\Program Files\\Amazon\\AWSCLIV2"],
+          "verifyCommand": "aws --version",
+          "verifyRegex": "aws-cli/[\\d.]+",
+          "icon": "🔶"
+        },
+        {
+          "id": "azurecli",
+          "name": "Azure CLI",
+          "description": "Command-line interface for Microsoft Azure",
+          "versions": ["2:latest"],
+          "defaultVersion": "2:latest",
+          "downloadUrls": {
+            "2:latest": "https://aka.ms/installazurecliwindowsx64"
+          },
+          "installCommand": {
+            "msi": "msiexec /i \"{installerPath}\" /quiet /norestart /log \"{logPath}\""
+          },
+          "uninstallSearch": ["Microsoft Azure CLI"],
+          "defaultInstallDir": "C:\\Program Files\\Microsoft SDKs\\Azure\\CLI2",
+          "envVars": {},
+          "pathEntries": ["C:\\Program Files\\Microsoft SDKs\\Azure\\CLI2\\wbin"],
+          "verifyCommand": "az --version",
+          "verifyRegex": "azure-cli\\s+[\\d.]+",
+          "icon": "🔷"
+        }
+      ]
     }
   ],
   "bundles": [
@@ -102,14 +229,14 @@
       "id": "java-dev",
       "name": "Java Developer Setup",
       "description": "Complete Java development environment",
-      "tools": ["java", "maven", "git"],
+      "tools": ["java", "git"],
       "icon": "☕"
     },
     {
       "id": "fullstack-dev",
       "name": "Full-Stack Developer Setup",
       "description": "Java backend + Node.js frontend + Git",
-      "tools": ["java", "nodejs", "maven", "git"],
+      "tools": ["java", "nodejs", "python", "git"],
       "icon": "🚀"
     },
     {
@@ -118,6 +245,13 @@
       "description": "Node.js + Git for frontend development",
       "tools": ["nodejs", "git"],
       "icon": "🎨"
+    },
+    {
+      "id": "cloud-dev",
+      "name": "Cloud & DevOps Setup",
+      "description": "Docker Desktop + Kubernetes + Cloud CLIs",
+      "tools": ["docker-desktop", "kubectl", "awscli", "azurecli"],
+      "icon": "☁️"
     }
   ],
   "settings": {

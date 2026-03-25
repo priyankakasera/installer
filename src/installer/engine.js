@@ -11,6 +11,8 @@ class InstallerEngine {
     this.config = JSON.parse(
       fs.readFileSync(path.join(__dirname, '..', 'config', 'tools.json'), 'utf8')
     );
+    // Build a flat tools list from categories for backward-compatible lookups
+    this._allTools = this.config.categories.flatMap((cat) => cat.tools);
     this.downloadDir = path.join(app.getPath('temp'), 'devtools-installer');
     this.historyPath = path.join(app.getPath('userData'), 'install-history.json');
     this.logPath = path.join(app.getPath('userData'), 'install.log');
@@ -118,12 +120,19 @@ class InstallerEngine {
     // Clear cached download on retry so a corrupt file doesn't persist
     const url = tool.downloadUrls[selectedVersion];
     if (url) {
-      const ext = path.extname(new URL(url).pathname) || '.exe';
-      const cached = path.join(this.downloadDir, `${tool.id}-${selectedVersion}${ext}`);
-      if (fs.existsSync(cached)) {
-        this._log(`Clearing cached download for retry: ${cached}`);
-        fs.unlinkSync(cached);
-      }
+      const safeVer = this._safeVersion(selectedVersion);
+      const prefix = `${tool.id}-${safeVer}`;
+      // Clear all cached files for this tool+version (any extension)
+      try {
+        const files = fs.readdirSync(this.downloadDir);
+        for (const f of files) {
+          if (f.startsWith(prefix) || f.startsWith(prefix + '.')) {
+            const fullPath = path.join(this.downloadDir, f);
+            this._log(`Clearing cached download for retry: ${fullPath}`);
+            try { fs.unlinkSync(fullPath); } catch {}
+          }
+        }
+      } catch { /* directory may not exist yet */ }
     }
 
     await this._installTool(tool, selectedVersion, (step, detail) => {
@@ -152,12 +161,16 @@ class InstallerEngine {
   // ─── Private Methods ─────────────────────────────────────────
 
   _getTool(toolId) {
-    return this.config.tools.find((t) => t.id === toolId);
+    return this._allTools.find((t) => t.id === toolId);
   }
 
   _stepPercent(step) {
     const map = { downloading: 10, installing: 50, configuring: 80, verifying: 90, completed: 100, error: 100 };
     return map[step] || 0;
+  }
+
+  _safeVersion(version) {
+    return version.replace(/[<>:"/\\|?*]/g, '_');
   }
 
   async _installTool(tool, version, onStep) {
@@ -166,7 +179,11 @@ class InstallerEngine {
     // Step 1: Download
     onStep('downloading', 'Starting download...');
     const installerPath = await this._download(tool, version, (pct, speed) => {
-      onStep('downloading', `${pct}% downloaded${speed ? ` (${speed})` : ''}`);
+      if (pct >= 0) {
+        onStep('downloading', `${pct}% downloaded${speed ? ` (${speed})` : ''}`);
+      } else {
+        onStep('downloading', speed || 'Downloading...');
+      }
     });
 
     // Step 2: Install
@@ -198,58 +215,126 @@ class InstallerEngine {
       if (!url) return reject(new Error(`No download URL for ${tool.name} v${version}`));
 
       const ext = path.extname(new URL(url).pathname) || '.exe';
-      const dest = path.join(this.downloadDir, `${tool.id}-${version}${ext}`);
+      const safeVer = this._safeVersion(version);
+      const dest = path.join(this.downloadDir, `${tool.id}-${safeVer}${ext}`);
 
-      // Skip if already downloaded
-      if (fs.existsSync(dest)) {
-        const stat = fs.statSync(dest);
-        if (stat.size > 1000) {
-          this._log(`Using cached download: ${dest}`);
+      // Check for cached download (might have been saved with a different
+      // extension after a redirect, e.g. .exe -> .msi)
+      const prefix = `${tool.id}-${safeVer}`;
+      try {
+        const existing = fs.readdirSync(this.downloadDir).find((f) => {
+          if (!f.startsWith(prefix) || f.endsWith('.size')) return false;
+          const filePath = path.join(this.downloadDir, f);
+          const fileSize = fs.statSync(filePath).size;
+          if (fileSize <= 1000) return false;
+          // Verify file size matches recorded expected size from the original download
+          const sizeFile = filePath + '.size';
+          if (fs.existsSync(sizeFile)) {
+            try {
+              const expectedSize = parseInt(fs.readFileSync(sizeFile, 'utf8').trim(), 10);
+              if (expectedSize > 0 && fileSize < expectedSize) {
+                this._log(`Cached file ${f} is incomplete (${fileSize} vs expected ${expectedSize}) — removing`);
+                fs.unlinkSync(filePath);
+                try { fs.unlinkSync(sizeFile); } catch {}
+                return false;
+              }
+            } catch {}
+          }
+          return true;
+        });
+        if (existing) {
+          const cachedPath = path.join(this.downloadDir, existing);
+          this._log(`Using cached download: ${cachedPath}`);
           onProgress(100, '');
-          return resolve(dest);
+          return resolve(cachedPath);
         }
-      }
+      } catch { /* directory may not exist yet */ }
 
       this._log(`Downloading from: ${url}`);
-      this._followRedirect(url, (response) => {
+      this._followRedirect(url, (response, finalUrl) => {
         if (response.statusCode !== 200) {
           return reject(new Error(`Download failed: HTTP ${response.statusCode}`));
         }
+
+        // Resolve the real file extension from the final URL or Content-Disposition
+        let realExt = ext;
+        const disposition = response.headers['content-disposition'];
+        if (disposition) {
+          const match = disposition.match(/filename[^;=\n]*=(['"]?)([^'"\n;]+)\1/);
+          if (match && match[2]) realExt = path.extname(match[2]) || realExt;
+        } else if (finalUrl !== url) {
+          const finalPathExt = path.extname(new URL(finalUrl).pathname);
+          if (finalPathExt) realExt = finalPathExt;
+        }
+        const finalDest = realExt !== ext
+          ? path.join(this.downloadDir, `${tool.id}-${safeVer}${realExt}`)
+          : dest;
 
         const totalSize = parseInt(response.headers['content-length'], 10) || 0;
         let downloaded = 0;
         let lastProgressTime = 0;
         const startTime = Date.now();
 
-        // Use large buffer for the write stream to maximize throughput
-        const fileStream = fs.createWriteStream(dest, { highWaterMark: 4 * 1024 * 1024 });
+        const fileStream = fs.createWriteStream(finalDest, { highWaterMark: 4 * 1024 * 1024 });
 
         response.on('data', (chunk) => {
           downloaded += chunk.length;
 
-          // Throttle progress updates to every 200ms to avoid UI backpressure
+          // Throttle progress updates to every 300ms to avoid UI backpressure
           const now = Date.now();
-          if (totalSize > 0 && (now - lastProgressTime > 200 || downloaded >= totalSize)) {
+          if (now - lastProgressTime > 300 || (totalSize > 0 && downloaded >= totalSize)) {
             lastProgressTime = now;
-            const pct = Math.round((downloaded / totalSize) * 100);
             const mb = (downloaded / (1024 * 1024)).toFixed(1);
-            const totalMb = (totalSize / (1024 * 1024)).toFixed(1);
             const elapsed = (now - startTime) / 1000;
             const speedMBs = elapsed > 0 ? (downloaded / (1024 * 1024) / elapsed).toFixed(1) : '0';
-            onProgress(pct, `${mb}MB / ${totalMb}MB — ${speedMBs} MB/s`);
+            if (totalSize > 0) {
+              const pct = Math.round((downloaded / totalSize) * 100);
+              const totalMb = (totalSize / (1024 * 1024)).toFixed(1);
+              onProgress(pct, `${mb}MB / ${totalMb}MB — ${speedMBs} MB/s`);
+            } else {
+              onProgress(-1, `${mb}MB downloaded — ${speedMBs} MB/s`);
+            }
           }
         });
 
         response.pipe(fileStream);
 
+        response.on('error', (err) => {
+          fileStream.destroy();
+          fs.unlink(finalDest, () => {});
+          reject(new Error(`Download stream error: ${err.message}`));
+        });
+
+        response.on('close', () => {
+          // If connection closed before all data received, treat as error
+          if (totalSize > 0 && downloaded < totalSize && !fileStream.destroyed) {
+            fileStream.destroy();
+            fs.unlink(finalDest, () => {});
+            reject(new Error(`Download interrupted: received ${(downloaded / 1024 / 1024).toFixed(1)}MB of ${(totalSize / 1024 / 1024).toFixed(1)}MB. Please retry.`));
+          }
+        });
+
         fileStream.on('finish', () => {
           fileStream.close();
-          this._log(`Download complete: ${dest}`);
-          resolve(dest);
+
+          // Verify the download is complete — reject truncated files
+          if (totalSize > 0 && downloaded < totalSize) {
+            this._log(`Download incomplete: got ${downloaded} of ${totalSize} bytes — removing partial file`);
+            fs.unlink(finalDest, () => {});
+            return reject(new Error(`Download incomplete: received ${(downloaded / 1024 / 1024).toFixed(1)}MB of ${(totalSize / 1024 / 1024).toFixed(1)}MB. Please retry.`));
+          }
+
+          // Record the expected file size so cached-file checks can validate completeness
+          if (totalSize > 0) {
+            try { fs.writeFileSync(finalDest + '.size', String(totalSize)); } catch {}
+          }
+
+          this._log(`Download complete: ${finalDest} (${downloaded} bytes)`);
+          resolve(finalDest);
         });
 
         fileStream.on('error', (err) => {
-          fs.unlink(dest, () => {});
+          fs.unlink(finalDest, () => {});
           reject(err);
         });
       }, (err) => reject(err));
@@ -266,9 +351,7 @@ class InstallerEngine {
         'Accept': '*/*',
         'Accept-Encoding': 'identity',
         'Connection': 'keep-alive'
-      },
-      // Large buffer for fast reading from socket
-      highWaterMark: 4 * 1024 * 1024
+      }
     };
 
     client.get(url, requestOptions, (res) => {
@@ -281,7 +364,19 @@ class InstallerEngine {
         }
         return this._followRedirect(redirectUrl, onResponse, onError, maxRedirects - 1);
       }
-      onResponse(res);
+
+      // Optimize socket for maximum download throughput
+      if (res.socket) {
+        res.socket.setNoDelay(true);
+        res.socket.setKeepAlive(true);
+      }
+      // Increase readable stream buffer from 16KB default to 1MB
+      // to reduce per-chunk overhead on large files
+      if (res._readableState) {
+        res._readableState.highWaterMark = 1024 * 1024;
+      }
+
+      onResponse(res, url);
     }).on('error', onError);
   }
 
@@ -292,7 +387,9 @@ class InstallerEngine {
     // Validate the downloaded file before attempting install
     try {
       const stat = fs.statSync(installerPath);
-      if (stat.size < 50000) {
+      // Standalone binaries (kubectl) may be small; only enforce min size for installers
+      const isCopyInstall = tool.installCommand[ext.replace('.', '')] === 'copy';
+      if (!isCopyInstall && stat.size < 50000) {
         throw new Error(`Downloaded file is too small (${stat.size} bytes) — likely not a valid installer`);
       }
       if (ext === '.msi') {
@@ -309,6 +406,42 @@ class InstallerEngine {
     } catch (validationErr) {
       if (validationErr.message.includes('not a valid')) throw validationErr;
       throw new Error(`Cannot access installer file: ${validationErr.message}`);
+    }
+
+    // Handle standalone binary copy (e.g., kubectl.exe)
+    const cmdTemplateRaw = tool.installCommand[ext.replace('.', '')];
+    if (cmdTemplateRaw === 'copy') {
+      this._log(`Copying standalone binary to: ${installDir}`);
+      const destFile = path.join(installDir, `${tool.id}${ext}`);
+
+      if (this.isAdmin()) {
+        if (!fs.existsSync(installDir)) {
+          fs.mkdirSync(installDir, { recursive: true });
+        }
+        fs.copyFileSync(installerPath, destFile);
+      } else {
+        const psScript = [
+          `if (-not (Test-Path '${installDir}')) { New-Item -ItemType Directory -Path '${installDir}' -Force | Out-Null }`,
+          `Copy-Item -Path '${installerPath}' -Destination '${destFile}' -Force`
+        ].join('\r\n');
+        const psScriptPath = path.join(this.downloadDir, `${tool.id}-copy.ps1`);
+        fs.writeFileSync(psScriptPath, psScript);
+
+        await new Promise((resolve, reject) => {
+          exec(
+            `powershell -NoProfile -Command "Start-Process powershell -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File \\"${psScriptPath}\\"' -Verb RunAs -Wait -WindowStyle Hidden"`,
+            { timeout: 60000, windowsHide: true },
+            (err) => {
+              if (err) return reject(new Error('Copy failed — UAC may have been denied'));
+              if (!fs.existsSync(destFile)) return reject(new Error(`Copy completed but ${destFile} was not found`));
+              resolve();
+            }
+          );
+        });
+      }
+
+      this._log(`Binary copied to ${destFile}`);
+      return;
     }
 
     if (ext === '.zip') {
@@ -377,6 +510,14 @@ class InstallerEngine {
           if (err) {
             this._handleInstallError(err, stdout, stderr, msiLogPath);
             if (err.code === 3010) return resolve();
+            if (err.code === 1620 || err.code === 1603) {
+              // 1620 = package could not be opened (corrupt/incomplete)
+              // 1603 = fatal error during installation
+              this._log(`MSI error ${err.code} — removing potentially corrupt installer: ${installerPath}`);
+              try { fs.unlinkSync(installerPath); } catch {}
+              try { fs.unlinkSync(installerPath + '.size'); } catch {}
+              return reject(new Error(`Installer package is corrupt or incomplete (error ${err.code}). Cached file removed — please retry the installation.`));
+            }
             if (err.killed) return reject(new Error('Installation timed out (killed after 10 minutes)'));
             return reject(new Error(`Installation failed (exit code ${err.code || 'unknown'}): ${stderr || stdout || err.message}`));
           }
@@ -429,6 +570,15 @@ class InstallerEngine {
         if (exitCode === 0 || exitCode === 3010) {
           if (exitCode === 3010) this._log('Exit code 3010: success (reboot recommended)');
           return resolve();
+        }
+
+        if (exitCode === 1620 || exitCode === 1603) {
+          // 1620 = package could not be opened (corrupt/incomplete)
+          // 1603 = fatal error during installation
+          this._log(`MSI error ${exitCode} — removing potentially corrupt installer: ${installerPath}`);
+          try { fs.unlinkSync(installerPath); } catch {}
+          try { fs.unlinkSync(installerPath + '.size'); } catch {}
+          return reject(new Error(`Installer package is corrupt or incomplete (error ${exitCode}). Cached file removed — please retry the installation.`));
         }
 
         if (err && err.killed) {
@@ -543,7 +693,8 @@ class InstallerEngine {
     await this._runUninstaller(tool, productInfo);
 
     // Clean up residual install directory left by MSI uninstaller
-    if (productInfo.location) {
+    // (skip for 'directory' and 'zip' types — already handled in _runUninstaller)
+    if (productInfo.location && productInfo.type !== 'directory' && productInfo.type !== 'zip') {
       const loc = productInfo.location.replace(/\\$/, '');
       if (fs.existsSync(loc)) {
         this._log(`Cleaning up residual install directory: ${loc}`);
@@ -567,19 +718,38 @@ class InstallerEngine {
     await new Promise(r => setTimeout(r, 1000));
     const still = await this.detectInstalled(tool.id);
     if (still.installed) {
-      this._log(`Warning: ${tool.name} still detected after uninstall — may need shell restart`);
-    }
+      // Identify where the command is still found
+      let remainingSource = '';
+      try {
+        const freshEnv = this._getFreshEnv();
+        const whereOutput = execSync(`where.exe ${tool.id}`, {
+          encoding: 'utf8', timeout: 10000, windowsHide: true, env: freshEnv, stdio: ['pipe', 'pipe', 'pipe']
+        }).trim();
+        if (whereOutput) {
+          remainingSource = whereOutput.split(/\r?\n/)[0].trim();
+          this._log(`Warning: ${tool.name} still detected at: ${remainingSource}`);
+        }
+      } catch { /* not found — good */ }
 
-    progressCallback({ step: 'completed', detail: `${tool.name} uninstalled successfully` });
-    this._log(`${tool.name} uninstalled successfully`);
+      if (remainingSource) {
+        progressCallback({ step: 'completed', detail: `Our installation removed. Note: ${tool.name} is still available from ${remainingSource} (bundled by another application)` });
+      } else {
+        this._log(`Warning: ${tool.name} still detected after uninstall — may need shell restart`);
+        progressCallback({ step: 'completed', detail: `${tool.name} uninstalled (verification may need shell restart)` });
+      }
+    } else {
+      progressCallback({ step: 'completed', detail: `${tool.name} uninstalled successfully` });
+    }
+    this._log(`${tool.name} uninstall completed`);
   }
 
   async _findInstalledProduct(tool, detectedInfo) {
     // Search Windows registry for MSI-installed product
-    if (tool.installCommand.msi || tool.installCommand.exe) {
-      const searchTerms = Array.isArray(tool.uninstallSearch)
-        ? tool.uninstallSearch
-        : [tool.uninstallSearch || tool.name];
+    const searchTerms = Array.isArray(tool.uninstallSearch)
+      ? tool.uninstallSearch
+      : [tool.uninstallSearch || tool.name];
+
+    if ((tool.installCommand.msi || tool.installCommand.exe) && searchTerms.length > 0 && searchTerms[0]) {
       const whereClause = searchTerms
         .map(t => `$_.DisplayName -like '*${t}*'`)
         .join(' -or ');
@@ -626,11 +796,55 @@ class InstallerEngine {
     }
 
     // For EXE-based tools (like Git), look for uninstaller directly
-    if (tool.installCommand.exe) {
+    if (tool.installCommand.exe && tool.installCommand.exe !== 'copy') {
       const installDir = tool.defaultInstallDir.replace('{version}', tool.defaultVersion);
       const uninstaller = path.join(installDir, 'unins000.exe');
       if (fs.existsSync(uninstaller)) {
         return { type: 'exe-uninstaller', uninstallerPath: uninstaller, location: installDir };
+      }
+    }
+
+    // For standalone binary copy tools (e.g., kubectl), check install dir AND
+    // search for all copies of the binary on the system
+    if (tool.installCommand.exe === 'copy') {
+      const installDir = tool.defaultInstallDir.replace('{version}', tool.defaultVersion);
+      const binaryName = `${tool.id}.exe`;
+
+      // Collect all known locations of this binary
+      const locations = [];
+
+      // 1. Our own install directory
+      if (fs.existsSync(installDir)) {
+        locations.push(installDir);
+      }
+
+      // 2. Find additional copies via where.exe
+      try {
+        const freshEnv = this._getFreshEnv();
+        const whereOutput = execSync(`where.exe ${tool.id}`, {
+          encoding: 'utf8', timeout: 10000, windowsHide: true, env: freshEnv, stdio: ['pipe', 'pipe', 'pipe']
+        }).trim();
+        if (whereOutput) {
+          for (const line of whereOutput.split(/\r?\n/)) {
+            const loc = line.trim();
+            if (loc && fs.existsSync(loc)) {
+              const dir = path.dirname(loc);
+              // Don't include our install dir twice
+              if (dir.toLowerCase() !== installDir.toLowerCase()) {
+                locations.push(dir);
+              }
+            }
+          }
+        }
+      } catch { /* where.exe returns exit code 1 if not found */ }
+
+      if (locations.length > 0) {
+        return {
+          type: 'directory',
+          location: locations[0], // primary location (our install dir if it exists)
+          allLocations: locations,
+          binaryName
+        };
       }
     }
 
@@ -679,6 +893,41 @@ class InstallerEngine {
         fs.rmSync(dir, { recursive: true, force: true });
       } else {
         await this._runElevatedCommand(tool.id, 'uninstall', `rmdir /s /q "${dir}"`, false);
+      }
+      return;
+    }
+
+    if (productInfo.type === 'directory') {
+      const binaryName = productInfo.binaryName || `${tool.id}.exe`;
+      const allLocations = productInfo.allLocations || [productInfo.location];
+      const installDir = tool.defaultInstallDir.replace('{version}', tool.defaultVersion);
+
+      for (const dir of allLocations) {
+        // Only remove our managed install directory; skip third-party dirs (e.g. Docker)
+        const isOurs = dir.toLowerCase() === installDir.toLowerCase();
+        if (isOurs) {
+          this._log(`Deleting managed install directory: ${dir}`);
+          if (isAdmin) {
+            fs.rmSync(dir, { recursive: true, force: true });
+          } else {
+            await this._runElevatedCommand(tool.id, 'uninstall', `rmdir /s /q "${dir}"`, false);
+          }
+        } else {
+          // For third-party directories, remove only the specific binary if it exists
+          const binaryPath = path.join(dir, binaryName);
+          if (fs.existsSync(binaryPath)) {
+            this._log(`Removing binary from third-party location: ${binaryPath}`);
+            try {
+              if (isAdmin) {
+                fs.unlinkSync(binaryPath);
+              } else {
+                await this._runElevatedCommand(tool.id, 'uninstall-binary', `del /f "${binaryPath}"`, false);
+              }
+            } catch (e) {
+              this._log(`Warning: could not remove ${binaryPath}: ${e.message}`);
+            }
+          }
+        }
       }
       return;
     }
@@ -769,7 +1018,7 @@ class InstallerEngine {
   _getFreshEnv() {
     try {
       const varNames = new Set();
-      for (const tool of this.config.tools) {
+      for (const tool of this._allTools) {
         for (const v of Object.keys(tool.envVars)) varNames.add(v);
       }
 

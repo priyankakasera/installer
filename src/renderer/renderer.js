@@ -10,7 +10,7 @@ const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
 const bundlesGrid = $('#bundlesGrid');
-const toolsList = $('#toolsList');
+const categoriesContainer = $('#categoriesContainer');
 const btnInstall = $('#btnInstall');
 const adminBadge = $('#adminBadge');
 
@@ -31,6 +31,11 @@ const doneSubtitle = $('#doneSubtitle');
 const resultsList = $('#resultsList');
 const btnBackToSelect = $('#btnBackToSelect');
 
+// ─── Helpers ─────────────────────────────────────────────────
+function getAllTools() {
+  return config.categories.flatMap((cat) => cat.tools);
+}
+
 // ─── Initialization ──────────────────────────────────────────
 async function init() {
   config = await window.api.getToolsConfig();
@@ -41,11 +46,11 @@ async function init() {
   adminBadge.className = 'admin-badge ' + (isAdmin ? 'admin' : 'no-admin');
 
   // Detect installed tools
-  const toolIds = config.tools.map((t) => t.id);
+  const toolIds = getAllTools().map((t) => t.id);
   detectedTools = await window.api.detectInstalled(toolIds);
 
   renderBundles();
-  renderTools();
+  renderCategories();
   setupListeners();
 }
 
@@ -66,71 +71,104 @@ function renderBundles() {
   }
 }
 
-// ─── Render Tools ────────────────────────────────────────────
-function renderTools() {
-  toolsList.innerHTML = '';
-  for (const tool of config.tools) {
-    const detected = detectedTools[tool.id];
-    const isDetected = detected && detected.installed;
+// ─── Render Categories & Tools ───────────────────────────────
+function renderCategories() {
+  categoriesContainer.innerHTML = '';
 
-    const card = document.createElement('div');
-    card.className = 'tool-card' + (selectedTools.has(tool.id) ? ' selected' : '') + (isDetected ? ' detected' : '');
-    card.dataset.toolId = tool.id;
+  for (const category of config.categories) {
+    const section = document.createElement('div');
+    section.className = 'category-section';
+    section.dataset.categoryId = category.id;
 
-    let versionOptions = tool.versions
-      .map((v) => `<option value="${escapeHtml(v)}"${v === (selectedTools.get(tool.id) || tool.defaultVersion) ? ' selected' : ''}>${escapeHtml(v)}</option>`)
-      .join('');
+    const allSelected = category.tools.every((t) => selectedTools.has(t.id));
 
-    const detectedBadge = isDetected
-      ? `<div class="tool-detected-badge">✓ Installed: ${escapeHtml(detected.output || detected.version || '')}</div>`
-      : '';
-
-    const uninstallBtn = isDetected
-      ? `<button class="btn btn-sm btn-uninstall" data-uninstall-id="${escapeHtml(tool.id)}" title="Uninstall ${escapeHtml(tool.name)}">🗑️ Uninstall</button>`
-      : '';
-
-    card.innerHTML = `
-      <div class="tool-checkbox"></div>
-      <div class="tool-icon">${escapeHtml(tool.icon)}</div>
-      <div class="tool-info">
-        <div class="tool-name">${escapeHtml(tool.name)}</div>
-        <div class="tool-desc">${escapeHtml(tool.description)}</div>
-        ${detectedBadge}
+    section.innerHTML = `
+      <div class="category-header">
+        <div class="category-title-group">
+          <span class="category-icon">${escapeHtml(category.icon)}</span>
+          <div>
+            <div class="category-title">${escapeHtml(category.name)}</div>
+            <div class="category-desc">${escapeHtml(category.description)}</div>
+          </div>
+        </div>
+        <button class="category-select-all${allSelected ? ' all-selected' : ''}" data-category-id="${escapeHtml(category.id)}">
+          ${allSelected ? '✓ All Selected' : 'Select All'}
+        </button>
       </div>
-      <div class="tool-actions">
-        ${uninstallBtn}
-        <select class="tool-version-select" data-tool-id="${escapeHtml(tool.id)}">${versionOptions}</select>
-      </div>
+      <div class="category-tools-list"></div>
     `;
 
-    card.addEventListener('click', (e) => {
-      if (e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
-      toggleTool(tool.id);
-    });
+    const toolsListEl = section.querySelector('.category-tools-list');
 
-    const select = card.querySelector('.tool-version-select');
-    select.addEventListener('change', (e) => {
-      if (selectedTools.has(tool.id)) {
-        selectedTools.set(tool.id, e.target.value);
-      }
-    });
+    for (const tool of category.tools) {
+      const detected = detectedTools[tool.id];
+      const isDetected = detected && detected.installed;
 
-    const unBtn = card.querySelector('[data-uninstall-id]');
-    if (unBtn) {
-      unBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        showUninstallModal(tool.id, tool.name);
+      const card = document.createElement('div');
+      card.className = 'tool-card' + (selectedTools.has(tool.id) ? ' selected' : '') + (isDetected ? ' detected' : '');
+      card.dataset.toolId = tool.id;
+
+      let versionOptions = tool.versions
+        .map((v) => `<option value="${escapeHtml(v)}"${v === (selectedTools.get(tool.id) || tool.defaultVersion) ? ' selected' : ''}>${escapeHtml(v)}</option>`)
+        .join('');
+
+      const detectedBadge = isDetected
+        ? `<div class="tool-detected-badge">✓ Installed: ${escapeHtml(detected.output || detected.version || '')}</div>`
+        : '';
+
+      const uninstallBtn = isDetected
+        ? `<button class="btn btn-sm btn-uninstall" data-uninstall-id="${escapeHtml(tool.id)}" title="Uninstall ${escapeHtml(tool.name)}">🗑️ Uninstall</button>`
+        : '';
+
+      card.innerHTML = `
+        <div class="tool-checkbox"></div>
+        <div class="tool-icon">${escapeHtml(tool.icon)}</div>
+        <div class="tool-info">
+          <div class="tool-name">${escapeHtml(tool.name)}</div>
+          <div class="tool-desc">${escapeHtml(tool.description)}</div>
+          ${detectedBadge}
+        </div>
+        <div class="tool-actions">
+          ${uninstallBtn}
+          <select class="tool-version-select" data-tool-id="${escapeHtml(tool.id)}">${versionOptions}</select>
+        </div>
+      `;
+
+      card.addEventListener('click', (e) => {
+        if (e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+        toggleTool(tool.id);
       });
+
+      const select = card.querySelector('.tool-version-select');
+      select.addEventListener('change', (e) => {
+        if (selectedTools.has(tool.id)) {
+          selectedTools.set(tool.id, e.target.value);
+        }
+      });
+
+      const unBtn = card.querySelector('[data-uninstall-id]');
+      if (unBtn) {
+        unBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          showUninstallModal(tool.id, tool.name);
+        });
+      }
+
+      toolsListEl.appendChild(card);
     }
 
-    toolsList.appendChild(card);
+    // Select All button handler
+    const selectAllBtn = section.querySelector('.category-select-all');
+    selectAllBtn.addEventListener('click', () => toggleCategory(category.id));
+
+    categoriesContainer.appendChild(section);
   }
 }
 
 // ─── Selection Logic ─────────────────────────────────────────
 function toggleTool(toolId) {
   if (installing) return;
-  const tool = config.tools.find((t) => t.id === toolId);
+  const tool = getAllTools().find((t) => t.id === toolId);
   if (!tool) return;
 
   if (selectedTools.has(toolId)) {
@@ -141,7 +179,31 @@ function toggleTool(toolId) {
   }
 
   updateBundleHighlights();
-  renderTools();
+  renderCategories();
+  updateInstallButton();
+}
+
+function toggleCategory(categoryId) {
+  if (installing) return;
+  const category = config.categories.find((c) => c.id === categoryId);
+  if (!category) return;
+
+  const allSelected = category.tools.every((t) => selectedTools.has(t.id));
+
+  if (allSelected) {
+    for (const tool of category.tools) {
+      selectedTools.delete(tool.id);
+    }
+  } else {
+    for (const tool of category.tools) {
+      if (!selectedTools.has(tool.id)) {
+        selectedTools.set(tool.id, tool.defaultVersion);
+      }
+    }
+  }
+
+  updateBundleHighlights();
+  renderCategories();
   updateInstallButton();
 }
 
@@ -160,14 +222,14 @@ function selectBundle(bundle) {
     // Select all bundle tools
     for (const tid of bundle.tools) {
       if (!selectedTools.has(tid)) {
-        const tool = config.tools.find((t) => t.id === tid);
+        const tool = getAllTools().find((t) => t.id === tid);
         selectedTools.set(tid, tool ? tool.defaultVersion : '');
       }
     }
   }
 
   updateBundleHighlights();
-  renderTools();
+  renderCategories();
   updateInstallButton();
 }
 
@@ -222,7 +284,7 @@ async function startInstallation() {
   // Render install items
   installItems.innerHTML = '';
   for (const sel of selections) {
-    const tool = config.tools.find((t) => t.id === sel.toolId);
+    const tool = getAllTools().find((t) => t.id === sel.toolId);
     if (!tool) continue;
 
     const item = document.createElement('div');
@@ -292,7 +354,7 @@ function handleProgress(data) {
 }
 
 async function retryTool(toolId) {
-  const tool = config.tools.find((t) => t.id === toolId);
+  const tool = getAllTools().find((t) => t.id === toolId);
   if (!tool) return;
 
   const version = selectedTools.get(toolId) || tool.defaultVersion;
@@ -330,7 +392,7 @@ function showDone(result) {
 
   items.forEach((item) => {
     const toolId = item.id.replace('install-item-', '');
-    const tool = config.tools.find((t) => t.id === toolId);
+    const tool = getAllTools().find((t) => t.id === toolId);
     const badge = item.querySelector('.install-item-badge');
     const isError = badge && badge.classList.contains('badge-error');
 
@@ -417,9 +479,9 @@ async function performUninstall() {
     document.getElementById('uninstallFill').style.width = '100%';
 
     // Refresh detection state
-    const toolIds = config.tools.map((t) => t.id);
+    const toolIds = getAllTools().map((t) => t.id);
     detectedTools = await window.api.detectInstalled(toolIds);
-    renderTools();
+    renderCategories();
     updateInstallButton();
 
     setTimeout(hideUninstallModal, 1200);
@@ -438,10 +500,10 @@ function setupListeners() {
     selectedTools.clear();
 
     // Re-detect tools to show updated status
-    const toolIds = config.tools.map((t) => t.id);
+    const toolIds = getAllTools().map((t) => t.id);
     detectedTools = await window.api.detectInstalled(toolIds);
 
-    renderTools();
+    renderCategories();
     updateInstallButton();
     updateBundleHighlights();
     showPage('select');
