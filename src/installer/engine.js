@@ -165,7 +165,7 @@ class InstallerEngine {
   }
 
   _stepPercent(step) {
-    const map = { downloading: 10, installing: 50, configuring: 80, verifying: 90, completed: 100, error: 100 };
+    const map = { downloading: 10, installing: 50, configuring: 80, verifying: 90, completed: 100, 'reboot-required': 100, error: 100 };
     return map[step] || 0;
   }
 
@@ -188,8 +188,16 @@ class InstallerEngine {
 
     // Step 2: Install
     onStep('installing', 'Running installer...');
-    await this._runInstaller(tool, version, installerPath);
+    const installResult = await this._runInstaller(tool, version, installerPath);
     onStep('installing', 'Installation complete');
+
+    // If the installer signals a reboot is required (e.g. Docker Desktop enabling
+    // WSL2/Hyper-V), stop here — the tool cannot be verified until after a reboot.
+    if (installResult && installResult.rebootRequired) {
+      onStep('reboot-required', `Restart Windows to complete installation — required features (WSL2/Hyper-V) will activate after reboot, then launch ${tool.name}.`);
+      this._log(`${tool.name}: reboot required to complete installation`);
+      return;
+    }
 
     // Step 3: Configure
     onStep('configuring', 'Setting environment variables...');
@@ -513,9 +521,9 @@ class InstallerEngine {
               this._log(`Exit code ${err.code}: success (reboot recommended)`);
               return resolve();
             }
-            if (err.code === 1 && ext === '.exe') {
-              this._log('Exit code 1 from EXE installer — treating as success (common with Inno Setup when app is already installed or reboot needed)');
-              return resolve();
+            if (tool.rebootExitCodes && tool.rebootExitCodes.includes(err.code)) {
+              this._log(`Exit code ${err.code} from installer — reboot required to complete installation`);
+              return resolve({ rebootRequired: true });
             }
             if (err.code === 1620 || err.code === 1603) {
               // 1620 = package could not be opened (corrupt/incomplete)
@@ -570,7 +578,9 @@ class InstallerEngine {
         this._log(`Elevated install finished. Exit code from file: ${exitCode}, PS error: ${err ? err.message : 'none'}`);
 
         // Only log MSI errors on actual failure
-        if (exitCode !== 0 && exitCode !== 3010 && exitCode !== 3 && !(exitCode === 1 && ext === '.exe')) {
+        const isKnownSuccess = exitCode === 0 || exitCode === 3010 || exitCode === 3
+          || (tool.rebootExitCodes && tool.rebootExitCodes.includes(exitCode));
+        if (!isKnownSuccess) {
           this._handleInstallError({ code: exitCode }, '', '', msiLogPath);
         }
 
@@ -579,9 +589,9 @@ class InstallerEngine {
           return resolve();
         }
 
-        if (exitCode === 1 && ext === '.exe') {
-          this._log('Exit code 1 from EXE installer — treating as success (common with Inno Setup when app is already installed or reboot needed)');
-          return resolve();
+        if (tool.rebootExitCodes && tool.rebootExitCodes.includes(exitCode)) {
+          this._log(`Exit code ${exitCode} from installer — reboot required to complete installation`);
+          return resolve({ rebootRequired: true });
         }
 
         if (exitCode === 1620 || exitCode === 1603) {

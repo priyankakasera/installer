@@ -151,6 +151,7 @@
           "installCommand": {
             "exe": "\"{installerPath}\" install --quiet --accept-license"
           },
+          "rebootExitCodes": [1],
           "uninstallSearch": ["Docker Desktop"],
           "silentUninstallArgs": "--quiet",
           "defaultInstallDir": "C:\\Program Files\\Docker\\Docker",
