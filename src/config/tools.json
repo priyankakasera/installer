@@ -29,7 +29,8 @@
           "pathEntries": ["{installDir}\\bin"],
           "verifyCommand": "java -version",
           "verifyRegex": "version \"[\\d.]+",
-          "icon": "☕"
+          "icon": "☕",
+          "iconUrl": "icons/java.svg"
         },
         {
           "id": "nodejs",
@@ -53,7 +54,8 @@
           "pathEntries": ["C:\\Program Files\\nodejs"],
           "verifyCommand": "node -v",
           "verifyRegex": "v[\\d.]+",
-          "icon": "🟢"
+          "icon": "🟢",
+          "iconUrl": "icons/nodejs.svg"
         },
         {
           "id": "python",
@@ -209,7 +211,8 @@
           "pathEntries": ["C:\\Program Files\\Amazon\\AWSCLIV2"],
           "verifyCommand": "aws --version",
           "verifyRegex": "aws-cli/[\\d.]+",
-          "icon": "🔶"
+          "icon": "🔶",
+          "iconUrl": "icons/aws.svg"
         },
         {
           "id": "azurecli",
@@ -229,7 +232,8 @@
           "pathEntries": ["C:\\Program Files\\Microsoft SDKs\\Azure\\CLI2\\wbin"],
           "verifyCommand": "az --version",
           "verifyRegex": "azure-cli\\s+[\\d.]+",
-          "icon": "🔷"
+          "icon": "🔷",
+          "iconUrl": "icons/azure.svg"
         }
       ]
     }

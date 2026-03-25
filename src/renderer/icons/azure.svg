@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Azure logo - stylised wave / A shape in Microsoft blue gradient -->
+  <!-- Left shard (dark blue) -->
+  <path d="M14 100 L50 12 L72 12 L44 66 L80 66 Z" fill="#0078D4"/>
+  <!-- Right shard (light blue highlight) -->
+  <path d="M44 66 L80 66 L96 100 Z" fill="#50B0F0"/>
+  <!-- Top triangle highlight -->
+  <path d="M50 12 L72 12 L60 38 Z" fill="#50B0F0" opacity="0.7"/>
+  <!-- Azure text under -->
+  <text x="64" y="122" font-family="Segoe UI, Arial, sans-serif" font-weight="700"
+        font-size="16" fill="#0078D4" text-anchor="middle" letter-spacing="1">Azure</text>
+</svg>
