@@ -333,19 +333,8 @@ function handleProgress(data) {
 
   if (statusEl) statusEl.textContent = detail || step;
   if (badgeEl) {
-    badgeEl.textContent = step === 'reboot-required' ? '⚠ Reboot Required' : capitalize(step);
+    badgeEl.textContent = capitalize(step);
     badgeEl.className = `install-item-badge badge-${step}`;
-
-    // Add reboot-required prompt
-    if (step === 'reboot-required') {
-      const parentItem = document.getElementById(`install-item-${toolId}`);
-      if (parentItem && !parentItem.querySelector('.reboot-warning')) {
-        const warn = document.createElement('div');
-        warn.className = 'reboot-warning';
-        warn.textContent = '⚠️ Restart Windows to finish — then launch the app.';
-        parentItem.appendChild(warn);
-      }
-    }
 
     // Add retry button on error
     if (step === 'error') {
@@ -400,28 +389,25 @@ function showDone(result) {
   const items = installItems.querySelectorAll('.install-item');
   let successCount = 0;
   let failCount = 0;
-  let rebootCount = 0;
 
   items.forEach((item) => {
     const toolId = item.id.replace('install-item-', '');
     const tool = getAllTools().find((t) => t.id === toolId);
     const badge = item.querySelector('.install-item-badge');
     const isError = badge && badge.classList.contains('badge-error');
-    const isReboot = badge && badge.classList.contains('badge-reboot-required');
 
     if (isError) failCount++;
-    else { successCount++; if (isReboot) rebootCount++; }
+    else successCount++;
 
     const resultItem = document.createElement('div');
     resultItem.className = 'result-item';
     const statusDetail = item.querySelector('.install-item-status');
     const errorDetail = isError && statusDetail ? statusDetail.textContent : '';
     resultItem.innerHTML = `
-      <span class="result-status">${isError ? '\u274C' : isReboot ? '\u26A0\uFE0F' : '\u2705'}</span>
+      <span class="result-status">${isError ? '\u274C' : '\u2705'}</span>
       <span class="result-name">${escapeHtml(tool ? tool.name : toolId)}</span>
-      <span class="result-detail">${isError ? 'Failed' : isReboot ? 'Reboot Required' : 'Installed'}</span>
+      <span class="result-detail">${isError ? 'Failed' : 'Installed'}</span>
       ${isError && errorDetail ? `<div class="result-error-detail">${escapeHtml(errorDetail)}</div>` : ''}
-      ${isReboot ? '<div class="result-error-detail">⚠️ Restart Windows to complete installation, then launch the app.</div>' : ''}
     `;
     resultsList.appendChild(resultItem);
   });
@@ -430,10 +416,6 @@ function showDone(result) {
     doneIcon.textContent = '⚠️';
     doneTitle.textContent = `${successCount} Installed, ${failCount} Failed`;
     doneSubtitle.textContent = 'Some tools could not be installed. You can retry from the progress page.';
-  } else if (rebootCount > 0) {
-    doneIcon.textContent = '⚠️';
-    doneTitle.textContent = 'Installation Complete — Reboot Required';
-    doneSubtitle.textContent = '⚠️ Restart Windows to finish enabling required features (WSL2/Hyper-V), then launch Docker Desktop.';
   } else {
     doneIcon.textContent = '✅';
     doneTitle.textContent = 'Installation Complete!';

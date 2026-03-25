@@ -165,7 +165,7 @@ class InstallerEngine {
   }
 
   _stepPercent(step) {
-    const map = { 'checking-prerequisites': 5, downloading: 10, installing: 50, configuring: 80, verifying: 90, completed: 100, 'reboot-required': 100, error: 100 };
+    const map = { downloading: 10, installing: 50, configuring: 80, verifying: 90, completed: 100, error: 100 };
     return map[step] || 0;
   }
 
@@ -175,12 +175,6 @@ class InstallerEngine {
 
   async _installTool(tool, version, onStep) {
     this._log(`\n${'='.repeat(50)}\nInstalling ${tool.name} v${version}\n${'='.repeat(50)}`);
-
-    // Step 0: Pre-install prerequisite checks
-    if (tool.prerequisiteChecks && tool.prerequisiteChecks.length > 0) {
-      onStep('checking-prerequisites', 'Checking system requirements...');
-      await this._runPrerequisiteChecks(tool, onStep);
-    }
 
     // Step 1: Download
     onStep('downloading', 'Starting download...');
@@ -194,45 +188,20 @@ class InstallerEngine {
 
     // Step 2: Install
     onStep('installing', 'Running installer...');
-    const installResult = await this._runInstaller(tool, version, installerPath);
+    await this._runInstaller(tool, version, installerPath);
     onStep('installing', 'Installation complete');
-
-    // If the installer signals a reboot is required (e.g. Docker Desktop enabling
-    // WSL2/Hyper-V), stop here — the tool cannot be verified until after a reboot.
-    if (installResult && installResult.rebootRequired) {
-      onStep('reboot-required', `Restart Windows to complete installation — required features (WSL2/Hyper-V) will activate after reboot, then launch ${tool.name}.`);
-      this._log(`${tool.name}: reboot required to complete installation`);
-      return;
-    }
 
     // Step 3: Configure
     onStep('configuring', 'Setting environment variables...');
     await this._configure(tool, version);
     onStep('configuring', 'Environment configured');
 
-    // Step 4: Verify — retry up to 4 times with increasing delays because:
-    // • MSI installers write PATH/envvars to the registry asynchronously
-    // • The configure step calls PowerShell to set Machine-scope PATH, but
-    //   there is a brief window where the process-level env cache is stale
-    // • Some tools (Node, Java) spawn a post-install service that takes a
-    //   moment to register the binary on PATH
+    // Step 4: Verify
     onStep('verifying', 'Verifying installation...');
-    const RETRY_DELAYS_MS = [1500, 3000, 5000, 8000]; // total wait up to ~17 s
-    let verifyResult = { installed: false };
-    for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
-      verifyResult = await this.detectInstalled(tool.id);
-      if (verifyResult.installed) break;
-      if (attempt < RETRY_DELAYS_MS.length) {
-        const wait = RETRY_DELAYS_MS[attempt];
-        this._log(`Verify attempt ${attempt + 1} failed for ${tool.name} — retrying in ${wait}ms`);
-        onStep('verifying', `Waiting for ${tool.name} to be ready... (attempt ${attempt + 2})`);
-        await new Promise(res => setTimeout(res, wait));
-      }
-    }
-
+    const verifyResult = await this.detectInstalled(tool.id);
     if (!verifyResult.installed) {
-      this._log(`Verification warning for ${tool.name} — installed but not yet visible on PATH (shell restart will fix this)`);
-      onStep('completed', `Installed ✓ (open a new terminal to use ${tool.name} — PATH updates on next login)`);
+      this._log(`Verification warning for ${tool.name} — command may require shell restart`);
+      onStep('completed', `Installed (verification may need shell restart): ${verifyResult.output || 'N/A'}`);
     } else {
       onStep('completed', `Verified: ${verifyResult.output}`);
     }
@@ -544,9 +513,9 @@ class InstallerEngine {
               this._log(`Exit code ${err.code}: success (reboot recommended)`);
               return resolve();
             }
-            if (tool.rebootExitCodes && tool.rebootExitCodes.includes(err.code)) {
-              this._log(`Exit code ${err.code} from installer — reboot required to complete installation`);
-              return resolve({ rebootRequired: true });
+            if (err.code === 1 && ext === '.exe') {
+              this._log('Exit code 1 from EXE installer — treating as success (common with Inno Setup when app is already installed or reboot needed)');
+              return resolve();
             }
             if (err.code === 1620 || err.code === 1603) {
               // 1620 = package could not be opened (corrupt/incomplete)
@@ -601,9 +570,7 @@ class InstallerEngine {
         this._log(`Elevated install finished. Exit code from file: ${exitCode}, PS error: ${err ? err.message : 'none'}`);
 
         // Only log MSI errors on actual failure
-        const isKnownSuccess = exitCode === 0 || exitCode === 3010 || exitCode === 3
-          || (tool.rebootExitCodes && tool.rebootExitCodes.includes(exitCode));
-        if (!isKnownSuccess) {
+        if (exitCode !== 0 && exitCode !== 3010 && exitCode !== 3 && !(exitCode === 1 && ext === '.exe')) {
           this._handleInstallError({ code: exitCode }, '', '', msiLogPath);
         }
 
@@ -612,9 +579,9 @@ class InstallerEngine {
           return resolve();
         }
 
-        if (tool.rebootExitCodes && tool.rebootExitCodes.includes(exitCode)) {
-          this._log(`Exit code ${exitCode} from installer — reboot required to complete installation`);
-          return resolve({ rebootRequired: true });
+        if (exitCode === 1 && ext === '.exe') {
+          this._log('Exit code 1 from EXE installer — treating as success (common with Inno Setup when app is already installed or reboot needed)');
+          return resolve();
         }
 
         if (exitCode === 1620 || exitCode === 1603) {
@@ -699,27 +666,12 @@ class InstallerEngine {
     fs.writeFileSync(psScriptPath, psLines.join('\r\n') + '\r\n');
 
     if (isAdmin) {
-      // Run directly, then broadcast WM_SETTINGCHANGE so the updated PATH is
-      // visible in the current session without requiring a logout/reboot.
+      // Run directly
       try {
         execSync(`powershell -NoProfile -ExecutionPolicy Bypass -File "${psScriptPath}"`, { timeout: 120000, windowsHide: true });
         this._log('Environment configured (admin)');
       } catch (err) {
         this._log(`Warning configuring env: ${err.message}`);
-      }
-      try {
-        execSync(
-          `powershell -NoProfile -Command "` +
-          `Add-Type -Namespace WinEnv -Name Msg -MemberDefinition ` +
-          `'[DllImport(\"user32.dll\",SetLastError=true,CharSet=CharSet.Auto)] ` +
-          `public static extern IntPtr SendMessageTimeout(IntPtr h,uint m,IntPtr w,string l,uint f,uint t,out IntPtr r);' -PassThru | Out-Null;` +
-          `$r=[IntPtr]::Zero; ` +
-          `[WinEnv.Msg]::SendMessageTimeout([IntPtr]0xFFFF,0x001A,[IntPtr]::Zero,'Environment',2,5000,[ref]$r) | Out-Null"`,
-          { timeout: 15000, windowsHide: true, stdio: 'ignore' }
-        );
-        this._log('WM_SETTINGCHANGE broadcast — PATH live in current session');
-      } catch {
-        // Non-fatal; PATH will apply after shell restart regardless
       }
     } else {
       // Elevate the PS script
@@ -1202,52 +1154,6 @@ class InstallerEngine {
     const ts = new Date().toISOString();
     const line = `[${ts}] ${message}\n`;
     fs.appendFileSync(this.logPath, line);
-  }
-
-  // ─── Prerequisite Checks ─────────────────────────────────────
-
-  async _runPrerequisiteChecks(tool, onStep) {
-    const failed = [];
-
-    for (const check of tool.prerequisiteChecks) {
-      onStep('checking-prerequisites', `Checking: ${check.name}...`);
-      this._log(`Prerequisite check: ${check.name}`);
-
-      try {
-        const raw = execSync(check.command, {
-          encoding: 'utf8',
-          timeout: 15000,
-          windowsHide: true,
-          stdio: ['pipe', 'pipe', 'pipe']
-        }).trim();
-
-        this._log(`  Result: ${raw}`);
-
-        let passed = true;
-        if (check.expectedRegex) {
-          passed = new RegExp(check.expectedRegex, 'i').test(raw);
-        } else if (check.minIntValue !== undefined) {
-          const val = parseInt(raw, 10);
-          passed = !isNaN(val) && val >= check.minIntValue;
-        }
-
-        if (!passed) {
-          this._log(`  FAILED: ${check.failMessage}`);
-          if (check.required) failed.push({ name: check.name, message: check.failMessage });
-        } else {
-          this._log(`  PASSED`);
-        }
-      } catch (err) {
-        // If the check command itself fails to run (e.g. needs elevation),
-        // log a warning but do not block the install.
-        this._log(`  Could not run check "${check.name}": ${err.message} — skipping`);
-      }
-    }
-
-    if (failed.length > 0) {
-      const msg = failed.map(f => `• ${f.name}:\n  ${f.message}`).join('\n');
-      throw new Error(`System requirements not met for ${tool.name}:\n\n${msg}`);
-    }
   }
 }
 
