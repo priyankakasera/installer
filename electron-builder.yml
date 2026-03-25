@@ -1,0 +1,87 @@
+# ─── electron-builder Configuration ─────────────────────────────
+# Docs: https://www.electron.build/configuration
+
+# Application identity
+appId: com.devtools.installer
+productName: DevTools Installer
+copyright: "Copyright © 2026 DevTools Installer"
+
+# ─── Directory structure ────────────────────────────────────────
+directories:
+  # Where to put the packaged output
+  output: dist
+  # Build resources (icons, installer graphics, etc.)
+  buildResources: build
+
+# ─── Files to include in the app ────────────────────────────────
+files:
+  - "src/**/*"
+  - "package.json"
+  # Exclude dev/build files that shouldn't ship
+  - "!**/*.map"
+  - "!**/node_modules/.cache/**"
+
+# ─── Extra resources (shipped alongside app.asar) ──────────────
+# Uncomment if you need to bundle external binaries or data files:
+# extraResources:
+#   - from: "assets/"
+#     to: "assets/"
+
+# ─── Windows target ────────────────────────────────────────────
+win:
+  # Path to your app icon (.ico, at least 256x256)
+  icon: build/icon.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+  # The app requires admin rights (your installer engine elevates per-command,
+  # but the NSIS installer itself needs admin to write to Program Files)
+  requestedExecutionLevel: requireAdministrator
+  # Signing configuration (uncomment when you have a certificate)
+  # certificateFile: ./certs/your-cert.pfx
+  # certificatePassword: ${CSC_KEY_PASSWORD}
+  # OR use Windows Certificate Store:
+  # certificateSubjectName: "Your Publisher Name"
+
+# ─── NSIS Installer Configuration ──────────────────────────────
+nsis:
+  # One-click install (false = show wizard with options)
+  oneClick: false
+  # Let users pick installation directory
+  allowToChangeInstallationDirectory: true
+  # Create a desktop shortcut
+  createDesktopShortcut: true
+  # Create a start menu shortcut
+  createStartMenuShortcut: true
+  # Shortcut name in Start Menu
+  shortcutName: DevTools Installer
+  # Installer file naming pattern
+  artifactName: "DevTools-Installer-Setup-${version}.${ext}"
+  # Show license agreement (uncomment and add a license file)
+  # license: LICENSE.txt
+  # Installer sidebar image (164x314 BMP, optional)
+  # installerSidebar: build/installerSidebar.bmp
+  # Uninstaller sidebar image
+  # uninstallerSidebar: build/uninstallerSidebar.bmp
+  # Header image (150x57 BMP, optional)
+  # installerHeader: build/installerHeader.bmp
+  # Run app after install
+  runAfterFinish: true
+  # Per-machine install (not per-user) — matches requireAdministrator
+  perMachine: true
+  # Allow elevation from the NSIS installer itself
+  allowElevation: true
+  # Include an uninstaller
+  deleteAppDataOnUninstall: false
+  # Custom NSIS script (advanced, optional)
+  # include: build/installer.nsh
+
+# ─── Auto-update (electron-updater) ────────────────────────────
+# Publishes release assets to GitHub Releases for auto-update
+publish:
+  - provider: github
+    owner: YOUR_USERNAME
+    repo: dev-tools-installer
+    # Use draft releases so you can review before making public
+    releaseType: draft
