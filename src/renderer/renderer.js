@@ -101,10 +101,10 @@ function renderSidebar() {
     item.className = 'sidebar-item' + (activeView.type === 'bundle' && activeView.id === bundle.id ? ' active' : '');
     item.dataset.viewType = 'bundle';
     item.dataset.viewId = bundle.id;
+    item.title = bundle.name;
     item.innerHTML = `
       <span class="sidebar-item-icon">${escapeHtml(bundle.icon)}</span>
       <span class="sidebar-item-label">${escapeHtml(bundle.name)}</span>
-      <span class="sidebar-tooltip">${escapeHtml(bundle.name)}</span>
     `;
     item.addEventListener('click', () => {
       setActiveView('bundle', bundle.id);
@@ -120,11 +120,11 @@ function renderSidebar() {
     item.className = 'sidebar-item' + (activeView.type === 'category' && activeView.id === cat.id ? ' active' : '');
     item.dataset.viewType = 'category';
     item.dataset.viewId = cat.id;
+    item.title = cat.name;
     item.innerHTML = `
       <span class="sidebar-item-icon">${escapeHtml(cat.icon)}</span>
       <span class="sidebar-item-label">${escapeHtml(cat.name)}</span>
       <span class="sidebar-item-count">${cat.tools.length}</span>
-      <span class="sidebar-tooltip">${escapeHtml(cat.name)}</span>
     `;
     item.addEventListener('click', () => {
       setActiveView('category', cat.id);
