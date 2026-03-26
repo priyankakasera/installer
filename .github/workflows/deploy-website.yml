@@ -3,10 +3,10 @@ name: Deploy Website to Firebase Hosting
 on:
   push:
     branches: [master]
-    paths:
-      - 'webapp/**'
-      - 'firebase.json'
-      - '.firebaserc'
+    # paths:
+    #   - 'webapp/**'
+    #   - 'firebase.json'
+    #   - '.firebaserc'
   release:
     types: [published]
   workflow_dispatch:
