@@ -1,4 +1,5 @@
 import { FiDownload } from 'react-icons/fi'
+import release from '../config/release'
 
 export default function CTA() {
   return (
@@ -12,7 +13,7 @@ export default function CTA() {
           environment in just a few clicks.
         </p>
         <a
-          href="https://github.com"
+          href={release.downloadUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] transition-all duration-200"
@@ -21,7 +22,7 @@ export default function CTA() {
           Download for Windows
         </a>
         <p className="mt-4 text-sm text-gray-500">
-          Version 1.00 &middot; Windows 10/11 &middot; 100% Free
+          Version {release.version} &middot; Windows 10/11 &middot; 100% Free
         </p>
       </div>
     </section>
