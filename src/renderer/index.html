@@ -19,84 +19,118 @@
 
     <!-- Header -->
     <header class="header">
-      <div class="header-content">
+      <div class="header-left">
         <h1>🛠️ DevTools Installer</h1>
         <p class="subtitle">One-click developer environment setup</p>
       </div>
-      <div class="admin-badge" id="adminBadge"></div>
+      <div class="header-right">
+        <div class="search-box" id="searchBox">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Search tools..." autocomplete="off" spellcheck="false">
+          <span class="search-clear" id="searchClear" style="display:none;">✕</span>
+        </div>
+        <div class="admin-badge" id="adminBadge"></div>
+      </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="content">
+    <!-- App Layout: Sidebar + Main -->
+    <div class="app-body">
 
-      <!-- ─── Step 1: Select Tools ─── -->
-      <section class="page active" id="pageSelect">
+      <!-- Sidebar Navigation -->
+      <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+          <div class="sidebar-section-label">Quick Setup</div>
+          <div id="sidebarBundles"></div>
+          <div class="sidebar-divider"></div>
+          <div class="sidebar-section-label">Categories</div>
+          <div id="sidebarCategories"></div>
+        </nav>
 
-        <!-- In-page loader: shown while refreshing detection after "Install More Tools" -->
-        <div class="page-content-loader" id="selectRefreshLoader" style="display:none;">
-          <div class="loader-spinner loader-spinner--lg"></div>
-          <div class="loader-text">Refreshing tool status...</div>
-        </div>
+      </aside>
 
-        <!-- Main content: hidden while refresh loader is active -->
-        <div id="selectMainContent">
+      <!-- Main Content Area -->
+      <main class="main-content">
 
-          <!-- Bundles -->
-          <div class="section-title">Quick Setup Bundles</div>
-          <div class="bundles-grid" id="bundlesGrid"></div>
+        <!-- ─── Step 1: Select Tools ─── -->
+        <section class="page active" id="pageSelect">
 
-          <!-- Tool Categories -->
-          <div id="categoriesContainer"></div>
+          <!-- In-page loader -->
+          <div class="page-content-loader" id="selectRefreshLoader" style="display:none;">
+            <div class="loader-spinner loader-spinner--lg"></div>
+            <div class="loader-text">Refreshing tool status...</div>
+          </div>
+
+          <!-- Main content -->
+          <div id="selectMainContent">
+            <!-- Category / Bundle header -->
+            <div class="content-header" id="contentHeader">
+              <div class="content-header-info">
+                <h2 class="content-title" id="contentTitle">All Tools</h2>
+                <p class="content-desc" id="contentDesc">Browse and install developer tools</p>
+              </div>
+              <button class="category-select-all" id="btnSelectAll" style="display:none;">Select All</button>
+            </div>
+
+            <!-- Search results empty state -->
+            <div class="empty-state" id="emptyState" style="display:none;">
+              <div class="empty-icon">🔍</div>
+              <div class="empty-title">No tools found</div>
+              <div class="empty-desc">Try a different search term</div>
+            </div>
+
+            <!-- Tool cards grid -->
+            <div class="tools-grid" id="toolsGrid"></div>
+
+            <!-- Install button below tools -->
+            <div class="install-footer" id="installFooter">
+              <button class="btn btn-primary btn-install-main" id="btnInstall" disabled>
+                Install Selected
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─── Step 2: Installation Progress ─── -->
+        <section class="page" id="pageInstall">
+          <div class="overall-progress">
+            <div class="progress-header">
+              <span id="overallLabel">Installing...</span>
+              <span id="overallPercent">0%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="overallFill"></div>
+            </div>
+          </div>
+
+          <div class="install-items" id="installItems"></div>
+
+          <!-- Log Panel -->
+          <div class="log-panel open">
+            <div class="log-header" id="logToggle">
+              <span>📋 Logs</span>
+              <span class="log-arrow">▼</span>
+            </div>
+            <div class="log-body" id="logBody">
+              <pre id="logContent"></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─── Step 3: Done ─── -->
+        <section class="page" id="pageDone">
+          <div class="done-icon" id="doneIcon">✅</div>
+          <h2 class="done-title" id="doneTitle">Installation Complete!</h2>
+          <p class="done-subtitle" id="doneSubtitle">Your development environment is ready.</p>
+
+          <div class="results-list" id="resultsList"></div>
 
           <div class="actions">
-            <button class="btn btn-primary" id="btnInstall" disabled>
-              Install Selected
-            </button>
+            <button class="btn btn-secondary" id="btnBackToSelect">Install More Tools</button>
           </div>
+        </section>
 
-        </div>
-      </section>
-
-      <!-- ─── Step 2: Installation Progress ─── -->
-      <section class="page" id="pageInstall">
-        <div class="overall-progress">
-          <div class="progress-header">
-            <span id="overallLabel">Installing...</span>
-            <span id="overallPercent">0%</span>
-          </div>
-          <div class="progress-bar">
-            <div class="progress-fill" id="overallFill"></div>
-          </div>
-        </div>
-
-        <div class="install-items" id="installItems"></div>
-
-        <!-- Log Panel -->
-        <div class="log-panel">
-          <div class="log-header" id="logToggle">
-            <span>📋 Logs</span>
-            <span class="log-arrow">▼</span>
-          </div>
-          <div class="log-body" id="logBody">
-            <pre id="logContent"></pre>
-          </div>
-        </div>
-      </section>
-
-      <!-- ─── Step 3: Done ─── -->
-      <section class="page" id="pageDone">
-        <div class="done-icon" id="doneIcon">✅</div>
-        <h2 class="done-title" id="doneTitle">Installation Complete!</h2>
-        <p class="done-subtitle" id="doneSubtitle">Your development environment is ready.</p>
-
-        <div class="results-list" id="resultsList"></div>
-
-        <div class="actions">
-          <button class="btn btn-secondary" id="btnBackToSelect">Install More Tools</button>
-        </div>
-      </section>
-
-    </main>
+      </main>
+    </div>
 
     <!-- Uninstall Confirmation Modal -->
     <div class="modal-overlay" id="uninstallModal">

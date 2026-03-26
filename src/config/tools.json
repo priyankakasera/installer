@@ -404,7 +404,7 @@
       "id": "java-dev",
       "name": "Java Developer Setup",
       "description": "Complete Java development environment",
-      "tools": ["java", "git"],
+      "tools": ["java", "maven", "gradle", "git"],
       "icon": "☕"
     },
     {

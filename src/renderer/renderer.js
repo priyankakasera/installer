@@ -5,14 +5,27 @@ let detectedTools = {};
 let installing = false;
 let uninstallToolId = null; // tool pending uninstall confirmation
 
+// Sidebar/nav state
+let activeView = null;       // { type: 'category', id } | { type: 'bundle', id } | { type: 'all' }
+let searchQuery = '';
+
 // ─── DOM Refs ────────────────────────────────────────────────
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
-const bundlesGrid = $('#bundlesGrid');
-const categoriesContainer = $('#categoriesContainer');
+const sidebarBundles = $('#sidebarBundles');
+const sidebarCategories = $('#sidebarCategories');
+const toolsGrid = $('#toolsGrid');
 const btnInstall = $('#btnInstall');
 const adminBadge = $('#adminBadge');
+
+const contentTitle = $('#contentTitle');
+const contentDesc = $('#contentDesc');
+const btnSelectAll = $('#btnSelectAll');
+const emptyState = $('#emptyState');
+
+const searchInput = $('#searchInput');
+const searchClear = $('#searchClear');
 
 const pageSelect = $('#pageSelect');
 const pageInstall = $('#pageInstall');
@@ -42,7 +55,6 @@ function hideStartupLoader() {
   if (!loader) return;
   loader.classList.add('loader-fade-out');
   loader.addEventListener('animationend', () => loader.remove(), { once: true });
-  // Safety fallback: remove if animationend never fires (e.g. prefers-reduced-motion)
   setTimeout(() => { if (loader.parentNode) loader.remove(); }, 500);
 }
 
@@ -54,10 +66,8 @@ function showSelectLoader(show) {
 // ─── Initialization ──────────────────────────────────────────
 async function init() {
   try {
-    // Step 1: fetch config (needed to know tool IDs)
     config = await window.api.getToolsConfig();
 
-    // Step 2: admin check + detection in parallel — no reason to serialise these
     const toolIds = config.categories.flatMap((cat) => cat.tools.map((t) => t.id));
     const [isAdmin, detected] = await Promise.all([
       window.api.checkAdmin(),
@@ -68,147 +78,218 @@ async function init() {
     adminBadge.textContent = isAdmin ? '🔒 Admin' : '⚠ No Admin';
     adminBadge.className = 'admin-badge ' + (isAdmin ? 'admin' : 'no-admin');
 
-    // Step 3: render with complete data — no partial render, no deferred update
-    renderBundles();
-    renderCategories();
+    // Default view: first category
+    activeView = { type: 'category', id: config.categories[0].id };
+
+    renderSidebar();
+    renderToolsGrid();
     updateInstallButton();
     setupListeners();
   } catch (err) {
     console.error('Initialisation failed:', err);
   } finally {
-    // Always remove the startup loader so the UI is never permanently blocked
     hideStartupLoader();
   }
 }
 
-// ─── Render Bundles ──────────────────────────────────────────
-function renderBundles() {
-  bundlesGrid.innerHTML = '';
+// ─── Sidebar Rendering ──────────────────────────────────────
+function renderSidebar() {
+  // Bundles
+  sidebarBundles.innerHTML = '';
   for (const bundle of config.bundles) {
-    const card = document.createElement('div');
-    card.className = 'bundle-card';
-    card.dataset.bundleId = bundle.id;
-    card.innerHTML = `
-      <div class="bundle-icon">${escapeHtml(bundle.icon)}</div>
-      <div class="bundle-name">${escapeHtml(bundle.name)}</div>
-      <div class="bundle-desc">${escapeHtml(bundle.description)}</div>
+    const item = document.createElement('div');
+    item.className = 'sidebar-item' + (activeView.type === 'bundle' && activeView.id === bundle.id ? ' active' : '');
+    item.dataset.viewType = 'bundle';
+    item.dataset.viewId = bundle.id;
+    item.innerHTML = `
+      <span class="sidebar-item-icon">${escapeHtml(bundle.icon)}</span>
+      <span class="sidebar-item-label">${escapeHtml(bundle.name)}</span>
     `;
-    card.addEventListener('click', () => selectBundle(bundle));
-    bundlesGrid.appendChild(card);
+    item.addEventListener('click', () => {
+      setActiveView('bundle', bundle.id);
+    });
+    sidebarBundles.appendChild(item);
+  }
+
+  // Categories
+  sidebarCategories.innerHTML = '';
+
+  for (const cat of config.categories) {
+    const item = document.createElement('div');
+    item.className = 'sidebar-item' + (activeView.type === 'category' && activeView.id === cat.id ? ' active' : '');
+    item.dataset.viewType = 'category';
+    item.dataset.viewId = cat.id;
+    item.innerHTML = `
+      <span class="sidebar-item-icon">${escapeHtml(cat.icon)}</span>
+      <span class="sidebar-item-label">${escapeHtml(cat.name)}</span>
+      <span class="sidebar-item-count">${cat.tools.length}</span>
+    `;
+    item.addEventListener('click', () => {
+      setActiveView('category', cat.id);
+    });
+    sidebarCategories.appendChild(item);
   }
 }
 
-// ─── Render Categories & Tools ───────────────────────────────
-function renderCategories() {
-  categoriesContainer.innerHTML = '';
+function setActiveView(type, id) {
+  activeView = { type, id };
+  // Clear search when switching views
+  if (searchQuery) {
+    searchQuery = '';
+    searchInput.value = '';
+    searchClear.style.display = 'none';
+  }
+  renderSidebar();
+  renderToolsGrid();
+}
 
-  for (const category of config.categories) {
-    const section = document.createElement('div');
-    section.className = 'category-section';
-    section.dataset.categoryId = category.id;
+// ─── Get Tools for Current View ─────────────────────────────
+function getToolsForView() {
+  let tools = [];
+  let title = 'All Tools';
+  let desc = 'Browse and install developer tools';
+  let categoryId = null;
 
-    const allSelected = category.tools.every((t) => selectedTools.has(t.id));
+  if (activeView.type === 'category') {
+    const cat = config.categories.find((c) => c.id === activeView.id);
+    if (cat) {
+      tools = cat.tools;
+      title = cat.name;
+      desc = cat.description;
+      categoryId = cat.id;
+    }
+  } else if (activeView.type === 'bundle') {
+    const bundle = config.bundles.find((b) => b.id === activeView.id);
+    if (bundle) {
+      tools = bundle.tools.map((tid) => getAllTools().find((t) => t.id === tid)).filter(Boolean);
+      title = bundle.name;
+      desc = bundle.description;
+    }
+  } else {
+    // 'all'
+    tools = getAllTools();
+  }
 
-    section.innerHTML = `
-      <div class="category-header">
-        <div class="category-title-group">
-          <span class="category-icon">${escapeHtml(category.icon)}</span>
-          <div>
-            <div class="category-title">${escapeHtml(category.name)}</div>
-            <div class="category-desc">${escapeHtml(category.description)}</div>
-          </div>
-        </div>
-        <button class="category-select-all${allSelected ? ' all-selected' : ''}" data-category-id="${escapeHtml(category.id)}">
-          ${allSelected ? '✓ All Selected' : 'Select All'}
-        </button>
-      </div>
-      <div class="category-tools-list"></div>
-    `;
+  // Apply search filter
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    tools = tools.filter((t) => t.name.toLowerCase().includes(q) || t.description.toLowerCase().includes(q));
+  }
 
-    const toolsListEl = section.querySelector('.category-tools-list');
+  return { tools, title, desc, categoryId };
+}
 
-    for (const tool of category.tools) {
-      const detected = detectedTools[tool.id];
-      const isDetected = detected && detected.installed;
+// ─── Tool Card Grid Rendering ────────────────────────────────
+function renderToolsGrid() {
+  const { tools, title, desc, categoryId } = getToolsForView();
 
-      // Check if this tool's dependencies are satisfied
-      const unmetDeps = (tool.dependsOn || []).filter((depId) => {
-        const depDetected = detectedTools[depId];
-        return !depDetected || !depDetected.installed;
-      });
-      const hasUnmetDeps = unmetDeps.length > 0;
-      const depNames = unmetDeps.map((depId) => {
-        const depTool = getAllTools().find((t) => t.id === depId);
-        return depTool ? depTool.name : depId;
-      });
+  // Update content header
+  contentTitle.textContent = title;
+  contentDesc.textContent = desc;
 
-      const card = document.createElement('div');
-      card.className = 'tool-card' + (selectedTools.has(tool.id) ? ' selected' : '') + (isDetected ? ' detected' : '') + (hasUnmetDeps ? ' disabled' : '');
-      card.dataset.toolId = tool.id;
-      if (hasUnmetDeps) {
-        card.title = `Requires: ${depNames.join(', ')} (not installed)`;
-      }
+  // Select All button — show for categories and bundles
+  if ((activeView.type === 'category' || activeView.type === 'bundle') && tools.length > 0 && !searchQuery) {
+    btnSelectAll.style.display = '';
+    const allSelected = tools.every((t) => selectedTools.has(t.id));
+    btnSelectAll.textContent = allSelected ? '✓ All Selected' : 'Select All';
+    btnSelectAll.className = 'category-select-all' + (allSelected ? ' all-selected' : '');
+  } else {
+    btnSelectAll.style.display = 'none';
+  }
 
-      let versionOptions = tool.versions
-        .map((v) => `<option value="${escapeHtml(v)}"${v === (selectedTools.get(tool.id) || tool.defaultVersion) ? ' selected' : ''}>${escapeHtml(v)}</option>`)
-        .join('');
+  // Empty state
+  if (tools.length === 0) {
+    toolsGrid.style.display = 'none';
+    emptyState.style.display = 'flex';
+    return;
+  }
+  toolsGrid.style.display = '';
+  emptyState.style.display = 'none';
 
-      const detectedBadge = isDetected
-        ? `<div class="tool-detected-badge">✓ Installed: ${escapeHtml(detected.output || detected.version || '')}</div>`
-        : '';
+  // Render cards
+  toolsGrid.innerHTML = '';
+  for (const tool of tools) {
+    const detected = detectedTools[tool.id];
+    const isDetected = detected && detected.installed;
 
-      const depsBadge = hasUnmetDeps
-        ? `<div class="tool-deps-badge">⚠ Requires: ${escapeHtml(depNames.join(', '))}</div>`
-        : '';
+    const unmetDeps = (tool.dependsOn || []).filter((depId) => {
+      const depDetected = detectedTools[depId];
+      return !depDetected || !depDetected.installed;
+    });
+    const hasUnmetDeps = unmetDeps.length > 0;
+    const depNames = unmetDeps.map((depId) => {
+      const depTool = getAllTools().find((t) => t.id === depId);
+      return depTool ? depTool.name : depId;
+    });
 
-      const uninstallBtn = isDetected
-        ? `<button class="btn btn-sm btn-uninstall" data-uninstall-id="${escapeHtml(tool.id)}" title="Uninstall ${escapeHtml(tool.name)}">🗑️ Uninstall</button>`
-        : '';
+    const card = document.createElement('div');
+    card.className = 'tool-card'
+      + (selectedTools.has(tool.id) ? ' selected' : '')
+      + (isDetected ? ' detected' : '')
+      + (hasUnmetDeps ? ' disabled' : '');
+    card.dataset.toolId = tool.id;
+    if (hasUnmetDeps) card.title = `Requires: ${depNames.join(', ')} (not installed)`;
 
-      card.innerHTML = `
+    const versionOptions = tool.versions
+      .map((v) => `<option value="${escapeHtml(v)}"${v === (selectedTools.get(tool.id) || tool.defaultVersion) ? ' selected' : ''}>${escapeHtml(v)}</option>`)
+      .join('');
+
+    const detectedBadge = isDetected
+      ? `<div class="tool-detected-badge">✓ Installed: ${escapeHtml(detected.output || detected.version || '')}</div>`
+      : '';
+
+    const depsBadge = hasUnmetDeps
+      ? `<div class="tool-deps-badge">⚠ Requires: ${escapeHtml(depNames.join(', '))}</div>`
+      : '';
+
+    const uninstallBtn = isDetected
+      ? `<button class="btn btn-sm btn-uninstall" data-uninstall-id="${escapeHtml(tool.id)}" title="Uninstall ${escapeHtml(tool.name)}">🗑️ Uninstall</button>`
+      : '';
+
+    card.innerHTML = `
+      <div class="tool-card-top">
         <div class="tool-checkbox"></div>
         <div class="tool-icon">${tool.iconUrl ? `<img class="tool-icon-img" src="${escapeHtml(tool.iconUrl)}" alt="${escapeHtml(tool.name)}">` : escapeHtml(tool.icon)}</div>
-        <div class="tool-info">
+        <div class="tool-card-info">
           <div class="tool-name">${escapeHtml(tool.name)}</div>
           <div class="tool-desc">${escapeHtml(tool.description)}</div>
           ${detectedBadge}
           ${depsBadge}
         </div>
+      </div>
+      <div class="tool-card-bottom">
+        <select class="tool-version-select" data-tool-id="${escapeHtml(tool.id)}"${hasUnmetDeps ? ' disabled' : ''}>${versionOptions}</select>
         <div class="tool-actions">
           ${uninstallBtn}
-          <select class="tool-version-select" data-tool-id="${escapeHtml(tool.id)}"${hasUnmetDeps ? ' disabled' : ''}>${versionOptions}</select>
         </div>
-      `;
+      </div>
+    `;
 
-      card.addEventListener('click', (e) => {
-        if (hasUnmetDeps) return;
-        if (e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
-        toggleTool(tool.id);
-      });
+    // Click to select/deselect
+    card.addEventListener('click', (e) => {
+      if (hasUnmetDeps) return;
+      if (e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+      toggleTool(tool.id);
+    });
 
-      const select = card.querySelector('.tool-version-select');
-      select.addEventListener('change', (e) => {
-        if (selectedTools.has(tool.id)) {
-          selectedTools.set(tool.id, e.target.value);
-        }
-      });
-
-      const unBtn = card.querySelector('[data-uninstall-id]');
-      if (unBtn) {
-        unBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          showUninstallModal(tool.id, tool.name);
-        });
+    // Version change
+    const select = card.querySelector('.tool-version-select');
+    select.addEventListener('change', (e) => {
+      if (selectedTools.has(tool.id)) {
+        selectedTools.set(tool.id, e.target.value);
       }
+    });
 
-      toolsListEl.appendChild(card);
+    // Uninstall button
+    const unBtn = card.querySelector('[data-uninstall-id]');
+    if (unBtn) {
+      unBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showUninstallModal(tool.id, tool.name);
+      });
     }
 
-    // Select All button handler
-    const selectAllBtn = section.querySelector('.category-select-all');
-    selectAllBtn.addEventListener('click', () => toggleCategory(category.id));
-
-    categoriesContainer.appendChild(section);
+    toolsGrid.appendChild(card);
   }
 }
 
@@ -225,69 +306,31 @@ function toggleTool(toolId) {
     selectedTools.set(toolId, versionSelect ? versionSelect.value : tool.defaultVersion);
   }
 
-  updateBundleHighlights();
-  renderCategories();
+  renderToolsGrid();
   updateInstallButton();
 }
 
-function toggleCategory(categoryId) {
+function toggleCurrentView() {
   if (installing) return;
-  const category = config.categories.find((c) => c.id === categoryId);
-  if (!category) return;
+  const { tools } = getToolsForView();
+  if (tools.length === 0) return;
 
-  const allSelected = category.tools.every((t) => selectedTools.has(t.id));
+  const allSelected = tools.every((t) => selectedTools.has(t.id));
 
   if (allSelected) {
-    for (const tool of category.tools) {
+    for (const tool of tools) {
       selectedTools.delete(tool.id);
     }
   } else {
-    for (const tool of category.tools) {
+    for (const tool of tools) {
       if (!selectedTools.has(tool.id)) {
         selectedTools.set(tool.id, tool.defaultVersion);
       }
     }
   }
 
-  updateBundleHighlights();
-  renderCategories();
+  renderToolsGrid();
   updateInstallButton();
-}
-
-function selectBundle(bundle) {
-  if (installing) return;
-
-  // Check if all bundle tools are already selected
-  const allSelected = bundle.tools.every((tid) => selectedTools.has(tid));
-
-  if (allSelected) {
-    // Deselect all bundle tools
-    for (const tid of bundle.tools) {
-      selectedTools.delete(tid);
-    }
-  } else {
-    // Select all bundle tools
-    for (const tid of bundle.tools) {
-      if (!selectedTools.has(tid)) {
-        const tool = getAllTools().find((t) => t.id === tid);
-        selectedTools.set(tid, tool ? tool.defaultVersion : '');
-      }
-    }
-  }
-
-  updateBundleHighlights();
-  renderCategories();
-  updateInstallButton();
-}
-
-function updateBundleHighlights() {
-  for (const card of $$('.bundle-card')) {
-    const bundleId = card.dataset.bundleId;
-    const bundle = config.bundles.find((b) => b.id === bundleId);
-    if (!bundle) continue;
-    const allSelected = bundle.tools.every((tid) => selectedTools.has(tid));
-    card.classList.toggle('selected', allSelected);
-  }
 }
 
 function updateInstallButton() {
@@ -297,29 +340,44 @@ function updateInstallButton() {
     : 'Install Selected';
 }
 
+// ─── Search ──────────────────────────────────────────────────
+function handleSearch(query) {
+  searchQuery = query.trim();
+  searchClear.style.display = searchQuery ? '' : 'none';
+
+  if (searchQuery) {
+    // When searching, show results across all tools
+    activeView = { type: 'all' };
+    renderSidebar();
+  }
+  renderToolsGrid();
+}
+
 // ─── Navigation ──────────────────────────────────────────────
 function showPage(pageName) {
   $$('.page').forEach((p) => p.classList.remove('active'));
 
+  const sidebar = $('#sidebar');
   if (pageName === 'select') {
     pageSelect.classList.add('active');
+    sidebar.style.display = '';
   } else if (pageName === 'install') {
     pageInstall.classList.add('active');
+    sidebar.style.display = 'none';
   } else if (pageName === 'done') {
     pageDone.classList.add('active');
+    sidebar.style.display = 'none';
   }
 }
 
 // ─── Installation ────────────────────────────────────────────
 async function startInstallation() {
-  // Guard: check all selected tools have their dependencies met
   const allTools = getAllTools();
   const unmetMessages = [];
   for (const [toolId] of selectedTools) {
     const tool = allTools.find((t) => t.id === toolId);
     if (!tool || !tool.dependsOn) continue;
     const missing = tool.dependsOn.filter((depId) => {
-      // Dep is satisfied if it's detected OR if it's also being installed now
       const depDetected = detectedTools[depId];
       return (!depDetected || !depDetected.installed) && !selectedTools.has(depId);
     });
@@ -342,7 +400,6 @@ async function startInstallation() {
 
   const selections = Array.from(selectedTools.entries()).map(([toolId, version]) => ({ toolId, version }));
 
-  // Render install items
   installItems.innerHTML = '';
   for (const sel of selections) {
     const tool = getAllTools().find((t) => t.id === sel.toolId);
@@ -366,15 +423,11 @@ async function startInstallation() {
   overallPercent.textContent = '0%';
   overallLabel.textContent = 'Installing...';
 
-  // Listen for progress
   window.api.onProgress(handleProgress);
-
   const result = await window.api.startInstallation(selections);
-
   window.api.removeProgressListener();
   installing = false;
 
-  // show done
   showDone(result);
 }
 
@@ -383,12 +436,10 @@ function handleProgress(data) {
 
   const { toolId, toolName, step, detail, overallPercent: pct } = data;
 
-  // Update overall
   overallFill.style.width = pct + '%';
   overallPercent.textContent = pct + '%';
   overallLabel.textContent = `Installing ${toolName || ''}...`;
 
-  // Update per-tool status
   const statusEl = document.getElementById(`status-${toolId}`);
   const badgeEl = document.getElementById(`badge-${toolId}`);
 
@@ -397,7 +448,6 @@ function handleProgress(data) {
     badgeEl.textContent = capitalize(step);
     badgeEl.className = `install-item-badge badge-${step}`;
 
-    // Add retry button on error
     if (step === 'error') {
       const parentItem = document.getElementById(`install-item-${toolId}`);
       if (parentItem && !parentItem.querySelector('.retry-btn')) {
@@ -410,7 +460,6 @@ function handleProgress(data) {
     }
   }
 
-  // Append to log
   appendLog(`[${toolName}] ${step}: ${detail}`);
 }
 
@@ -420,7 +469,6 @@ async function retryTool(toolId) {
 
   const version = selectedTools.get(toolId) || tool.defaultVersion;
 
-  // Reset UI for this tool
   const statusEl = document.getElementById(`status-${toolId}`);
   const badgeEl = document.getElementById(`badge-${toolId}`);
   if (statusEl) statusEl.textContent = 'Retrying...';
@@ -429,7 +477,6 @@ async function retryTool(toolId) {
     badgeEl.className = 'install-item-badge badge-downloading';
   }
 
-  // Remove retry button
   const parentItem = document.getElementById(`install-item-${toolId}`);
   const retryBtn = parentItem ? parentItem.querySelector('.retry-btn') : null;
   if (retryBtn) retryBtn.remove();
@@ -442,10 +489,6 @@ async function retryTool(toolId) {
 function showDone(result) {
   showPage('done');
 
-  // Parse results from the last all-complete event or result
-  const results = result.success !== false ? [] : [{ error: result.error }];
-
-  // Rebuild from install items
   resultsList.innerHTML = '';
   const items = installItems.querySelectorAll('.install-item');
   let successCount = 0;
@@ -528,7 +571,6 @@ async function performUninstall() {
   document.getElementById('uninstallFill').style.background = '';
 
   const stepPcts = { finding: 10, uninstalling: 40, cleaning: 70, verifying: 90, completed: 100 };
-
   const fillEl = document.getElementById('uninstallFill');
   const activeSteps = new Set(['finding', 'uninstalling', 'cleaning', 'verifying']);
 
@@ -537,7 +579,6 @@ async function performUninstall() {
     const pct = stepPcts[data.step] || 0;
     fillEl.style.width = pct + '%';
     document.getElementById('uninstallStatus').textContent = data.detail || data.step;
-    // Show shimmer while work is ongoing; stop it when done or errored
     if (activeSteps.has(data.step)) {
       fillEl.classList.add('progress-fill--active');
     } else {
@@ -549,17 +590,15 @@ async function performUninstall() {
   const result = await window.api.uninstallTool(toolId, detected);
   window.api.removeUninstallProgressListener();
 
-  // Always stop the shimmer once the operation resolves
   fillEl.classList.remove('progress-fill--active');
 
   if (result.success) {
     document.getElementById('uninstallStatus').textContent = 'Uninstalled successfully!';
     fillEl.style.width = '100%';
 
-    // Refresh detection state
     const toolIds = getAllTools().map((t) => t.id);
     detectedTools = await window.api.detectInstalled(toolIds);
-    renderCategories();
+    renderToolsGrid();
     updateInstallButton();
 
     setTimeout(hideUninstallModal, 1200);
@@ -591,8 +630,8 @@ function setupListeners() {
     try {
       const toolIds = getAllTools().map((t) => t.id);
       detectedTools = await window.api.detectInstalled(toolIds);
-      renderCategories();
-      updateBundleHighlights();
+      renderSidebar();
+      renderToolsGrid();
       updateInstallButton();
     } catch (err) {
       console.error('Failed to refresh tool status:', err);
@@ -607,6 +646,22 @@ function setupListeners() {
 
   document.getElementById('btnCancelUninstall').addEventListener('click', hideUninstallModal);
   document.getElementById('btnConfirmUninstall').addEventListener('click', performUninstall);
+
+  // Select All button for current view
+  btnSelectAll.addEventListener('click', () => toggleCurrentView());
+
+  // Search
+  let searchTimer = null;
+  searchInput.addEventListener('input', (e) => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => handleSearch(e.target.value), 150);
+  });
+
+  searchClear.addEventListener('click', () => {
+    searchInput.value = '';
+    handleSearch('');
+    searchInput.focus();
+  });
 }
 
 // ─── Boot ────────────────────────────────────────────────────
