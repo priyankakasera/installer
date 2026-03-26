@@ -8,8 +8,8 @@
       "tools": [
         {
           "id": "java",
-          "name": "Java (JDK 21)",
-          "description": "Java Development Kit 21 — Required for Java development",
+          "name": "Java (JDK)",
+          "description": "Java Development Kit — Required for Java development",
           "versions": ["21.0.10", "17.0.18", "11.0.30"],
           "defaultVersion": "21.0.10",
           "downloadUrls": {
@@ -330,16 +330,18 @@
           "id": "intellij-idea",
           "name": "IntelliJ IDEA",
           "description": "Professional IDE for Java and Kotlin development by JetBrains",
-          "versions": ["2025.3"],
-          "defaultVersion": "2025.3",
+          "versions": ["latest"],
+          "defaultVersion": "latest",
           "downloadUrls": {
-            "2025.3": "https://download.jetbrains.com/idea/ideaIC-2025.3.exe"
+            "latest": "https://data.services.jetbrains.com/products/download?code=IIC&platform=windows"
           },
           "installCommand": {
             "exe": "\"{installerPath}\" /S /D={installDir}"
           },
           "uninstallSearch": ["IntelliJ IDEA"],
-          "defaultInstallDir": "C:\\Program Files\\JetBrains\\IntelliJ IDEA Community 2025.3",
+          "startMenuFolders": ["JetBrains"],
+          "startMenuKeywords": ["IntelliJ IDEA"],
+          "defaultInstallDir": "C:\\Program Files\\JetBrains\\IntelliJ IDEA Community",
           "envVars": {},
           "pathEntries": ["{installDir}\\bin"],
           "verifyCommand": "where idea64",
@@ -393,25 +395,6 @@
           "verifyCommand": "powershell -NoProfile -NonInteractive -Command \"& { $paths = @(\\\"$env:LOCALAPPDATA\\Postman\\Postman.exe\\\", \\\"$env:LOCALAPPDATA\\Programs\\Postman\\Postman.exe\\\", 'C:\\Program Files\\Postman\\Postman.exe'); foreach ($p in $paths) { if (Test-Path $p) { Write-Output 'Postman installed'; return } } }\"",
           "verifyRegex": "Postman installed",
           "icon": "🟧"
-        },
-        {
-          "id": "curl",
-          "name": "cURL",
-          "description": "Command-line tool for transferring data with URLs",
-          "versions": ["8.19.0"],
-          "defaultVersion": "8.19.0",
-          "downloadUrls": {
-            "8.19.0": "https://curl.se/windows/dl-8.19.0/curl-8.19.0-win64-mingw.zip"
-          },
-          "installCommand": {
-            "zip": "extract"
-          },
-          "defaultInstallDir": "C:\\Program Files\\curl\\curl-{version}-win64-mingw",
-          "envVars": {},
-          "pathEntries": ["{installDir}\\bin"],
-          "verifyCommand": "curl --version",
-          "verifyRegex": "curl [\\d.]+",
-          "icon": "🌐"
         }
       ]
     }

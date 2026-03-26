@@ -479,7 +479,21 @@ class InstallerEngine {
         // MSI magic: D0 CF 11 E0
         if (buf[0] !== 0xD0 || buf[1] !== 0xCF || buf[2] !== 0x11 || buf[3] !== 0xE0) {
           fs.unlinkSync(installerPath);
+          try { fs.unlinkSync(installerPath + '.size'); } catch {}
           throw new Error('Downloaded file is not a valid MSI — removing cached file. Please retry.');
+        }
+      }
+      if (ext === '.exe') {
+        const fd = fs.openSync(installerPath, 'r');
+        const buf = Buffer.alloc(2);
+        fs.readSync(fd, buf, 0, 2, 0);
+        fs.closeSync(fd);
+        // EXE magic: 4D 5A (MZ)
+        if (buf[0] !== 0x4D || buf[1] !== 0x5A) {
+          this._log(`Downloaded file is not a valid EXE (magic: ${buf[0].toString(16)} ${buf[1].toString(16)}) — removing: ${installerPath}`);
+          fs.unlinkSync(installerPath);
+          try { fs.unlinkSync(installerPath + '.size'); } catch {}
+          throw new Error('Downloaded file is not a valid Windows executable — cached file removed. Please retry the installation.');
         }
       }
     } catch (validationErr) {
@@ -569,6 +583,13 @@ class InstallerEngine {
     const cmdTemplate = tool.installCommand[ext.replace('.', '')];
     if (!cmdTemplate) throw new Error(`No install command for ${ext} files`);
 
+    // Pre-install cleanup: if the target install directory exists but is empty/broken,
+    // or if a previous installation left registry artifacts, attempt to uninstall first.
+    // This prevents error 1603 from Python and similar EXE installers.
+    if (ext === '.exe') {
+      await this._cleanupCorruptInstall(tool, version, installerPath, installDir);
+    }
+
     // MSI log path for debugging
     const msiLogPath = path.join(this.downloadDir, `${tool.id}-install.log`);
 
@@ -596,13 +617,22 @@ class InstallerEngine {
               this._log('Exit code 1 from EXE installer — treating as success (common with Inno Setup when app is already installed or reboot needed)');
               return resolve();
             }
-            if (err.code === 1620 || err.code === 1603) {
+            if (err.code === 1620) {
               // 1620 = package could not be opened (corrupt/incomplete)
-              // 1603 = fatal error during installation
-              this._log(`MSI error ${err.code} — removing potentially corrupt installer: ${installerPath}`);
+              this._log(`Installer error ${err.code} — removing corrupt installer: ${installerPath}`);
               try { fs.unlinkSync(installerPath); } catch {}
               try { fs.unlinkSync(installerPath + '.size'); } catch {}
               return reject(new Error(`Installer package is corrupt or incomplete (error ${err.code}). Cached file removed — please retry the installation.`));
+            }
+            if (err.code === 1603) {
+              if (ext === '.msi') {
+                this._log(`MSI error 1603 — removing potentially corrupt installer: ${installerPath}`);
+                try { fs.unlinkSync(installerPath); } catch {}
+                try { fs.unlinkSync(installerPath + '.size'); } catch {}
+                return reject(new Error(`Installer package is corrupt or incomplete (error 1603). Cached file removed — please retry the installation.`));
+              }
+              // EXE error 1603: installation failed but file is not corrupt
+              return reject(new Error(`Installation failed (error 1603). This can happen when a previous version is partially installed — try uninstalling it first, or reboot and try again.`));
             }
             if (err.killed) return reject(new Error('Installation timed out (killed after 10 minutes)'));
             return reject(new Error(`Installation failed (exit code ${err.code || 'unknown'}): ${stderr || stdout || err.message}`));
@@ -663,13 +693,23 @@ class InstallerEngine {
           return resolve();
         }
 
-        if (exitCode === 1620 || exitCode === 1603) {
+        if (exitCode === 1620) {
           // 1620 = package could not be opened (corrupt/incomplete)
-          // 1603 = fatal error during installation
-          this._log(`MSI error ${exitCode} — removing potentially corrupt installer: ${installerPath}`);
+          this._log(`Installer error ${exitCode} — removing corrupt installer: ${installerPath}`);
           try { fs.unlinkSync(installerPath); } catch {}
           try { fs.unlinkSync(installerPath + '.size'); } catch {}
           return reject(new Error(`Installer package is corrupt or incomplete (error ${exitCode}). Cached file removed — please retry the installation.`));
+        }
+
+        if (exitCode === 1603) {
+          if (ext === '.msi') {
+            this._log(`MSI error 1603 — removing potentially corrupt installer: ${installerPath}`);
+            try { fs.unlinkSync(installerPath); } catch {}
+            try { fs.unlinkSync(installerPath + '.size'); } catch {}
+            return reject(new Error(`Installer package is corrupt or incomplete (error 1603). Cached file removed — please retry the installation.`));
+          }
+          // EXE error 1603: installation failed but file is not corrupt
+          return reject(new Error(`Installation failed (error 1603). This can happen when a previous version is partially installed — try uninstalling it first, or reboot and try again.`));
         }
 
         if (err && err.killed) {
@@ -715,6 +755,184 @@ class InstallerEngine {
       execSync('reg delete "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Component Based Servicing\\RebootPending" /f', { stdio: 'ignore', timeout: 5000 });
     } catch { /* key may not exist — that's fine */ }
     this._log('Cleared pending reboot flags');
+  }
+
+  async _cleanupCorruptInstall(tool, version, installerPath, installDir) {
+    // Check if the install directory exists but is empty/broken (corrupt partial install).
+    // Also check for lingering product-specific registry entries (e.g. Python registers under
+    // HKLM\SOFTWARE\Python even when the standard Uninstall key is missing).
+    let needsCleanup = false;
+
+    if (fs.existsSync(installDir)) {
+      try {
+        const contents = fs.readdirSync(installDir);
+        if (contents.length === 0) {
+          this._log(`Install directory exists but is empty: ${installDir}`);
+          needsCleanup = true;
+        }
+      } catch {
+        needsCleanup = true;
+      }
+    }
+
+    // Python-specific: check for registry entries under HKLM\SOFTWARE\Python\PythonCore
+    if (tool.id === 'python') {
+      const majorMinor = version.match(/^(\d+\.\d+)/);
+      if (majorMinor) {
+        try {
+          const regCheck = execSync(
+            `reg query "HKLM\\SOFTWARE\\Python\\PythonCore\\${majorMinor[1]}" /ve`,
+            { encoding: 'utf8', timeout: 5000, windowsHide: true }
+          );
+          if (regCheck) {
+            this._log(`Found lingering Python ${majorMinor[1]} registry entries`);
+            needsCleanup = true;
+          }
+        } catch { /* key doesn't exist — no cleanup needed */ }
+      }
+    }
+
+    if (!needsCleanup) return;
+
+    this._log(`Attempting to clean up corrupt/partial installation of ${tool.name} before fresh install...`);
+
+    // Step 1: Try uninstalling via the same installer EXE (Python supports /uninstall)
+    const uninstallCmd = `"${installerPath}" /uninstall /quiet`;
+    this._log(`Running pre-install cleanup: ${uninstallCmd}`);
+
+    const isAdmin = this.isAdmin();
+    try {
+      if (isAdmin) {
+        await new Promise((resolve) => {
+          exec(uninstallCmd, { timeout: 120000, windowsHide: true }, (err) => {
+            if (err) this._log(`Pre-install uninstall exited with code ${err.code} (non-fatal)`);
+            else this._log('Pre-install uninstall completed successfully');
+            resolve();
+          });
+        });
+      } else {
+        await this._runElevatedCommand(tool.id, 'pre-cleanup', uninstallCmd, false, [0, 1, 2, 3, 1605]);
+      }
+    } catch (e) {
+      this._log(`Pre-install cleanup command failed (non-fatal): ${e.message}`);
+    }
+
+    // Step 2: Remove empty/residual install directory
+    if (fs.existsSync(installDir)) {
+      this._log(`Removing residual directory: ${installDir}`);
+      try {
+        if (isAdmin) {
+          fs.rmSync(installDir, { recursive: true, force: true });
+        } else {
+          await this._runElevatedCommand(tool.id, 'pre-cleanup-dir', `rmdir /s /q "${installDir}"`, false, [0, 2]);
+        }
+      } catch (e) {
+        this._log(`Warning: could not remove residual directory: ${e.message}`);
+      }
+    }
+
+    // Step 3: Python-specific — remove lingering registry keys if uninstaller didn't
+    if (tool.id === 'python') {
+      const majorMinor = version.match(/^(\d+\.\d+)/);
+      if (majorMinor) {
+        const regKeys = [
+          `HKLM\\SOFTWARE\\Python\\PythonCore\\${majorMinor[1]}`,
+        ];
+        for (const key of regKeys) {
+          try {
+            execSync(`reg delete "${key}" /f`, { stdio: 'ignore', timeout: 5000, windowsHide: true });
+            this._log(`Removed lingering registry key: ${key}`);
+          } catch { /* key may not exist */ }
+        }
+      }
+    }
+
+    // Small delay to let the system settle after cleanup
+    await new Promise(r => setTimeout(r, 2000));
+    this._log('Pre-install cleanup complete');
+  }
+
+  async _cleanupStartMenuShortcuts(tool) {
+    if (!tool.startMenuFolders && !tool.startMenuKeywords) return;
+
+    const searchTerms = tool.startMenuKeywords || [tool.name];
+    const startMenuRoots = [
+      'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs',
+      path.join(process.env.APPDATA || '', 'Microsoft\\Windows\\Start Menu\\Programs')
+    ];
+
+    const foldersToRemove = tool.startMenuFolders || [];
+
+    // Remove explicitly listed Start Menu subfolders (e.g. "JetBrains" for IntelliJ)
+    for (const folder of foldersToRemove) {
+      for (const root of startMenuRoots) {
+        const fullFolderPath = path.join(root, folder);
+        if (fs.existsSync(fullFolderPath)) {
+          this._log(`Removing Start Menu folder: ${fullFolderPath}`);
+          try {
+            if (this.isAdmin()) {
+              fs.rmSync(fullFolderPath, { recursive: true, force: true });
+            } else {
+              await this._runElevatedCommand(tool.id, 'shortcut-cleanup',
+                `rmdir /s /q "${fullFolderPath}"`, false, [0, 2]);
+            }
+          } catch (e) {
+            this._log(`Warning: could not remove Start Menu folder ${fullFolderPath}: ${e.message}`);
+          }
+        }
+      }
+    }
+
+    // Fallback: remove individual .lnk files in any root sub-folder that match search terms
+    for (const root of startMenuRoots) {
+      if (!fs.existsSync(root)) continue;
+      try {
+        const subFolders = fs.readdirSync(root)
+          .map(name => ({ name, full: path.join(root, name) }))
+          .filter(({ full }) => {
+            try { return fs.statSync(full).isDirectory(); } catch { return false; }
+          });
+
+        for (const { full: subFolder } of subFolders) {
+          try {
+            const files = fs.readdirSync(subFolder);
+            const matchingLinks = files.filter(f =>
+              f.toLowerCase().endsWith('.lnk') &&
+              searchTerms.some(term => f.toLowerCase().includes(term.toLowerCase()))
+            );
+
+            for (const lnk of matchingLinks) {
+              const lnkPath = path.join(subFolder, lnk);
+              this._log(`Removing Start Menu shortcut: ${lnkPath}`);
+              try {
+                if (this.isAdmin()) {
+                  fs.unlinkSync(lnkPath);
+                } else {
+                  await this._runElevatedCommand(tool.id, 'shortcut-cleanup',
+                    `del /f /q "${lnkPath}"`, false, [0, 2]);
+                }
+              } catch (e) {
+                this._log(`Warning: could not remove shortcut ${lnkPath}: ${e.message}`);
+              }
+            }
+
+            // Remove the sub-folder if it is now empty
+            try {
+              const remaining = fs.readdirSync(subFolder);
+              if (remaining.length === 0) {
+                if (this.isAdmin()) {
+                  fs.rmdirSync(subFolder);
+                } else {
+                  await this._runElevatedCommand(tool.id, 'shortcut-cleanup',
+                    `rmdir "${subFolder}"`, false, [0, 2]);
+                }
+                this._log(`Removed empty Start Menu folder: ${subFolder}`);
+              }
+            } catch { /* not empty or already gone — fine */ }
+          } catch { /* permission denied on some folders — skip */ }
+        }
+      } catch { /* root doesn't exist or access denied — skip */ }
+    }
   }
 
   async _configure(tool, version) {
@@ -828,6 +1046,9 @@ class InstallerEngine {
       }
     }
 
+    // Clean up Start Menu shortcuts left by certain installers (e.g., JetBrains IDEs)
+    await this._cleanupStartMenuShortcuts(tool);
+
     progressCallback({ step: 'cleaning', detail: 'Removing environment variables and PATH entries...' });
     await this._unconfigure(tool);
 
@@ -917,12 +1138,19 @@ class InstallerEngine {
       } catch { /* not found in registry */ }
     }
 
-    // For EXE-based tools (like Git), look for uninstaller directly
+    // For EXE-based tools (like Git, IntelliJ), look for uninstaller directly
     if (tool.installCommand.exe && tool.installCommand.exe !== 'copy') {
       const installDir = tool.defaultInstallDir.replace('{version}', tool.defaultVersion);
-      const uninstaller = path.join(installDir, 'unins000.exe');
-      if (fs.existsSync(uninstaller)) {
-        return { type: 'exe-uninstaller', uninstallerPath: uninstaller, location: installDir };
+      // Check common uninstaller file names and locations
+      const uninstallerCandidates = [
+        path.join(installDir, 'unins000.exe'),          // Inno Setup (Git, etc.)
+        path.join(installDir, 'bin', 'Uninstall.exe'),  // JetBrains IDEs
+        path.join(installDir, 'Uninstall.exe'),         // Other installers
+      ];
+      for (const candidate of uninstallerCandidates) {
+        if (fs.existsSync(candidate)) {
+          return { type: 'exe-uninstaller', uninstallerPath: candidate, location: installDir };
+        }
       }
     }
 
@@ -972,12 +1200,60 @@ class InstallerEngine {
       }
     }
 
-    // For ZIP-extracted tools (Maven), check if install dir exists
+    // For ZIP-extracted tools (Maven, Gradle, cURL), check if install dir exists
     if (tool.installCommand.zip) {
+      // 1. Exact version-based directory check
       for (const ver of tool.versions) {
         const dir = tool.defaultInstallDir.replace('{version}', ver);
         if (fs.existsSync(dir)) {
           return { type: 'zip', location: dir, version: ver };
+        }
+      }
+
+      // 2. Check tool-specific env vars (e.g. GRADLE_HOME) for actual install location
+      for (const varName of Object.keys(tool.envVars)) {
+        try {
+          const envVal = execSync(
+            `powershell -NoProfile -Command "[Environment]::GetEnvironmentVariable('${varName}', 'Machine')"`,
+            { encoding: 'utf8', timeout: 5000, windowsHide: true }
+          ).trim();
+          if (envVal && fs.existsSync(envVal)) {
+            this._log(`Found ${tool.name} install via env var ${varName}: ${envVal}`);
+            return { type: 'zip', location: envVal };
+          }
+        } catch { /* env var not set */ }
+      }
+
+      // 3. Scan parent directory for matching subdirectories
+      const templateBase = path.basename(tool.defaultInstallDir);
+      const versionIdx = templateBase.indexOf('{version}');
+      const prefix = versionIdx >= 0 ? templateBase.substring(0, versionIdx) : '';
+      const parentDir = path.dirname(tool.defaultInstallDir.replace('{version}', tool.versions[0] || ''));
+      if (prefix && fs.existsSync(parentDir)) {
+        try {
+          const dirs = fs.readdirSync(parentDir).filter(d => {
+            return d.toLowerCase().startsWith(prefix.toLowerCase()) &&
+              fs.statSync(path.join(parentDir, d)).isDirectory();
+          });
+          if (dirs.length > 0) {
+            const fullPath = path.join(parentDir, dirs[0]);
+            this._log(`Found ${tool.name} install via directory scan: ${fullPath}`);
+            return { type: 'zip', location: fullPath };
+          }
+        } catch { /* scan failed */ }
+      }
+
+      // 4. Check install history for configured paths
+      const history = this.getHistory();
+      for (const record of history) {
+        if (record.toolId === tool.id && record.success && Array.isArray(record.configuredPaths)) {
+          for (const p of record.configuredPaths) {
+            const historyDir = path.dirname(p); // PATH entries point to bin/, parent is install dir
+            if (fs.existsSync(historyDir)) {
+              this._log(`Found ${tool.name} install via history: ${historyDir}`);
+              return { type: 'zip', location: historyDir };
+            }
+          }
         }
       }
     }
@@ -995,9 +1271,14 @@ class InstallerEngine {
     }
 
     if (productInfo.type === 'exe-uninstaller') {
-      const cmd = `"${productInfo.uninstallerPath}" /VERYSILENT /NORESTART /SUPPRESSMSGBOXES`;
+      const uninstallerName = path.basename(productInfo.uninstallerPath).toLowerCase();
+      // JetBrains Uninstall.exe uses /S; Inno Setup unins000.exe uses /VERYSILENT
+      const silentFlags = uninstallerName === 'uninstall.exe'
+        ? '/S'
+        : '/VERYSILENT /NORESTART /SUPPRESSMSGBOXES';
+      const cmd = `"${productInfo.uninstallerPath}" ${silentFlags}`;
       this._log(`Running uninstaller: ${cmd}`);
-      return this._runElevatedCommand(tool.id, 'uninstall', cmd, isAdmin);
+      return this._runElevatedCommand(tool.id, 'uninstall', cmd, isAdmin, [1]);
     }
 
     if (productInfo.type === 'exe' && productInfo.uninstallString) {
@@ -1029,16 +1310,54 @@ class InstallerEngine {
         }
       }
       this._log(`Running uninstall string: ${cmd}`);
-      return this._runElevatedCommand(tool.id, 'uninstall', cmd, isAdmin);
+      return this._runElevatedCommand(tool.id, 'uninstall', cmd, isAdmin, [1]);
     }
 
     if (productInfo.type === 'zip') {
       const dir = productInfo.location;
       this._log(`Deleting directory: ${dir}`);
-      if (isAdmin) {
-        fs.rmSync(dir, { recursive: true, force: true });
-      } else {
-        await this._runElevatedCommand(tool.id, 'uninstall', `rmdir /s /q "${dir}"`, false);
+
+      // Kill processes that may lock files (e.g., Gradle daemon locks .jar files)
+      await this._killProcessesLocking(dir);
+
+      // Use OS rmdir instead of Node's fs.rmSync to avoid EBUSY crashes on locked files
+      const rmCmd = `rmdir /s /q "${dir}"`;
+      try {
+        if (isAdmin) {
+          await new Promise((resolve, reject) => {
+            exec(rmCmd, { timeout: 60000, windowsHide: true }, (err) => {
+              if (err) this._log(`rmdir attempt: ${err.message}`);
+              resolve();
+            });
+          });
+        } else {
+          await this._runElevatedCommand(tool.id, 'uninstall', rmCmd, false);
+        }
+      } catch (e) {
+        this._log(`First rmdir attempt failed: ${e.message}`);
+      }
+
+      // Verify removal; retry if still exists
+      if (fs.existsSync(dir)) {
+        this._log(`Directory still exists after rmdir, retrying...`);
+        await this._killProcessesLocking(dir);
+        await new Promise(r => setTimeout(r, 2000));
+        try {
+          if (isAdmin) {
+            await new Promise((resolve, reject) => {
+              exec(rmCmd, { timeout: 60000, windowsHide: true }, (err) => {
+                if (err && fs.existsSync(dir)) return reject(err);
+                resolve();
+              });
+            });
+          } else {
+            await this._runElevatedCommand(tool.id, 'uninstall-retry', rmCmd, false);
+          }
+        } catch (retryErr) {
+          if (fs.existsSync(dir)) {
+            throw new Error(`Could not remove ${dir}: files are locked by running processes. Close all applications using ${tool.name} (including background daemons) and try again.`);
+          }
+        }
       }
       return;
     }
@@ -1081,7 +1400,9 @@ class InstallerEngine {
     throw new Error('Cannot determine how to uninstall this product');
   }
 
-  _runElevatedCommand(toolId, purpose, cmd, isAdmin) {
+  _runElevatedCommand(toolId, purpose, cmd, isAdmin, acceptableCodes = []) {
+    const isSuccessCode = (code) => code === 0 || code === 3010 || code === 3 || acceptableCodes.includes(code);
+
     if (isAdmin) {
       return new Promise((resolve, reject) => {
         exec(cmd, { timeout: 300000, windowsHide: true }, (err) => {
@@ -1089,8 +1410,8 @@ class InstallerEngine {
             if (err.killed) {
               return reject(new Error(`${purpose} timed out after 5 minutes. The process may be waiting for user interaction or is still running in the background. Try closing the application first and retry.`));
             }
-            if (err.code === 0 || err.code === 3010 || err.code === 3) {
-              if (err.code !== 0) this._log(`${purpose} exit code ${err.code}: success (reboot recommended)`);
+            if (isSuccessCode(err.code)) {
+              if (err.code !== 0) this._log(`${purpose} exit code ${err.code}: treating as success`);
               return resolve();
             }
             return reject(new Error(`${purpose} failed — ${this._describeExitCode(err.code)}`));
@@ -1114,8 +1435,8 @@ class InstallerEngine {
           try { exitCode = parseInt(fs.readFileSync(exitCodeFile, 'utf8').trim(), 10); } catch {}
         }
         this._log(`Elevated ${purpose} finished. Exit code: ${exitCode}`);
-        if (exitCode === 0 || exitCode === 3010 || exitCode === 3) {
-          if (exitCode && exitCode !== 0) this._log(`${purpose} exit code ${exitCode}: success (reboot recommended)`);
+        if (isSuccessCode(exitCode)) {
+          if (exitCode && exitCode !== 0) this._log(`${purpose} exit code ${exitCode}: treating as success`);
           return resolve();
         }
         if (err && err.killed) {
@@ -1136,6 +1457,29 @@ class InstallerEngine {
     } catch {
       return null;
     }
+  }
+
+  async _killProcessesLocking(dir) {
+    const psScriptPath = path.join(this.downloadDir, '_kill_locking.ps1');
+    const psContent = [
+      `$ErrorActionPreference = 'SilentlyContinue'`,
+      `$dir = '${dir.replace(/'/g, "''")}'`,
+      `# Kill processes with executables in the target directory`,
+      `Get-Process | Where-Object { $_.Path -and $_.Path.StartsWith($dir, [System.StringComparison]::OrdinalIgnoreCase) } | Stop-Process -Force`,
+      `# Kill Java processes (e.g. Gradle daemon) referencing this directory`,
+      `$escaped = [regex]::Escape($dir)`,
+      `Get-CimInstance Win32_Process -Filter "Name='java.exe'" | Where-Object { $_.CommandLine -match $escaped } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }`,
+      `Start-Sleep -Seconds 1`
+    ].join('\r\n');
+
+    fs.writeFileSync(psScriptPath, psContent);
+
+    try {
+      await new Promise(resolve => {
+        exec(`powershell -NoProfile -ExecutionPolicy Bypass -File "${psScriptPath}"`,
+          { timeout: 20000, windowsHide: true }, () => resolve());
+      });
+    } catch { /* best effort */ }
   }
 
   _describeExitCode(code) {

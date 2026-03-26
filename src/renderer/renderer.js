@@ -508,6 +508,7 @@ function showUninstallModal(toolId, toolName) {
   document.getElementById('uninstallToolName').textContent = toolName;
   document.getElementById('uninstallProgress').style.display = 'none';
   document.getElementById('uninstallActions').style.display = 'flex';
+  document.getElementById('btnConfirmUninstall').textContent = 'Uninstall';
   document.getElementById('uninstallModal').classList.add('open');
 }
 
