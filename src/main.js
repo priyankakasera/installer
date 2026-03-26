@@ -70,11 +70,7 @@ ipcMain.handle('get-tools-config', async () => {
 });
 
 ipcMain.handle('detect-installed', async (event, toolIds) => {
-  const results = {};
-  for (const id of toolIds) {
-    results[id] = await installerEngine.detectInstalled(id);
-  }
-  return results;
+  return installerEngine.detectInstalledBatch(toolIds);
 });
 
 ipcMain.handle('start-installation', async (event, selections) => {

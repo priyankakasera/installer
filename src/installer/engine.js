@@ -3,6 +3,7 @@ const path = require('path');
 const https = require('https');
 const http = require('http');
 const { execSync, exec } = require('child_process');
+const { Worker } = require('worker_threads');
 const { app } = require('electron');
 const AdmZip = require('adm-zip');
 
@@ -41,12 +42,88 @@ class InstallerEngine {
     const tool = this._getTool(toolId);
     if (!tool) return { installed: false };
 
-    // Read fresh env vars from the system — the Electron process.env is stale
-    // after we set Machine-scope variables during installation.
     const freshEnv = await this._getFreshEnv();
+    return this._detectWithEnv(tool, freshEnv);
+  }
 
+  async detectInstalledBatch(toolIds) {
+    try {
+      return await this._detectBatchViaWorker(toolIds);
+    } catch (err) {
+      this._log(`Worker detection failed (${err.message}), using fallback`);
+      return this._detectBatchFallback(toolIds);
+    }
+  }
+
+  _detectBatchViaWorker(toolIds) {
+    return new Promise((resolve, reject) => {
+      const tools = toolIds
+        .map((id) => this._getTool(id))
+        .filter(Boolean)
+        .map((t) => ({ id: t.id, verifyCommand: t.verifyCommand, verifyRegex: t.verifyRegex }));
+
+      const envVarNames = [...new Set(
+        this._allTools.flatMap((t) => Object.keys(t.envVars))
+      )];
+
+      const worker = new Worker(path.join(__dirname, 'detect-worker.js'), {
+        workerData: { tools, envVarNames, tempDir: this.downloadDir }
+      });
+
+      let settled = false;
+      const timeout = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        worker.terminate();
+        reject(new Error('Detection worker timed out'));
+      }, 60000);
+
+      worker.on('message', (results) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeout);
+        if (results && results.__error) {
+          reject(new Error(results.message || 'Worker error'));
+          return;
+        }
+        // Fill in any missing tool IDs
+        for (const id of toolIds) {
+          if (!results[id]) results[id] = { installed: false, version: null, output: '' };
+        }
+        resolve(results);
+      });
+
+      worker.on('error', (err) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeout);
+        reject(err);
+      });
+
+      worker.on('exit', (code) => {
+        if (settled) return;
+        if (code !== 0) {
+          settled = true;
+          clearTimeout(timeout);
+          reject(new Error(`Worker exited with code ${code}`));
+        }
+      });
+    });
+  }
+
+  async _detectBatchFallback(toolIds) {
+    const freshEnv = await this._getFreshEnv();
+    const results = {};
+    for (const id of toolIds) {
+      const tool = this._getTool(id);
+      if (!tool) { results[id] = { installed: false }; continue; }
+      results[id] = await this._detectWithEnv(tool, freshEnv);
+    }
+    return results;
+  }
+
+  _detectWithEnv(tool, freshEnv) {
     return new Promise((resolve) => {
-      // Use shell:true to find .cmd files (e.g. mvn.cmd).
       exec(tool.verifyCommand, {
         encoding: 'utf8', timeout: 10000, env: freshEnv, windowsHide: true, shell: true
       }, (err, stdout, stderr) => {
