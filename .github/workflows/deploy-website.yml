@@ -1,27 +1,24 @@
-name: Deploy Website to GitHub Pages
+name: Deploy Website to Firebase Hosting
 
 on:
   push:
     branches: [main]
     paths:
       - 'webapp/**'
+      - 'firebase.json'
+      - '.firebaserc'
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  group: firebase-deploy
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: webapp
     steps:
       - uses: actions/checkout@v4
 
@@ -31,19 +28,18 @@ jobs:
           cache: npm
           cache-dependency-path: webapp/package-lock.json
 
-      - run: npm ci
-      - run: npm run build
+      - name: Install dependencies
+        working-directory: webapp
+        run: npm ci
 
-      - uses: actions/upload-pages-artifact@v3
+      - name: Build
+        working-directory: webapp
+        run: npm run build
+
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          path: webapp/dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          channelId: live
+          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
