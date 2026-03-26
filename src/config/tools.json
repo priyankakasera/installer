@@ -317,10 +317,10 @@
           "id": "vscode",
           "name": "Visual Studio Code",
           "description": "Lightweight but powerful source code editor by Microsoft",
-          "versions": ["1.113"],
-          "defaultVersion": "1.113",
+          "versions": ["latest"],
+          "defaultVersion": "latest",
           "downloadUrls": {
-            "1.113": "https://update.code.visualstudio.com/1.113/win32-x64/stable"
+            "latest": "https://update.code.visualstudio.com/latest/win32-x64/stable"
           },
           "installCommand": {
             "exe": "\"{installerPath}\" /VERYSILENT /NORESTART /MERGETASKS=!runcode,addcontextmenufiles,addcontextmenufolders,addtopath"
@@ -330,7 +330,7 @@
           "envVars": {},
           "pathEntries": ["C:\\Program Files\\Microsoft VS Code\\bin"],
           "verifyCommand": "code --version",
-          "verifyRegex": "[\\d.]+",
+          "verifyRegex": "\\d+\\.\\d+",
           "icon": "💻",
           "iconUrl": "icons/vscode.png"
         },
@@ -352,8 +352,8 @@
           "defaultInstallDir": "C:\\Program Files\\JetBrains\\IntelliJ IDEA Community",
           "envVars": {},
           "pathEntries": ["{installDir}\\bin"],
-          "verifyCommand": "where idea64",
-          "verifyRegex": "idea64",
+          "verifyCommand": "powershell -NoProfile -NonInteractive -Command \"$found=$false;$dirs=@('C:\\Program Files\\JetBrains','C:\\Program Files (x86)\\JetBrains',(Join-Path $env:LOCALAPPDATA 'JetBrains\\Toolbox\\apps'),(Join-Path $env:LOCALAPPDATA 'Programs'));foreach($d in $dirs){if(-not $found -and (Test-Path $d)){$f=Get-ChildItem $d -Filter idea64.exe -Recurse -Depth 4 -EA 0|Select -First 1;if($f){Write-Output ('IntelliJ IDEA '+$f.VersionInfo.ProductVersion);$found=$true}}};if(-not $found){$w=Get-Command idea64.exe -EA 0;if($w){Write-Output 'IntelliJ IDEA found'}}\"",
+          "verifyRegex": "IntelliJ IDEA",
           "icon": "🧠",
           "iconUrl": "icons/intellij.png"
         },

@@ -141,8 +141,11 @@ function setActiveView(type, id) {
     searchInput.value = '';
     searchClear.style.display = 'none';
   }
+  // Reset selection when navigating between views
+  selectedTools.clear();
   renderSidebar();
   renderToolsGrid();
+  updateInstallButton();
 }
 
 // ─── Get Tools for Current View ─────────────────────────────
@@ -224,11 +227,16 @@ function renderToolsGrid() {
       return depTool ? depTool.name : depId;
     });
 
+    // If tool is installed but has unmet deps, show warning but keep interactable
+    const isDisabled = hasUnmetDeps && !isDetected;
+    const showDepWarning = hasUnmetDeps && isDetected;
+
     const card = document.createElement('div');
     card.className = 'tool-card'
       + (selectedTools.has(tool.id) ? ' selected' : '')
       + (isDetected ? ' detected' : '')
-      + (hasUnmetDeps ? ' disabled' : '');
+      + (isDisabled ? ' disabled' : '')
+      + (showDepWarning ? ' dep-warning' : '');
     card.dataset.toolId = tool.id;
     if (hasUnmetDeps) card.title = `Requires: ${depNames.join(', ')} (not installed)`;
 
@@ -239,6 +247,8 @@ function renderToolsGrid() {
     const detectedBadge = isDetected
       ? `<div class="tool-detected-badge">✓ Installed: ${escapeHtml(detected.output || detected.version || '')}</div>`
       : '';
+
+    const selectedVersion = selectedTools.get(tool.id) || tool.defaultVersion;
 
     const depsBadge = hasUnmetDeps
       ? `<div class="tool-deps-badge">⚠ Requires: ${escapeHtml(depNames.join(', '))}</div>`
@@ -260,7 +270,7 @@ function renderToolsGrid() {
         </div>
       </div>
       <div class="tool-card-bottom">
-        <select class="tool-version-select" data-tool-id="${escapeHtml(tool.id)}"${hasUnmetDeps ? ' disabled' : ''}>${versionOptions}</select>
+        <select class="tool-version-select" data-tool-id="${escapeHtml(tool.id)}"${isDisabled ? ' disabled' : ''}>${versionOptions}</select>
         <div class="tool-actions">
           ${uninstallBtn}
         </div>
@@ -269,8 +279,9 @@ function renderToolsGrid() {
 
     // Click to select/deselect
     card.addEventListener('click', (e) => {
-      if (hasUnmetDeps) return;
+      if (isDisabled) return;
       if (e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+      if (showDepWarning) return; // Installed but missing deps — don't allow re-select
       toggleTool(tool.id);
     });
 
@@ -440,7 +451,11 @@ function handleProgress(data) {
 
   overallFill.style.width = pct + '%';
   overallPercent.textContent = pct + '%';
-  overallLabel.textContent = `Installing ${toolName || ''}...`;
+  if (step === 'downloading') {
+    overallLabel.textContent = `Downloading ${toolName || ''}...`;
+  } else {
+    overallLabel.textContent = `Installing ${toolName || ''}...`;
+  }
 
   const statusEl = document.getElementById(`status-${toolId}`);
   const badgeEl = document.getElementById(`badge-${toolId}`);
@@ -547,6 +562,19 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+function compareVersions(a, b) {
+  const pa = a.split('.').map(Number);
+  const pb = b.split('.').map(Number);
+  const len = Math.max(pa.length, pb.length);
+  for (let i = 0; i < len; i++) {
+    const na = pa[i] || 0;
+    const nb = pb[i] || 0;
+    if (na < nb) return -1;
+    if (na > nb) return 1;
+  }
+  return 0;
+}
+
 // ─── Uninstall ───────────────────────────────────────────────
 function showUninstallModal(toolId, toolName) {
   uninstallToolId = toolId;
@@ -598,6 +626,7 @@ async function performUninstall() {
     document.getElementById('uninstallStatus').textContent = 'Uninstalled successfully!';
     fillEl.style.width = '100%';
 
+    // Force fresh detection instead of potentially reusing stale state
     const toolIds = getAllTools().map((t) => t.id);
     detectedTools = await window.api.detectInstalled(toolIds);
     renderToolsGrid();
@@ -624,23 +653,17 @@ async function performUninstall() {
 function setupListeners() {
   btnInstall.addEventListener('click', startInstallation);
 
-  btnBackToSelect.addEventListener('click', async () => {
+  const goBackToSelect = async () => {
     selectedTools.clear();
     showPage('select');
-    showSelectLoader(true);
+    await refreshDetection();
+  };
 
-    try {
-      const toolIds = getAllTools().map((t) => t.id);
-      detectedTools = await window.api.detectInstalled(toolIds);
-      renderSidebar();
-      renderToolsGrid();
-      updateInstallButton();
-    } catch (err) {
-      console.error('Failed to refresh tool status:', err);
-    } finally {
-      showSelectLoader(false);
-    }
-  });
+  btnBackToSelect.addEventListener('click', goBackToSelect);
+
+  // "Install More Tools" button on done page
+  const btnInstallMore = document.getElementById('btnInstallMore');
+  if (btnInstallMore) btnInstallMore.addEventListener('click', goBackToSelect);
 
   logToggle.addEventListener('click', () => {
     logToggle.closest('.log-panel').classList.toggle('open');
@@ -651,6 +674,22 @@ function setupListeners() {
 
   // Select All button for current view
   btnSelectAll.addEventListener('click', () => toggleCurrentView());
+
+  // Manual Refresh button
+  const btnRefresh = document.getElementById('btnRefresh');
+  if (btnRefresh) {
+    btnRefresh.addEventListener('click', async () => {
+      if (btnRefresh.disabled) return;
+      btnRefresh.disabled = true;
+      btnRefresh.classList.add('refreshing');
+      try {
+        await refreshDetection();
+      } finally {
+        btnRefresh.disabled = false;
+        btnRefresh.classList.remove('refreshing');
+      }
+    });
+  }
 
   // Search
   let searchTimer = null;
@@ -664,6 +703,22 @@ function setupListeners() {
     handleSearch('');
     searchInput.focus();
   });
+}
+
+// ─── Refresh Detection ──────────────────────────────────────
+async function refreshDetection() {
+  showSelectLoader(true);
+  try {
+    const toolIds = getAllTools().map((t) => t.id);
+    detectedTools = await window.api.detectInstalled(toolIds);
+    renderSidebar();
+    renderToolsGrid();
+    updateInstallButton();
+  } catch (err) {
+    console.error('Failed to refresh tool status:', err);
+  } finally {
+    showSelectLoader(false);
+  }
 }
 
 // ─── Boot ────────────────────────────────────────────────────

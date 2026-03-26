@@ -68,7 +68,12 @@
                 <h2 class="content-title" id="contentTitle">All Tools</h2>
                 <p class="content-desc" id="contentDesc">Browse and install developer tools</p>
               </div>
-              <button class="category-select-all" id="btnSelectAll" style="display:none;">Select All</button>
+              <div class="content-header-actions">
+                <button class="btn-refresh" id="btnRefresh" title="Re-detect installed tools">
+                  <span class="refresh-icon">🔄</span> Refresh
+                </button>
+                <button class="category-select-all" id="btnSelectAll" style="display:none;">Select All</button>
+              </div>
             </div>
 
             <!-- Search results empty state -->
@@ -125,7 +130,8 @@
           <div class="results-list" id="resultsList"></div>
 
           <div class="actions">
-            <button class="btn btn-secondary" id="btnBackToSelect">Install More Tools</button>
+            <button class="btn btn-secondary" id="btnBackToSelect">← Back to Tools</button>
+            <button class="btn btn-primary" id="btnInstallMore">Install More Tools</button>
           </div>
         </section>
 

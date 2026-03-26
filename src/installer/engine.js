@@ -142,51 +142,87 @@ class InstallerEngine {
     const total = selections.length;
     const results = [];
 
+    // ── Phase 1: Download all tools in parallel ──
+    const downloadMap = new Map(); // toolId -> installerPath | { __error }
+    let completedDownloads = 0;
+
+    const downloadPromises = selections.map(({ toolId, version }, i) => {
+      const tool = this._getTool(toolId);
+      if (!tool) return Promise.resolve();
+      const selectedVersion = version || tool.defaultVersion;
+      const url = tool.downloadUrls[selectedVersion];
+
+      // ZIP-extract and copy-based installs still go through _download;
+      // tools with no URL (shouldn't happen) are caught there.
+      return (async () => {
+        try {
+          // Validate URL before downloading
+          if (url) await this._validateUrl(url);
+
+          const installerPath = await this._download(tool, selectedVersion, (pct, speed) => {
+            const dlPct = pct >= 0 ? pct : 0;
+            progressCallback({
+              toolId, toolName: tool.name, step: 'downloading',
+              detail: pct >= 0 ? `${pct}%${speed ? ` (${speed})` : ''}` : (speed || 'Downloading...'),
+              toolIndex: i, totalTools: total,
+              overallPercent: Math.round(((completedDownloads + dlPct / 100) / total) * 30)
+            });
+          });
+          downloadMap.set(toolId, installerPath);
+        } catch (err) {
+          this._log(`ERROR downloading ${tool.name}: ${err.message}`);
+          downloadMap.set(toolId, { __error: err.message });
+          progressCallback({
+            toolId, toolName: tool.name, step: 'error',
+            detail: `Download failed: ${err.message}`,
+            toolIndex: i, totalTools: total,
+            overallPercent: Math.round(((completedDownloads + 1) / total) * 30)
+          });
+        }
+        completedDownloads++;
+      })();
+    });
+
+    await Promise.all(downloadPromises);
+
+    // ── Phase 2: Install, configure, verify — sequentially ──
     for (let i = 0; i < selections.length; i++) {
       const { toolId, version } = selections[i];
       const tool = this._getTool(toolId);
       if (!tool) continue;
-
       const selectedVersion = version || tool.defaultVersion;
+      const downloaded = downloadMap.get(toolId);
+
+      if (!downloaded || downloaded.__error) {
+        const errMsg = downloaded?.__error || 'Download was skipped';
+        results.push({ toolId, success: false, error: errMsg });
+        this._saveHistory(toolId, selectedVersion, false, errMsg);
+        continue;
+      }
 
       try {
-        const configResult = await this._installTool(tool, selectedVersion, (step, detail) => {
+        const configResult = await this._installToolPostDownload(tool, selectedVersion, downloaded, (step, detail) => {
           progressCallback({
-            toolId,
-            toolName: tool.name,
-            step,
-            detail,
-            toolIndex: i,
-            totalTools: total,
-            overallPercent: Math.round(((i + (this._stepPercent(step) / 100)) / total) * 100)
+            toolId, toolName: tool.name, step, detail,
+            toolIndex: i, totalTools: total,
+            overallPercent: Math.round(30 + ((i + (this._stepPercentPostDownload(step) / 100)) / total) * 70)
           });
         });
-
         results.push({ toolId, success: true });
         this._saveHistory(toolId, selectedVersion, true, null, configResult);
       } catch (err) {
         this._log(`ERROR installing ${tool.name}: ${err.message}`);
         results.push({ toolId, success: false, error: err.message });
         this._saveHistory(toolId, selectedVersion, false, err.message);
-
         progressCallback({
-          toolId,
-          toolName: tool.name,
-          step: 'error',
-          detail: err.message,
-          toolIndex: i,
-          totalTools: total,
-          overallPercent: Math.round(((i + 1) / total) * 100)
+          toolId, toolName: tool.name, step: 'error', detail: err.message,
+          toolIndex: i, totalTools: total,
+          overallPercent: Math.round(30 + ((i + 1) / total) * 70)
         });
       }
     }
 
-    progressCallback({
-      step: 'all-complete',
-      results,
-      overallPercent: 100
-    });
-
+    progressCallback({ step: 'all-complete', results, overallPercent: 100 });
     return results;
   }
 
@@ -245,6 +281,65 @@ class InstallerEngine {
   _stepPercent(step) {
     const map = { downloading: 10, installing: 50, configuring: 80, verifying: 90, completed: 100, error: 100 };
     return map[step] || 0;
+  }
+
+  _stepPercentPostDownload(step) {
+    const map = { installing: 20, configuring: 60, verifying: 80, completed: 100, error: 100 };
+    return map[step] || 0;
+  }
+
+  _validateUrl(url) {
+    return new Promise((resolve, reject) => {
+      const client = url.startsWith('https') ? https : http;
+      const req = client.request(url, { method: 'HEAD', timeout: 15000, headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }}, (res) => {
+        // Follow redirects for HEAD too
+        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+          res.resume();
+          return this._validateUrl(res.headers.location).then(resolve, reject);
+        }
+        res.resume();
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve();
+        } else if (res.statusCode === 405) {
+          // Server doesn't support HEAD — assume OK, download will validate
+          resolve();
+        } else {
+          reject(new Error(`URL returned HTTP ${res.statusCode}: ${url}`));
+        }
+      });
+      req.on('error', (err) => reject(new Error(`URL validation failed: ${err.message}`)));
+      req.on('timeout', () => { req.destroy(); reject(new Error(`URL validation timed out: ${url}`)); });
+      req.end();
+    });
+  }
+
+  async _installToolPostDownload(tool, version, installerPath, onStep) {
+    this._log(`\n${'='.repeat(50)}\nInstalling ${tool.name} v${version}\n${'='.repeat(50)}`);
+
+    // Step 1: Install
+    onStep('installing', 'Running installer...');
+    await this._runInstaller(tool, version, installerPath);
+    onStep('installing', 'Installation complete');
+
+    // Step 2: Configure
+    onStep('configuring', 'Setting environment variables...');
+    const configResult = await this._configure(tool, version);
+    onStep('configuring', 'Environment configured');
+
+    // Step 3: Verify
+    onStep('verifying', 'Verifying installation...');
+    const verifyResult = await this.detectInstalled(tool.id);
+    if (!verifyResult.installed) {
+      this._log(`Verification warning for ${tool.name} — command may require shell restart`);
+      onStep('completed', `Installed (verification may need shell restart): ${verifyResult.output || 'N/A'}`);
+    } else {
+      onStep('completed', `Verified: ${verifyResult.output}`);
+    }
+
+    this._log(`${tool.name} installed successfully`);
+    return configResult;
   }
 
   _safeVersion(version) {
@@ -1152,6 +1247,63 @@ class InstallerEngine {
           return { type: 'exe-uninstaller', uninstallerPath: candidate, location: installDir };
         }
       }
+
+      // Scan parent directory for matching subdirectories (handles JetBrains
+      // installs where the folder name includes version/edition info, e.g.
+      // "IntelliJ IDEA Community Edition 2025.1.3")
+      const parentDir = path.dirname(installDir);
+      const basePrefix = path.basename(installDir).split(' ')[0].toLowerCase();
+      if (fs.existsSync(parentDir) && basePrefix) {
+        try {
+          const dirs = fs.readdirSync(parentDir).filter(d => {
+            try {
+              return d.toLowerCase().startsWith(basePrefix) &&
+                fs.statSync(path.join(parentDir, d)).isDirectory();
+            } catch { return false; }
+          });
+          for (const d of dirs) {
+            const fullDir = path.join(parentDir, d);
+            for (const uninstaller of ['unins000.exe', 'bin\\Uninstall.exe', 'Uninstall.exe']) {
+              const candidate = path.join(fullDir, uninstaller);
+              if (fs.existsSync(candidate)) {
+                this._log(`Found uninstaller via parent scan: ${candidate}`);
+                return { type: 'exe-uninstaller', uninstallerPath: candidate, location: fullDir };
+              }
+            }
+          }
+        } catch { /* scan failed — continue */ }
+      }
+
+      // JetBrains Toolbox: check Toolbox-managed installations
+      if (searchTerms.some(t => t.toLowerCase().includes('intellij'))) {
+        const toolboxBase = path.join(process.env.LOCALAPPDATA || '', 'JetBrains', 'Toolbox', 'apps');
+        if (fs.existsSync(toolboxBase)) {
+          try {
+            const ideaDirs = fs.readdirSync(toolboxBase).filter(d => d.startsWith('IDEA'));
+            for (const ideaDir of ideaDirs) {
+              const channelPath = path.join(toolboxBase, ideaDir);
+              const channels = fs.readdirSync(channelPath).filter(d => {
+                try { return fs.statSync(path.join(channelPath, d)).isDirectory(); } catch { return false; }
+              });
+              for (const ch of channels) {
+                const versionsPath = path.join(channelPath, ch);
+                const versions = fs.readdirSync(versionsPath).filter(d => {
+                  try { return fs.statSync(path.join(versionsPath, d)).isDirectory(); } catch { return false; }
+                }).sort().reverse(); // Latest version first
+                for (const ver of versions) {
+                  const vDir = path.join(versionsPath, ver);
+                  const idea64 = path.join(vDir, 'bin', 'idea64.exe');
+                  if (fs.existsSync(idea64)) {
+                    this._log(`Found IntelliJ via Toolbox: ${vDir}`);
+                    // Toolbox-managed: return as directory type since there's no uninstaller
+                    return { type: 'toolbox', location: vDir, managedBy: 'JetBrains Toolbox' };
+                  }
+                }
+              }
+            }
+          } catch { /* Toolbox scan failed */ }
+        }
+      }
     }
 
     // For standalone binary copy tools (e.g., kubectl), check install dir AND
@@ -1258,7 +1410,65 @@ class InstallerEngine {
       }
     }
 
+    // ── Universal fallbacks (all tool types) ────────────────────
+
+    // Fallback A: Check if defaultInstallDir exists on disk
+    const defaultDir = tool.defaultInstallDir.replace('{version}', tool.defaultVersion);
+    if (fs.existsSync(defaultDir)) {
+      try {
+        const contents = fs.readdirSync(defaultDir);
+        if (contents.length > 0) {
+          this._log(`Found ${tool.name} install via default directory: ${defaultDir}`);
+          return { type: 'zip', location: defaultDir };
+        }
+      } catch { /* access denied */ }
+    }
+
+    // Fallback B: Derive install location from binary on PATH
+    // Extract the first runnable command from verifyCommand
+    const binaryFallback = await this._findViaBinaryOnPath(tool);
+    if (binaryFallback) return binaryFallback;
+
     return null;
+  }
+
+  async _findViaBinaryOnPath(tool) {
+    // Extract a binary name from verifyCommand for where.exe lookup
+    const cmd = tool.verifyCommand;
+    // Match: bare command (git, mvn, node), or quoted path
+    const binaryMatch = cmd.match(/^(?:"([^"]+)"|(\S+))/);
+    if (!binaryMatch) return null;
+    const binary = binaryMatch[1] || binaryMatch[2];
+    // Skip commands that aren't direct binaries
+    if (!binary || ['powershell', 'if', 'cmd', 'where', 'where.exe'].includes(binary.toLowerCase())) return null;
+
+    try {
+      const freshEnv = await this._getFreshEnv();
+      const whereOutput = await new Promise((resolve) => {
+        exec(`where.exe ${binary}`, {
+          encoding: 'utf8', timeout: 10000, windowsHide: true, env: freshEnv
+        }, (err, stdout) => resolve(err ? '' : (stdout || '').trim()));
+      });
+      if (!whereOutput) return null;
+
+      const binaryPath = whereOutput.split(/\r?\n/)[0].trim();
+      if (!binaryPath || !fs.existsSync(binaryPath)) return null;
+
+      // Derive install directory: go up from bin/ if present
+      let installDir = path.dirname(binaryPath);
+      if (path.basename(installDir).toLowerCase() === 'bin') {
+        installDir = path.dirname(installDir);
+      }
+      // Also go up from Scripts/ (Python)
+      if (path.basename(installDir).toLowerCase() === 'scripts') {
+        installDir = path.dirname(installDir);
+      }
+
+      this._log(`Found ${tool.name} install via PATH binary: ${installDir}`);
+      return { type: 'zip', location: installDir };
+    } catch {
+      return null;
+    }
   }
 
   async _runUninstaller(tool, productInfo) {
@@ -1307,6 +1517,19 @@ class InstallerEngine {
 
         if (tool.silentUninstallArgs) {
           cmd += ' ' + tool.silentUninstallArgs;
+        } else {
+          // Auto-detect silent flags from the uninstaller filename
+          const exeFromCmd = cmd.match(/"([^"]+\.exe)"/i) || cmd.match(/(\S+\.exe)/i);
+          if (exeFromCmd) {
+            const uninstallerName = path.basename(exeFromCmd[1]).toLowerCase();
+            if (uninstallerName === 'uninstall.exe') {
+              cmd += ' /S';
+            } else if (uninstallerName === 'unins000.exe') {
+              cmd += ' /VERYSILENT /NORESTART /SUPPRESSMSGBOXES';
+            } else {
+              cmd += ' /S';
+            }
+          }
         }
       }
       this._log(`Running uninstall string: ${cmd}`);
@@ -1355,7 +1578,12 @@ class InstallerEngine {
           }
         } catch (retryErr) {
           if (fs.existsSync(dir)) {
-            throw new Error(`Could not remove ${dir}: files are locked by running processes. Close all applications using ${tool.name} (including background daemons) and try again.`);
+            // Identify locking processes to give a helpful error
+            const lockingProcs = await this._identifyLockingProcesses(dir);
+            const procHint = lockingProcs.length > 0
+              ? ` Processes locking files: ${lockingProcs.join(', ')}.`
+              : '';
+            throw new Error(`Could not remove ${dir}: files are locked by running processes.${procHint} Close all applications using ${tool.name} (including background daemons) and try again.`);
           }
         }
       }
@@ -1395,6 +1623,10 @@ class InstallerEngine {
         }
       }
       return;
+    }
+
+    if (productInfo.type === 'toolbox') {
+      throw new Error(`${tool.name} is managed by JetBrains Toolbox. Please uninstall it from the Toolbox app, or remove the directory manually: ${productInfo.location}`);
     }
 
     throw new Error('Cannot determine how to uninstall this product');
@@ -1480,6 +1712,20 @@ class InstallerEngine {
           { timeout: 20000, windowsHide: true }, () => resolve());
       });
     } catch { /* best effort */ }
+  }
+
+  async _identifyLockingProcesses(dir) {
+    try {
+      const ps = `Get-Process | Where-Object { $_.Path -and $_.Path.StartsWith('${dir.replace(/'/g, "''")}', [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -ExpandProperty Name -Unique`;
+      const output = await new Promise((resolve) => {
+        exec(`powershell -NoProfile -Command "${ps}"`, {
+          encoding: 'utf8', timeout: 10000, windowsHide: true
+        }, (err, stdout) => resolve(err ? '' : (stdout || '').trim()));
+      });
+      return output ? output.split(/\r?\n/).map(s => s.trim()).filter(Boolean) : [];
+    } catch {
+      return [];
+    }
   }
 
   _describeExitCode(code) {
