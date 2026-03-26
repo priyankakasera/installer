@@ -30,7 +30,7 @@
           "verifyCommand": "java -version",
           "verifyRegex": "version \"[\\d.]+",
           "icon": "☕",
-          "iconUrl": "icons/java.svg"
+          "iconUrl": "icons/java.png"
         },
         {
           "id": "nodejs",
