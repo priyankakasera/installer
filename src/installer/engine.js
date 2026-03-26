@@ -735,8 +735,8 @@ class InstallerEngine {
 
     // Clean up residual install directory left by MSI uninstaller
     // (skip for 'directory' and 'zip' types — already handled in _runUninstaller)
-    if (productInfo.location && productInfo.type !== 'directory' && productInfo.type !== 'zip') {
-      const loc = productInfo.location.replace(/\\$/, '');
+    if (productInfo.type !== 'directory' && productInfo.type !== 'zip') {
+      const loc = (productInfo.location || tool.defaultInstallDir.replace('{version}', tool.defaultVersion)).replace(/\\$/, '');
       if (fs.existsSync(loc)) {
         this._log(`Cleaning up residual install directory: ${loc}`);
         try {
@@ -797,7 +797,7 @@ class InstallerEngine {
         .map(t => `$_.DisplayName -like '*${t}*'`)
         .join(' -or ');
       try {
-        const ps = `Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*' -ErrorAction SilentlyContinue | Where-Object { ${whereClause} } | Select-Object PSChildName, DisplayName, UninstallString, InstallLocation | ConvertTo-Json -Compress`;
+        const ps = `@('HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*','HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*','HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*') | ForEach-Object { Get-ItemProperty $_ -ErrorAction SilentlyContinue } | Where-Object { ${whereClause} } | Select-Object PSChildName, DisplayName, UninstallString, InstallLocation | ConvertTo-Json -Compress`;
         const output = await new Promise((resolve) => {
           exec(`powershell -NoProfile -Command "${ps}"`, {
             encoding: 'utf8', timeout: 15000, windowsHide: true

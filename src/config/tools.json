@@ -112,6 +112,69 @@
           "verifyRegex": "Apache Maven [\\d.]+",
           "icon": "🪶",
           "dependsOn": ["java"]
+        },
+        {
+          "id": "yarn",
+          "name": "Yarn",
+          "description": "Fast, reliable, and secure dependency management for Node.js",
+          "versions": ["1.22.22"],
+          "defaultVersion": "1.22.22",
+          "downloadUrls": {
+            "1.22.22": "https://github.com/yarnpkg/yarn/releases/download/v1.22.22/yarn-1.22.22.msi"
+          },
+          "installCommand": {
+            "msi": "msiexec /i \"{installerPath}\" /quiet /norestart /log \"{logPath}\""
+          },
+          "uninstallSearch": ["Yarn"],
+          "defaultInstallDir": "C:\\Program Files (x86)\\Yarn",
+          "envVars": {},
+          "pathEntries": ["C:\\Program Files (x86)\\Yarn\\bin"],
+          "verifyCommand": "if exist \"C:\\Program Files (x86)\\Yarn\\bin\\yarn.cmd\" (\"C:\\Program Files (x86)\\Yarn\\bin\\yarn.cmd\" --version) else if exist \"C:\\Program Files\\Yarn\\bin\\yarn.cmd\" (\"C:\\Program Files\\Yarn\\bin\\yarn.cmd\" --version)",
+          "verifyRegex": "[\\d]+\\.[\\d]+\\.[\\d]+",
+          "icon": "🧶",
+          "dependsOn": ["nodejs"]
+        },
+        {
+          "id": "gradle",
+          "name": "Gradle",
+          "description": "Powerful build automation tool for multi-language software development",
+          "versions": ["9.4.1"],
+          "defaultVersion": "9.4.1",
+          "downloadUrls": {
+            "9.4.1": "https://services.gradle.org/distributions/gradle-9.4.1-bin.zip"
+          },
+          "installCommand": {
+            "zip": "extract"
+          },
+          "defaultInstallDir": "C:\\Program Files\\Gradle\\gradle-{version}",
+          "envVars": {
+            "GRADLE_HOME": "{installDir}"
+          },
+          "pathEntries": ["{installDir}\\bin"],
+          "verifyCommand": "powershell -NoProfile -NonInteractive -Command \"& {if ($env:GRADLE_HOME) { Write-Output ('Gradle ' + (Split-Path -Leaf $env:GRADLE_HOME).Replace('gradle-','')) }}\"",
+          "verifyRegex": "Gradle [\\d.]+",
+          "icon": "🐘",
+          "dependsOn": ["java"]
+        },
+        {
+          "id": "chocolatey",
+          "name": "Chocolatey",
+          "description": "The package manager for Windows — automates software management",
+          "versions": ["2.7.0"],
+          "defaultVersion": "2.7.0",
+          "downloadUrls": {
+            "2.7.0": "https://github.com/chocolatey/choco/releases/download/2.7.0/chocolatey-2.7.0.0.msi"
+          },
+          "installCommand": {
+            "msi": "msiexec /i \"{installerPath}\" /quiet /norestart /log \"{logPath}\""
+          },
+          "uninstallSearch": ["Chocolatey"],
+          "defaultInstallDir": "C:\\ProgramData\\chocolatey",
+          "envVars": {},
+          "pathEntries": ["C:\\ProgramData\\chocolatey\\bin"],
+          "verifyCommand": "if exist \"C:\\ProgramData\\chocolatey\\bin\\choco.exe\" (\"C:\\ProgramData\\chocolatey\\bin\\choco.exe\" --version)",
+          "verifyRegex": "[\\d]+\\.[\\d]+\\.[\\d]+",
+          "icon": "🍫"
         }
       ]
     },
@@ -234,6 +297,121 @@
           "verifyRegex": "azure-cli\\s+[\\d.]+",
           "icon": "🔷",
           "iconUrl": "icons/azure.svg"
+        }
+      ]
+    },
+    {
+      "id": "ides-editors",
+      "name": "IDEs & Code Editors",
+      "description": "Integrated development environments and code editors for productive development",
+      "icon": "🧑‍💻",
+      "tools": [
+        {
+          "id": "vscode",
+          "name": "Visual Studio Code",
+          "description": "Lightweight but powerful source code editor by Microsoft",
+          "versions": ["1.113"],
+          "defaultVersion": "1.113",
+          "downloadUrls": {
+            "1.113": "https://update.code.visualstudio.com/1.113/win32-x64/stable"
+          },
+          "installCommand": {
+            "exe": "\"{installerPath}\" /VERYSILENT /NORESTART /MERGETASKS=!runcode,addcontextmenufiles,addcontextmenufolders,addtopath"
+          },
+          "uninstallSearch": ["Microsoft Visual Studio Code"],
+          "defaultInstallDir": "C:\\Program Files\\Microsoft VS Code",
+          "envVars": {},
+          "pathEntries": ["C:\\Program Files\\Microsoft VS Code\\bin"],
+          "verifyCommand": "code --version",
+          "verifyRegex": "[\\d.]+",
+          "icon": "💻"
+        },
+        {
+          "id": "intellij-idea",
+          "name": "IntelliJ IDEA",
+          "description": "Professional IDE for Java and Kotlin development by JetBrains",
+          "versions": ["2025.3"],
+          "defaultVersion": "2025.3",
+          "downloadUrls": {
+            "2025.3": "https://download.jetbrains.com/idea/ideaIC-2025.3.exe"
+          },
+          "installCommand": {
+            "exe": "\"{installerPath}\" /S /D={installDir}"
+          },
+          "uninstallSearch": ["IntelliJ IDEA"],
+          "defaultInstallDir": "C:\\Program Files\\JetBrains\\IntelliJ IDEA Community 2025.3",
+          "envVars": {},
+          "pathEntries": ["{installDir}\\bin"],
+          "verifyCommand": "where idea64",
+          "verifyRegex": "idea64",
+          "icon": "🧠"
+        },
+        {
+          "id": "notepadpp",
+          "name": "Notepad++",
+          "description": "Free source code editor and Notepad replacement for Windows",
+          "versions": ["8.9.3"],
+          "defaultVersion": "8.9.3",
+          "downloadUrls": {
+            "8.9.3": "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.9.3/npp.8.9.3.Installer.x64.exe"
+          },
+          "installCommand": {
+            "exe": "\"{installerPath}\" /S"
+          },
+          "uninstallSearch": ["Notepad++"],
+          "defaultInstallDir": "C:\\Program Files\\Notepad++",
+          "envVars": {},
+          "pathEntries": ["C:\\Program Files\\Notepad++"],
+          "verifyCommand": "where notepad++",
+          "verifyRegex": "notepad",
+          "icon": "📝"
+        }
+      ]
+    },
+    {
+      "id": "api-testing",
+      "name": "API & Testing Tools",
+      "description": "Tools for API development, testing, and debugging",
+      "icon": "🧪",
+      "tools": [
+        {
+          "id": "postman",
+          "name": "Postman",
+          "description": "API platform for building, testing, and documenting APIs",
+          "versions": ["12"],
+          "defaultVersion": "12",
+          "downloadUrls": {
+            "12": "https://dl.pstmn.io/download/latest/win64"
+          },
+          "installCommand": {
+            "exe": "\"{installerPath}\" --silent"
+          },
+          "uninstallSearch": ["Postman"],
+          "defaultInstallDir": "%LOCALAPPDATA%\\Postman",
+          "envVars": {},
+          "pathEntries": [],
+          "verifyCommand": "powershell -NoProfile -NonInteractive -Command \"& { $paths = @(\\\"$env:LOCALAPPDATA\\Postman\\Postman.exe\\\", \\\"$env:LOCALAPPDATA\\Programs\\Postman\\Postman.exe\\\", 'C:\\Program Files\\Postman\\Postman.exe'); foreach ($p in $paths) { if (Test-Path $p) { Write-Output 'Postman installed'; return } } }\"",
+          "verifyRegex": "Postman installed",
+          "icon": "🟧"
+        },
+        {
+          "id": "curl",
+          "name": "cURL",
+          "description": "Command-line tool for transferring data with URLs",
+          "versions": ["8.19.0"],
+          "defaultVersion": "8.19.0",
+          "downloadUrls": {
+            "8.19.0": "https://curl.se/windows/dl-8.19.0/curl-8.19.0-win64-mingw.zip"
+          },
+          "installCommand": {
+            "zip": "extract"
+          },
+          "defaultInstallDir": "C:\\Program Files\\curl\\curl-{version}-win64-mingw",
+          "envVars": {},
+          "pathEntries": ["{installDir}\\bin"],
+          "verifyCommand": "curl --version",
+          "verifyRegex": "curl [\\d.]+",
+          "icon": "🌐"
         }
       ]
     }
