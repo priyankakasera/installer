@@ -111,6 +111,7 @@
           "verifyCommand": "mvn -version",
           "verifyRegex": "Apache Maven [\\d.]+",
           "icon": "🪶",
+          "iconUrl": "icons/maven.svg",
           "dependsOn": ["java"]
         },
         {
@@ -132,6 +133,7 @@
           "verifyCommand": "if exist \"C:\\Program Files (x86)\\Yarn\\bin\\yarn.cmd\" (\"C:\\Program Files (x86)\\Yarn\\bin\\yarn.cmd\" --version) else if exist \"C:\\Program Files\\Yarn\\bin\\yarn.cmd\" (\"C:\\Program Files\\Yarn\\bin\\yarn.cmd\" --version)",
           "verifyRegex": "[\\d]+\\.[\\d]+\\.[\\d]+",
           "icon": "🧶",
+          "iconUrl": "icons/yarn.svg",
           "dependsOn": ["nodejs"]
         },
         {
@@ -154,6 +156,7 @@
           "verifyCommand": "powershell -NoProfile -NonInteractive -Command \"& {if ($env:GRADLE_HOME) { Write-Output ('Gradle ' + (Split-Path -Leaf $env:GRADLE_HOME).Replace('gradle-','')) }}\"",
           "verifyRegex": "Gradle [\\d.]+",
           "icon": "🐘",
+          "iconUrl": "icons/gradle.svg",
           "dependsOn": ["java"]
         },
         {
@@ -174,7 +177,8 @@
           "pathEntries": ["C:\\ProgramData\\chocolatey\\bin"],
           "verifyCommand": "if exist \"C:\\ProgramData\\chocolatey\\bin\\choco.exe\" (\"C:\\ProgramData\\chocolatey\\bin\\choco.exe\" --version)",
           "verifyRegex": "[\\d]+\\.[\\d]+\\.[\\d]+",
-          "icon": "🍫"
+          "icon": "🍫",
+          "iconUrl": "icons/chocolatey.png"
         }
       ]
     },
@@ -202,7 +206,8 @@
           "pathEntries": ["C:\\Program Files\\Git\\cmd"],
           "verifyCommand": "git --version",
           "verifyRegex": "git version [\\d.]+",
-          "icon": "🔀"
+          "icon": "🔀",
+          "iconUrl": "icons/github.svg"
         }
       ]
     },
@@ -232,7 +237,8 @@
           "pathEntries": ["C:\\Program Files\\Docker\\Docker\\resources\\bin"],
           "verifyCommand": "docker --version",
           "verifyRegex": "Docker version [\\d.]+",
-          "icon": "🐳"
+          "icon": "🐳",
+          "iconUrl": "icons/docker.svg"
         },
         {
           "id": "kubectl",
@@ -254,7 +260,8 @@
           "pathEntries": ["C:\\Program Files\\kubectl"],
           "verifyCommand": "kubectl version --client",
           "verifyRegex": "Client Version: v[\\d.]+",
-          "icon": "☸️"
+          "icon": "☸️",
+          "iconUrl": "icons/kubernetes.png"
         },
         {
           "id": "awscli",
@@ -275,7 +282,7 @@
           "verifyCommand": "aws --version",
           "verifyRegex": "aws-cli/[\\d.]+",
           "icon": "🔶",
-          "iconUrl": "icons/aws.svg"
+          "iconUrl": "icons/aws.jpeg"
         },
         {
           "id": "azurecli",
@@ -296,7 +303,7 @@
           "verifyCommand": "az --version",
           "verifyRegex": "azure-cli\\s+[\\d.]+",
           "icon": "🔷",
-          "iconUrl": "icons/azure.svg"
+          "iconUrl": "icons/azure.png"
         }
       ]
     },
@@ -324,7 +331,8 @@
           "pathEntries": ["C:\\Program Files\\Microsoft VS Code\\bin"],
           "verifyCommand": "code --version",
           "verifyRegex": "[\\d.]+",
-          "icon": "💻"
+          "icon": "💻",
+          "iconUrl": "icons/vscode.png"
         },
         {
           "id": "intellij-idea",
@@ -346,7 +354,8 @@
           "pathEntries": ["{installDir}\\bin"],
           "verifyCommand": "where idea64",
           "verifyRegex": "idea64",
-          "icon": "🧠"
+          "icon": "🧠",
+          "iconUrl": "icons/intellij.png"
         },
         {
           "id": "notepadpp",
@@ -366,7 +375,8 @@
           "pathEntries": ["C:\\Program Files\\Notepad++"],
           "verifyCommand": "where notepad++",
           "verifyRegex": "notepad",
-          "icon": "📝"
+          "icon": "📝",
+          "iconUrl": "icons/notepadpp.png"
         }
       ]
     },
@@ -394,7 +404,8 @@
           "pathEntries": [],
           "verifyCommand": "powershell -NoProfile -NonInteractive -Command \"& { $paths = @(\\\"$env:LOCALAPPDATA\\Postman\\Postman.exe\\\", \\\"$env:LOCALAPPDATA\\Programs\\Postman\\Postman.exe\\\", 'C:\\Program Files\\Postman\\Postman.exe'); foreach ($p in $paths) { if (Test-Path $p) { Write-Output 'Postman installed'; return } } }\"",
           "verifyRegex": "Postman installed",
-          "icon": "🟧"
+          "icon": "🟧",
+          "iconUrl": "icons/postman.svg"
         }
       ]
     }

@@ -229,6 +229,29 @@ body {
   text-overflow: ellipsis;
 }
 
+/* Tooltip shown on hover for truncated labels */
+.sidebar-item .sidebar-tooltip {
+  display: none;
+  position: absolute;
+  left: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #23262f;
+  color: var(--text);
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 200;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  border: 1px solid var(--border);
+}
+
+.sidebar-item:hover .sidebar-tooltip {
+  display: block;
+}
+
 .sidebar-item-count {
   font-size: 10px;
   background: var(--border);

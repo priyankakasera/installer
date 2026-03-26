@@ -104,6 +104,7 @@ function renderSidebar() {
     item.innerHTML = `
       <span class="sidebar-item-icon">${escapeHtml(bundle.icon)}</span>
       <span class="sidebar-item-label">${escapeHtml(bundle.name)}</span>
+      <span class="sidebar-tooltip">${escapeHtml(bundle.name)}</span>
     `;
     item.addEventListener('click', () => {
       setActiveView('bundle', bundle.id);
@@ -123,6 +124,7 @@ function renderSidebar() {
       <span class="sidebar-item-icon">${escapeHtml(cat.icon)}</span>
       <span class="sidebar-item-label">${escapeHtml(cat.name)}</span>
       <span class="sidebar-item-count">${cat.tools.length}</span>
+      <span class="sidebar-tooltip">${escapeHtml(cat.name)}</span>
     `;
     item.addEventListener('click', () => {
       setActiveView('category', cat.id);
