@@ -153,6 +153,20 @@
         </div>
       </div>
     </div>
+
+    <!-- Version Conflict Confirmation Modal -->
+    <div class="modal-overlay" id="versionConflictModal">
+      <div class="modal" style="width: 480px;">
+        <div class="modal-title">Version Changes Detected</div>
+        <p class="modal-desc" id="conflictDesc">The following tools are already installed. The existing versions will be uninstalled before installing the selected versions.</p>
+        <div id="conflictList" class="conflict-list"></div>
+        <div id="conflictDepWarnings" class="conflict-dep-warnings" style="display:none;"></div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary btn-sm" id="btnCancelConflict">Cancel</button>
+          <button class="btn btn-sm btn-primary" id="btnConfirmConflict">Proceed</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="renderer.js"></script>

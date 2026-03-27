@@ -115,6 +115,22 @@ function renderSidebar() {
   // Categories
   sidebarCategories.innerHTML = '';
 
+  // Installed filter — dynamic count
+  const installedCount = getAllTools().filter(t => detectedTools[t.id] && detectedTools[t.id].installed).length;
+  const installedItem = document.createElement('div');
+  installedItem.className = 'sidebar-item' + (activeView.type === 'installed' ? ' active' : '');
+  installedItem.dataset.viewType = 'installed';
+  installedItem.title = 'Installed Tools';
+  installedItem.innerHTML = `
+    <span class="sidebar-item-icon">✅</span>
+    <span class="sidebar-item-label">Installed</span>
+    <span class="sidebar-item-count">${installedCount}</span>
+  `;
+  installedItem.addEventListener('click', () => {
+    setActiveView('installed');
+  });
+  sidebarCategories.appendChild(installedItem);
+
   for (const cat of config.categories) {
     const item = document.createElement('div');
     item.className = 'sidebar-item' + (activeView.type === 'category' && activeView.id === cat.id ? ' active' : '');
@@ -170,6 +186,10 @@ function getToolsForView() {
       title = bundle.name;
       desc = bundle.description;
     }
+  } else if (activeView.type === 'installed') {
+    tools = getAllTools().filter(t => detectedTools[t.id] && detectedTools[t.id].installed);
+    title = 'Installed Tools';
+    desc = 'Tools currently detected on your system';
   } else {
     // 'all'
     tools = getAllTools();
@@ -192,8 +212,8 @@ function renderToolsGrid() {
   contentTitle.textContent = title;
   contentDesc.textContent = desc;
 
-  // Select All button — show for categories and bundles
-  if ((activeView.type === 'category' || activeView.type === 'bundle') && tools.length > 0 && !searchQuery) {
+  // Select All button — show for categories, bundles, and installed view
+  if ((activeView.type === 'category' || activeView.type === 'bundle' || activeView.type === 'installed') && tools.length > 0 && !searchQuery) {
     btnSelectAll.style.display = '';
     const allSelected = tools.every((t) => selectedTools.has(t.id));
     btnSelectAll.textContent = allSelected ? '✓ All Selected' : 'Select All';
@@ -228,8 +248,8 @@ function renderToolsGrid() {
     });
 
     // If tool is installed but has unmet deps, show warning but keep interactable
-    const isDisabled = hasUnmetDeps && !isDetected;
-    const showDepWarning = hasUnmetDeps && isDetected;
+    const isDisabled = false; // Dependencies are warnings only, never block
+    const showDepWarning = hasUnmetDeps;
 
     const card = document.createElement('div');
     card.className = 'tool-card'
@@ -279,9 +299,7 @@ function renderToolsGrid() {
 
     // Click to select/deselect
     card.addEventListener('click', (e) => {
-      if (isDisabled) return;
       if (e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
-      if (showDepWarning) return; // Installed but missing deps — don't allow re-select
       toggleTool(tool.id);
     });
 
@@ -386,6 +404,8 @@ function showPage(pageName) {
 // ─── Installation ────────────────────────────────────────────
 async function startInstallation() {
   const allTools = getAllTools();
+
+  // Dependency check — collect warnings (informational only, no longer blocks)
   const unmetMessages = [];
   for (const [toolId] of selectedTools) {
     const tool = allTools.find((t) => t.id === toolId);
@@ -402,21 +422,68 @@ async function startInstallation() {
       unmetMessages.push(`${tool.name} requires: ${missingNames.join(', ')}`);
     }
   }
-  if (unmetMessages.length > 0) {
-    alert(`Cannot install — unmet dependencies:\n\n${unmetMessages.join('\n')}\n\nPlease select the required tools first.`);
-    return;
+
+  // Build version conflict list and enriched selections
+  const conflicts = [];
+  const selections = Array.from(selectedTools.entries()).map(([toolId, version]) => {
+    const tool = allTools.find((t) => t.id === toolId);
+    const detected = detectedTools[toolId];
+    const sel = { toolId, version };
+
+    if (detected && detected.installed) {
+      const existingVer = extractVersion(detected.version || detected.output || '');
+      const selectedVer = extractVersion(version);
+
+      if (existingVer && selectedVer) {
+        const cmp = compareVersions(existingVer, selectedVer);
+        if (cmp === 0) {
+          sel.action = 'reinstall';
+          sel.existingVersion = existingVer;
+          conflicts.push({ toolId, toolName: tool ? tool.name : toolId, action: 'reinstall', existingVersion: existingVer, selectedVersion: selectedVer });
+        } else if (cmp > 0) {
+          sel.action = 'downgrade';
+          sel.existingVersion = existingVer;
+          conflicts.push({ toolId, toolName: tool ? tool.name : toolId, action: 'downgrade', existingVersion: existingVer, selectedVersion: selectedVer });
+        } else {
+          sel.action = 'upgrade';
+          sel.existingVersion = existingVer;
+          conflicts.push({ toolId, toolName: tool ? tool.name : toolId, action: 'upgrade', existingVersion: existingVer, selectedVersion: selectedVer });
+        }
+      } else {
+        // Can't parse versions — treat as reinstall to be safe
+        sel.action = 'reinstall';
+        sel.existingVersion = detected.version || detected.output || 'unknown';
+        conflicts.push({ toolId, toolName: tool ? tool.name : toolId, action: 'reinstall', existingVersion: sel.existingVersion, selectedVersion: version });
+      }
+    }
+
+    return sel;
+  });
+
+  // Show version conflict confirmation if any
+  if (conflicts.length > 0) {
+    const confirmed = await showVersionConflictModal(conflicts, unmetMessages);
+    if (!confirmed) return;
+  } else if (unmetMessages.length > 0) {
+    // No version conflicts but there are dependency warnings
+    const proceed = confirm(`⚠ Dependency warnings:\n\n${unmetMessages.join('\n')}\n\nThese tools may not work correctly without their dependencies. Proceed anyway?`);
+    if (!proceed) return;
   }
 
   installing = true;
   showPage('install');
   logContent.textContent = '';
 
-  const selections = Array.from(selectedTools.entries()).map(([toolId, version]) => ({ toolId, version }));
+  // selections already built above with version conflict info
 
   installItems.innerHTML = '';
   for (const sel of selections) {
     const tool = getAllTools().find((t) => t.id === sel.toolId);
     if (!tool) continue;
+
+    const actionBadge = sel.action
+      ? ` (${sel.action === 'upgrade' ? '⬆ Upgrade' : sel.action === 'downgrade' ? '⬇ Downgrade' : '🔄 Reinstall'})`
+      : '';
 
     const item = document.createElement('div');
     item.className = 'install-item';
@@ -424,7 +491,7 @@ async function startInstallation() {
     item.innerHTML = `
       <div class="install-item-icon">${escapeHtml(tool.icon)}</div>
       <div class="install-item-info">
-        <div class="install-item-name">${escapeHtml(tool.name)} v${escapeHtml(sel.version)}</div>
+        <div class="install-item-name">${escapeHtml(tool.name)} v${escapeHtml(sel.version)}${actionBadge}</div>
         <div class="install-item-status" id="status-${tool.id}">Waiting...</div>
       </div>
       <span class="install-item-badge badge-waiting" id="badge-${tool.id}">Waiting</span>
@@ -453,6 +520,10 @@ function handleProgress(data) {
   overallPercent.textContent = pct + '%';
   if (step === 'downloading') {
     overallLabel.textContent = `Downloading ${toolName || ''}...`;
+  } else if (step === 'uninstalling-existing') {
+    overallLabel.textContent = `Removing existing ${toolName || ''}...`;
+  } else if (step === 'rolling-back' || step === 'rolled-back') {
+    overallLabel.textContent = `Rolling back ${toolName || ''}...`;
   } else {
     overallLabel.textContent = `Installing ${toolName || ''}...`;
   }
@@ -515,7 +586,8 @@ function showDone(result) {
     const toolId = item.id.replace('install-item-', '');
     const tool = getAllTools().find((t) => t.id === toolId);
     const badge = item.querySelector('.install-item-badge');
-    const isError = badge && badge.classList.contains('badge-error');
+    const isError = badge && (badge.classList.contains('badge-error') || badge.classList.contains('badge-rolled-back'));
+    const isRolledBack = badge && badge.classList.contains('badge-rolled-back');
 
     if (isError) failCount++;
     else successCount++;
@@ -524,10 +596,11 @@ function showDone(result) {
     resultItem.className = 'result-item';
     const statusDetail = item.querySelector('.install-item-status');
     const errorDetail = isError && statusDetail ? statusDetail.textContent : '';
+    const resultLabel = isRolledBack ? 'Rolled Back' : (isError ? 'Failed' : 'Installed');
     resultItem.innerHTML = `
       <span class="result-status">${isError ? '\u274C' : '\u2705'}</span>
       <span class="result-name">${escapeHtml(tool ? tool.name : toolId)}</span>
-      <span class="result-detail">${isError ? 'Failed' : 'Installed'}</span>
+      <span class="result-detail">${resultLabel}</span>
       ${isError && errorDetail ? `<div class="result-error-detail">${escapeHtml(errorDetail)}</div>` : ''}
     `;
     resultsList.appendChild(resultItem);
@@ -573,6 +646,74 @@ function compareVersions(a, b) {
     if (na > nb) return 1;
   }
   return 0;
+}
+
+function extractVersion(str) {
+  if (!str) return null;
+  const match = str.match(/(\d+(?:\.\d+)*)/);
+  return match ? match[1] : null;
+}
+
+function showVersionConflictModal(conflicts, depWarnings) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('versionConflictModal');
+    const list = document.getElementById('conflictList');
+    const descEl = document.getElementById('conflictDesc');
+    const depEl = document.getElementById('conflictDepWarnings');
+
+    list.innerHTML = '';
+
+    const hasReinstallOnly = conflicts.every(c => c.action === 'reinstall');
+    if (hasReinstallOnly) {
+      descEl.textContent = conflicts.length === 1
+        ? 'The selected tool is already installed with the same version. Do you want to reinstall it?'
+        : 'The following tools are already installed with the same versions. Do you want to reinstall them?';
+    } else {
+      descEl.textContent = 'The following tools are already installed. The existing versions will be uninstalled before installing the selected versions.';
+    }
+
+    for (const c of conflicts) {
+      const item = document.createElement('div');
+      item.className = 'conflict-item';
+      const actionLabel = c.action === 'upgrade' ? '⬆ Upgrade' : c.action === 'downgrade' ? '⬇ Downgrade' : '🔄 Reinstall';
+      const versionDetail = c.action === 'reinstall'
+        ? escapeHtml(c.existingVersion)
+        : `${escapeHtml(c.existingVersion)} → ${escapeHtml(c.selectedVersion)}`;
+      item.innerHTML = `
+        <span class="conflict-tool">${escapeHtml(c.toolName)}</span>
+        <span class="conflict-action">${actionLabel}</span>
+        <span class="conflict-detail">${versionDetail}</span>
+      `;
+      list.appendChild(item);
+    }
+
+    // Show dependency warnings if any
+    if (depWarnings && depWarnings.length > 0) {
+      depEl.style.display = '';
+      depEl.innerHTML = `<div class="conflict-dep-title">⚠ Dependency warnings:</div>` +
+        depWarnings.map(m => `<div class="conflict-dep-item">${escapeHtml(m)}</div>`).join('');
+    } else {
+      depEl.style.display = 'none';
+      depEl.innerHTML = '';
+    }
+
+    const btnConfirm = document.getElementById('btnConfirmConflict');
+    const btnCancel = document.getElementById('btnCancelConflict');
+
+    const cleanup = () => {
+      modal.classList.remove('open');
+      btnConfirm.removeEventListener('click', onConfirm);
+      btnCancel.removeEventListener('click', onCancel);
+    };
+
+    const onConfirm = () => { cleanup(); resolve(true); };
+    const onCancel = () => { cleanup(); resolve(false); };
+
+    btnConfirm.addEventListener('click', onConfirm);
+    btnCancel.addEventListener('click', onCancel);
+
+    modal.classList.add('open');
+  });
 }
 
 // ─── Uninstall ───────────────────────────────────────────────

@@ -74,10 +74,12 @@
             "exe": "\"{installerPath}\" /quiet InstallAllUsers=1 PrependPath=1 TargetDir=\"{installDir}\""
           },
           "uninstallSearch": ["Python"],
-          "defaultInstallDir": "C:\\Program Files\\Python{version}",
+          "uninstallExclude": ["Miniconda", "Anaconda", "conda"],
+          "installerUninstallArgs": "/uninstall /quiet",
+          "defaultInstallDir": "C:\\Program Files\\Python\\Python{shortVersion}",
           "envVars": {},
           "pathEntries": ["{installDir}", "{installDir}\\Scripts"],
-          "verifyCommand": "python --version",
+          "verifyCommand": "powershell -NoProfile -NonInteractive -Command \"& { $dirs = @('C:\\Program Files\\Python\\Python314','C:\\Program Files\\Python\\Python313','C:\\Program Files\\Python\\Python312','C:\\Program Files\\Python\\Python311','C:\\Program Files\\Python\\Python310'); $exe = $dirs | ForEach-Object { Join-Path $_ 'python.exe' } | Where-Object { Test-Path $_ } | Select-Object -First 1; if ($exe) { & $exe --version } else { & python --version } }\"",
           "verifyRegex": "Python [\\d.]+",
           "icon": "🐍",
           "iconUrl": "icons/python.svg"
@@ -231,12 +233,14 @@
             "exe": "\"{installerPath}\" install --quiet --accept-license"
           },
           "uninstallSearch": ["Docker Desktop"],
+          "uninstallCommand": "cmd.exe /c \"cd /d \\\"C:\\Program Files\\Docker\\Docker\\\\\" && InstallerCli.exe uninstall --quiet\"",
           "silentUninstallArgs": "--quiet",
+          "startMenuKeywords": ["Docker Desktop"],
           "defaultInstallDir": "C:\\Program Files\\Docker\\Docker",
           "envVars": {},
           "pathEntries": ["C:\\Program Files\\Docker\\Docker\\resources\\bin"],
-          "verifyCommand": "docker --version",
-          "verifyRegex": "Docker version [\\d.]+",
+          "verifyCommand": "powershell -NoProfile -NonInteractive -Command \"& { $r = Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Docker Desktop' -EA 0; if ($r) { Write-Output ('Docker Desktop ' + $r.DisplayVersion) } elseif (Test-Path 'C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe') { $v = (Get-Item 'C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe').VersionInfo.ProductVersion; Write-Output ('Docker Desktop ' + $v) } }\"",
+          "verifyRegex": "Docker Desktop [\\d.]+",
           "icon": "🐳",
           "iconUrl": "icons/docker.svg"
         },
@@ -279,7 +283,7 @@
           "defaultInstallDir": "C:\\Program Files\\Amazon\\AWSCLIV2",
           "envVars": {},
           "pathEntries": ["C:\\Program Files\\Amazon\\AWSCLIV2"],
-          "verifyCommand": "aws --version",
+          "verifyCommand": "if exist \"C:\\Program Files\\Amazon\\AWSCLIV2\\aws.exe\" (\"C:\\Program Files\\Amazon\\AWSCLIV2\\aws.exe\" --version) else (aws --version)",
           "verifyRegex": "aws-cli/[\\d.]+",
           "icon": "🔶",
           "iconUrl": "icons/aws.jpeg"
@@ -326,6 +330,7 @@
             "exe": "\"{installerPath}\" /VERYSILENT /NORESTART /MERGETASKS=!runcode,addcontextmenufiles,addcontextmenufolders,addtopath"
           },
           "uninstallSearch": ["Microsoft Visual Studio Code"],
+          "startMenuKeywords": ["Visual Studio Code"],
           "defaultInstallDir": "C:\\Program Files\\Microsoft VS Code",
           "envVars": {},
           "pathEntries": ["C:\\Program Files\\Microsoft VS Code\\bin"],
@@ -370,6 +375,7 @@
             "exe": "\"{installerPath}\" /S"
           },
           "uninstallSearch": ["Notepad++"],
+          "startMenuKeywords": ["Notepad++"],
           "defaultInstallDir": "C:\\Program Files\\Notepad++",
           "envVars": {},
           "pathEntries": ["C:\\Program Files\\Notepad++"],
@@ -399,6 +405,7 @@
             "exe": "\"{installerPath}\" --silent"
           },
           "uninstallSearch": ["Postman"],
+          "startMenuKeywords": ["Postman"],
           "defaultInstallDir": "%LOCALAPPDATA%\\Postman",
           "envVars": {},
           "pathEntries": [],
