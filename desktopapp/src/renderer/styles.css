@@ -857,6 +857,83 @@ body {
   gap: 10px;
 }
 
+/* ─── Version Conflict Modal ─────────────────────────────── */
+.conflict-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 16px;
+}
+
+.conflict-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  background: var(--bg-surface, rgba(255,255,255,0.04));
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.conflict-tool {
+  font-weight: 600;
+  min-width: 100px;
+}
+
+.conflict-action {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.conflict-item:has(.conflict-action:first-of-type) .conflict-action { background: rgba(96,165,250,0.15); color: #60a5fa; }
+
+.conflict-detail {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.conflict-dep-warnings {
+  background: rgba(251,191,36,0.08);
+  border: 1px solid rgba(251,191,36,0.25);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  font-size: 12px;
+}
+
+.conflict-dep-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #fbbf24;
+}
+
+.conflict-dep-item {
+  color: var(--text-muted);
+  padding-left: 8px;
+  line-height: 1.6;
+}
+
+/* ─── Rollback Badge Styles ──────────────────────────────── */
+.badge-rolling-back {
+  background: rgba(251,191,36,0.15);
+  color: #fbbf24;
+}
+
+.badge-rolled-back {
+  background: rgba(251,191,36,0.15);
+  color: #fbbf24;
+}
+
+.badge-uninstalling-existing {
+  background: rgba(96,165,250,0.15);
+  color: #60a5fa;
+}
+
 /* ─── Error Panel ────────────────────────────────────────── */
 .error-panel {
   background: rgba(248, 113, 113, 0.08);

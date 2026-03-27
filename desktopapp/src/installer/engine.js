@@ -25,6 +25,18 @@ class InstallerEngine {
 
   // ─── Public API ──────────────────────────────────────────────
 
+  _resolveInstallDir(tool, version) {
+    // {version} → full version string (e.g. "3.14.3")
+    // {shortVersion} → major+minor without dots (e.g. "314")
+    let dir = tool.defaultInstallDir.replace('{version}', version);
+    if (dir.includes('{shortVersion}')) {
+      const mm = version.match(/^(\d+)\.(\d+)/);
+      const short = mm ? mm[1] + mm[2] : version.replace(/\./g, '');
+      dir = dir.replace('{shortVersion}', short);
+    }
+    return dir;
+  }
+
   getToolsConfig() {
     return this.config;
   }
@@ -187,7 +199,7 @@ class InstallerEngine {
 
     // ── Phase 2: Install, configure, verify — sequentially ──
     for (let i = 0; i < selections.length; i++) {
-      const { toolId, version } = selections[i];
+      const { toolId, version, action, existingVersion } = selections[i];
       const tool = this._getTool(toolId);
       if (!tool) continue;
       const selectedVersion = version || tool.defaultVersion;
@@ -198,6 +210,49 @@ class InstallerEngine {
         results.push({ toolId, success: false, error: errMsg });
         this._saveHistory(toolId, selectedVersion, false, errMsg);
         continue;
+      }
+
+      // Pre-install uninstall for upgrade/downgrade/reinstall
+      if (action === 'upgrade' || action === 'downgrade' || action === 'reinstall') {
+        const actionLabel = action === 'reinstall' ? 'Reinstalling' : action === 'upgrade' ? 'Upgrading' : 'Downgrading';
+        this._log(`${actionLabel} ${tool.name}: removing existing ${existingVersion || 'version'} before installing ${selectedVersion}`);
+        progressCallback({
+          toolId, toolName: tool.name, step: 'uninstalling-existing',
+          detail: `Removing existing ${tool.name} ${existingVersion || ''}...`,
+          toolIndex: i, totalTools: total,
+          overallPercent: Math.round(30 + ((i) / total) * 70)
+        });
+
+        try {
+          const detectedInfo = await this.detectInstalled(tool.id);
+          await this.uninstallTool(toolId, detectedInfo, (progress) => {
+            progressCallback({
+              toolId, toolName: tool.name,
+              step: 'uninstalling-existing',
+              detail: `Removing existing version: ${progress.detail}`,
+              toolIndex: i, totalTools: total,
+              overallPercent: Math.round(30 + ((i) / total) * 70)
+            });
+          });
+          this._log(`Existing version of ${tool.name} removed successfully`);
+          progressCallback({
+            toolId, toolName: tool.name, step: 'uninstalling-existing',
+            detail: `Existing version removed. Installing ${selectedVersion}...`,
+            toolIndex: i, totalTools: total,
+            overallPercent: Math.round(30 + ((i + 0.1) / total) * 70)
+          });
+        } catch (err) {
+          this._log(`ERROR removing existing ${tool.name}: ${err.message}`);
+          results.push({ toolId, success: false, error: `Failed to remove existing version: ${err.message}` });
+          this._saveHistory(toolId, selectedVersion, false, `Pre-install uninstall failed: ${err.message}`);
+          progressCallback({
+            toolId, toolName: tool.name, step: 'error',
+            detail: `Failed to remove existing version: ${err.message}`,
+            toolIndex: i, totalTools: total,
+            overallPercent: Math.round(30 + ((i + 1) / total) * 70)
+          });
+          continue;
+        }
       }
 
       try {
@@ -318,28 +373,52 @@ class InstallerEngine {
   async _installToolPostDownload(tool, version, installerPath, onStep) {
     this._log(`\n${'='.repeat(50)}\nInstalling ${tool.name} v${version}\n${'='.repeat(50)}`);
 
-    // Step 1: Install
-    onStep('installing', 'Running installer...');
-    await this._runInstaller(tool, version, installerPath);
-    onStep('installing', 'Installation complete');
+    const completedSteps = [];
 
-    // Step 2: Configure
-    onStep('configuring', 'Setting environment variables...');
-    const configResult = await this._configure(tool, version);
-    onStep('configuring', 'Environment configured');
+    try {
+      // Step 1: Install
+      onStep('installing', 'Running installer...');
+      await this._runInstaller(tool, version, installerPath);
+      completedSteps.push('install');
+      onStep('installing', 'Installation complete');
 
-    // Step 3: Verify
-    onStep('verifying', 'Verifying installation...');
-    const verifyResult = await this.detectInstalled(tool.id);
-    if (!verifyResult.installed) {
-      this._log(`Verification warning for ${tool.name} — command may require shell restart`);
-      onStep('completed', `Installed (verification may need shell restart): ${verifyResult.output || 'N/A'}`);
-    } else {
-      onStep('completed', `Verified: ${verifyResult.output}`);
+      // Step 2: Configure
+      onStep('configuring', 'Setting environment variables...');
+      const configResult = await this._configure(tool, version);
+      completedSteps.push({ step: 'configure', result: configResult });
+      onStep('configuring', 'Environment configured');
+
+      // Step 3: Verify
+      onStep('verifying', 'Verifying installation...');
+      const verifyResult = await this.detectInstalled(tool.id);
+      if (!verifyResult.installed) {
+        // Fallback: check if the install directory exists and has content
+        const installDir = this._resolveInstallDir(tool, version);
+        const dirExists = fs.existsSync(installDir);
+        let dirHasContent = false;
+        if (dirExists) {
+          try { dirHasContent = fs.readdirSync(installDir).length > 0; } catch {}
+        }
+
+        if (dirHasContent) {
+          this._log(`Verification command did not detect ${tool.name}, but install directory exists: ${installDir}`);
+          onStep('completed', `Installed to ${installDir} (verification may need shell restart)`);
+        } else {
+          this._log(`Verification warning for ${tool.name} — command may require shell restart`);
+          onStep('completed', `Installed (verification may need shell restart): ${verifyResult.output || 'N/A'}`);
+        }
+      } else {
+        onStep('completed', `Verified: ${verifyResult.output}`);
+      }
+
+      this._log(`${tool.name} installed successfully`);
+      return configResult;
+    } catch (err) {
+      this._log(`Installation failed for ${tool.name}: ${err.message} — starting rollback`);
+      onStep('rolling-back', `Installation failed: ${err.message}. Rolling back...`);
+      await this._rollbackInstall(tool, version, completedSteps, onStep);
+      throw err;
     }
-
-    this._log(`${tool.name} installed successfully`);
-    return configResult;
   }
 
   _safeVersion(version) {
@@ -349,38 +428,135 @@ class InstallerEngine {
   async _installTool(tool, version, onStep) {
     this._log(`\n${'='.repeat(50)}\nInstalling ${tool.name} v${version}\n${'='.repeat(50)}`);
 
-    // Step 1: Download
-    onStep('downloading', 'Starting download...');
-    const installerPath = await this._download(tool, version, (pct, speed) => {
-      if (pct >= 0) {
-        onStep('downloading', `${pct}% downloaded${speed ? ` (${speed})` : ''}`);
+    const completedSteps = [];
+
+    try {
+      // Step 1: Download
+      onStep('downloading', 'Starting download...');
+      const installerPath = await this._download(tool, version, (pct, speed) => {
+        if (pct >= 0) {
+          onStep('downloading', `${pct}% downloaded${speed ? ` (${speed})` : ''}`);
+        } else {
+          onStep('downloading', speed || 'Downloading...');
+        }
+      });
+
+      // Step 2: Install
+      onStep('installing', 'Running installer...');
+      await this._runInstaller(tool, version, installerPath);
+      completedSteps.push('install');
+      onStep('installing', 'Installation complete');
+
+      // Step 3: Configure
+      onStep('configuring', 'Setting environment variables...');
+      const configResult = await this._configure(tool, version);
+      completedSteps.push({ step: 'configure', result: configResult });
+      onStep('configuring', 'Environment configured');
+
+      // Step 4: Verify
+      onStep('verifying', 'Verifying installation...');
+      const verifyResult = await this.detectInstalled(tool.id);
+      if (!verifyResult.installed) {
+        this._log(`Verification warning for ${tool.name} — command may require shell restart`);
+        onStep('completed', `Installed (verification may need shell restart): ${verifyResult.output || 'N/A'}`);
       } else {
-        onStep('downloading', speed || 'Downloading...');
+        onStep('completed', `Verified: ${verifyResult.output}`);
       }
-    });
 
-    // Step 2: Install
-    onStep('installing', 'Running installer...');
-    await this._runInstaller(tool, version, installerPath);
-    onStep('installing', 'Installation complete');
+      this._log(`${tool.name} installed successfully`);
+      return configResult;
+    } catch (err) {
+      this._log(`Installation failed for ${tool.name}: ${err.message} — starting rollback`);
+      onStep('rolling-back', `Installation failed: ${err.message}. Rolling back...`);
+      await this._rollbackInstall(tool, version, completedSteps, onStep);
+      throw err;
+    }
+  }
 
-    // Step 3: Configure
-    onStep('configuring', 'Setting environment variables...');
-    const configResult = await this._configure(tool, version);
-    onStep('configuring', 'Environment configured');
+  async _rollbackInstall(tool, version, completedSteps, onStep) {
+    this._log(`\n${'─'.repeat(50)}\nRolling back ${tool.name} v${version}\n${'─'.repeat(50)}`);
+    const rollbackResults = [];
 
-    // Step 4: Verify
-    onStep('verifying', 'Verifying installation...');
-    const verifyResult = await this.detectInstalled(tool.id);
-    if (!verifyResult.installed) {
-      this._log(`Verification warning for ${tool.name} — command may require shell restart`);
-      onStep('completed', `Installed (verification may need shell restart): ${verifyResult.output || 'N/A'}`);
-    } else {
-      onStep('completed', `Verified: ${verifyResult.output}`);
+    // Process in reverse order
+    for (let i = completedSteps.length - 1; i >= 0; i--) {
+      const step = completedSteps[i];
+
+      // Undo environment configuration
+      if (step && step.step === 'configure') {
+        onStep('rolling-back', 'Reverting: Removing environment configuration...');
+        this._log('Rollback: removing environment variables and PATH entries');
+        try {
+          await this._unconfigure(tool);
+          rollbackResults.push({ action: 'unconfigure', success: true });
+          this._log('Rollback: environment configuration removed');
+          onStep('rolling-back', 'Reverting: Environment configuration removed ✓');
+        } catch (e) {
+          rollbackResults.push({ action: 'unconfigure', success: false, error: e.message });
+          this._log(`Rollback: failed to remove environment configuration: ${e.message}`);
+          onStep('rolling-back', `Reverting: Could not remove env config: ${e.message}`);
+        }
+      }
+
+      // Undo installation
+      if (step === 'install') {
+        onStep('rolling-back', 'Reverting: Removing installed files...');
+        this._log('Rollback: attempting to uninstall partially installed tool');
+        try {
+          const detectedInfo = await this.detectInstalled(tool.id);
+          const productInfo = await this._findInstalledProduct(tool, detectedInfo);
+          if (productInfo) {
+            await this._runUninstaller(tool, productInfo);
+            this._log('Rollback: uninstaller completed');
+          }
+
+          // Also clean up install directory if it still exists
+          const installDir = this._resolveInstallDir(tool, version);
+          if (fs.existsSync(installDir)) {
+            this._log(`Rollback: removing install directory ${installDir}`);
+            try {
+              if (this.isAdmin()) {
+                fs.rmSync(installDir, { recursive: true, force: true });
+              } else {
+                await this._runElevatedCommand(tool.id, 'rollback-cleanup', `rmdir /s /q "${installDir}"`, false, [0, 2]);
+              }
+            } catch (dirErr) {
+              this._log(`Rollback: could not remove install directory: ${dirErr.message}`);
+            }
+          }
+
+          rollbackResults.push({ action: 'uninstall', success: true });
+          onStep('rolling-back', 'Reverting: Installed files removed ✓');
+        } catch (e) {
+          rollbackResults.push({ action: 'uninstall', success: false, error: e.message });
+          this._log(`Rollback: failed to remove installed files: ${e.message}`);
+          onStep('rolling-back', `Reverting: Could not remove installed files: ${e.message}`);
+        }
+
+        // Clean up Start Menu shortcuts
+        try {
+          await this._cleanupStartMenuShortcuts(tool);
+          this._log('Rollback: Start Menu shortcuts cleaned');
+        } catch (e) {
+          this._log(`Rollback: could not clean Start Menu shortcuts: ${e.message}`);
+        }
+      }
     }
 
-    this._log(`${tool.name} installed successfully`);
-    return configResult;
+    // Summarize rollback
+    const allSuccess = rollbackResults.length === 0 || rollbackResults.every(r => r.success);
+    const failedSteps = rollbackResults.filter(r => !r.success);
+
+    if (allSuccess) {
+      this._log(`Rollback of ${tool.name} completed successfully`);
+      onStep('rolled-back', 'Installation rolled back and cleaned up successfully');
+    } else {
+      const failedNames = failedSteps.map(r => `${r.action}: ${r.error}`).join('; ');
+      this._log(`Rollback of ${tool.name} partially failed: ${failedNames}`);
+      onStep('rolled-back', `Rollback completed with issues. Could not fully revert: ${failedSteps.map(r => r.action).join(', ')}`);
+    }
+
+    // History is saved by the caller (installAll / installSingle)
+    return rollbackResults;
   }
 
   _download(tool, version, onProgress) {
@@ -556,7 +732,7 @@ class InstallerEngine {
 
   async _runInstaller(tool, version, installerPath) {
     const ext = path.extname(installerPath).toLowerCase();
-    const installDir = tool.defaultInstallDir.replace('{version}', version);
+    const installDir = this._resolveInstallDir(tool, version);
 
     // Validate the downloaded file before attempting install
     try {
@@ -1031,7 +1207,7 @@ class InstallerEngine {
   }
 
   async _configure(tool, version) {
-    const installDir = tool.defaultInstallDir.replace('{version}', version);
+    const installDir = this._resolveInstallDir(tool, version);
     const isAdmin = this.isAdmin();
     const configuredPaths = [];
     const configuredEnvVars = {};
@@ -1126,7 +1302,7 @@ class InstallerEngine {
     // Clean up residual install directory left by MSI uninstaller
     // (skip for 'directory' and 'zip' types — already handled in _runUninstaller)
     if (productInfo.type !== 'directory' && productInfo.type !== 'zip') {
-      const loc = (productInfo.location || tool.defaultInstallDir.replace('{version}', tool.defaultVersion)).replace(/\\$/, '');
+      const loc = (productInfo.location || this._resolveInstallDir(tool, tool.defaultVersion)).replace(/\\$/, '');
       if (fs.existsSync(loc)) {
         this._log(`Cleaning up residual install directory: ${loc}`);
         try {
@@ -1189,8 +1365,13 @@ class InstallerEngine {
       const whereClause = searchTerms
         .map(t => `$_.DisplayName -like '*${t}*'`)
         .join(' -or ');
+      // Build exclude clause for known false-positive products (e.g. Miniconda matching "Python")
+      const excludeTerms = Array.isArray(tool.uninstallExclude) ? tool.uninstallExclude : [];
+      const excludeClause = excludeTerms.length > 0
+        ? ' -and ' + excludeTerms.map(t => `$_.DisplayName -notlike '*${t}*'`).join(' -and ')
+        : '';
       try {
-        const ps = `@('HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*','HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*','HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*') | ForEach-Object { Get-ItemProperty $_ -ErrorAction SilentlyContinue } | Where-Object { ${whereClause} } | Select-Object PSChildName, DisplayName, UninstallString, InstallLocation | ConvertTo-Json -Compress`;
+        const ps = `@('HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*','HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*','HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*') | ForEach-Object { Get-ItemProperty $_ -ErrorAction SilentlyContinue } | Where-Object { (${whereClause})${excludeClause} -and $_.SystemComponent -ne 1 } | Select-Object PSChildName, DisplayName, UninstallString, QuietUninstallString, InstallLocation | ConvertTo-Json -Compress`;
         const output = await new Promise((resolve) => {
           exec(`powershell -NoProfile -Command "${ps}"`, {
             encoding: 'utf8', timeout: 15000, windowsHide: true
@@ -1201,32 +1382,40 @@ class InstallerEngine {
           const products = (Array.isArray(parsed) ? parsed : [parsed]).filter(p => p.DisplayName);
 
           if (products.length > 0) {
-            let best = products[0];
+            const pickBest = (list) => {
+              const withUninstall = list.filter(p => (p.QuietUninstallString || p.UninstallString));
+              const pool = withUninstall.length > 0 ? withUninstall : list;
+              return pool.reduce((a, b) => a.DisplayName.length <= b.DisplayName.length ? a : b);
+            };
 
-            // If we have detected version info, pick the product matching that version
+            // Start with the shortest DisplayName from entries that have an uninstall command.
+            let best = pickBest(products);
+
+            // If we have detected version info, prefer the product matching that version
             if (detectedInfo && detectedInfo.version) {
               const verMatch = detectedInfo.version.match(/[\d.]+/);
               if (verMatch) {
                 const detectedVer = verMatch[0];
-                const exact = products.find(p => p.DisplayName.includes(detectedVer));
-                if (exact) {
-                  best = exact;
+                const versionProducts = products.filter(p => p.DisplayName.includes(detectedVer));
+                if (versionProducts.length > 0) {
+                  // Among version-matching entries, prefer an entry with an uninstall command, then shortest name.
+                  best = pickBest(versionProducts);
                 } else {
                   // Fall back to major version match
                   const major = detectedVer.split('.')[0];
-                  const majorMatch = products.find(p => p.DisplayName.match(new RegExp(`\\b${major}\\b`)));
-                  if (majorMatch) best = majorMatch;
+                  const majorMatches = products.filter(p => p.DisplayName.match(new RegExp(`\\b${major}\\b`)));
+                  if (majorMatches.length > 0) best = pickBest(majorMatches);
                 }
               }
             }
 
             this._log(`Found product: ${best.DisplayName} (of ${products.length} match(es))`);
             return {
-              type: best.UninstallString && best.UninstallString.includes('MsiExec') ? 'msi' : 'exe',
+              type: (best.QuietUninstallString || best.UninstallString || '').includes('MsiExec') ? 'msi' : 'exe',
               guid: best.PSChildName,
               name: best.DisplayName,
               location: best.InstallLocation || '',
-              uninstallString: best.UninstallString || ''
+              uninstallString: best.QuietUninstallString || best.UninstallString || ''
             };
           }
         }
@@ -1235,7 +1424,7 @@ class InstallerEngine {
 
     // For EXE-based tools (like Git, IntelliJ), look for uninstaller directly
     if (tool.installCommand.exe && tool.installCommand.exe !== 'copy') {
-      const installDir = tool.defaultInstallDir.replace('{version}', tool.defaultVersion);
+      const installDir = this._resolveInstallDir(tool, tool.defaultVersion);
       // Check common uninstaller file names and locations
       const uninstallerCandidates = [
         path.join(installDir, 'unins000.exe'),          // Inno Setup (Git, etc.)
@@ -1309,7 +1498,7 @@ class InstallerEngine {
     // For standalone binary copy tools (e.g., kubectl), check install dir AND
     // search for all copies of the binary on the system
     if (tool.installCommand.exe === 'copy') {
-      const installDir = tool.defaultInstallDir.replace('{version}', tool.defaultVersion);
+      const installDir = this._resolveInstallDir(tool, tool.defaultVersion);
       const binaryName = `${tool.id}.exe`;
 
       // Collect all known locations of this binary
@@ -1356,7 +1545,7 @@ class InstallerEngine {
     if (tool.installCommand.zip) {
       // 1. Exact version-based directory check
       for (const ver of tool.versions) {
-        const dir = tool.defaultInstallDir.replace('{version}', ver);
+        const dir = this._resolveInstallDir(tool, ver);
         if (fs.existsSync(dir)) {
           return { type: 'zip', location: dir, version: ver };
         }
@@ -1378,9 +1567,9 @@ class InstallerEngine {
 
       // 3. Scan parent directory for matching subdirectories
       const templateBase = path.basename(tool.defaultInstallDir);
-      const versionIdx = templateBase.indexOf('{version}');
+      const versionIdx = templateBase.search(/\{(short)?version\}/i);
       const prefix = versionIdx >= 0 ? templateBase.substring(0, versionIdx) : '';
-      const parentDir = path.dirname(tool.defaultInstallDir.replace('{version}', tool.versions[0] || ''));
+      const parentDir = path.dirname(this._resolveInstallDir(tool, tool.versions[0] || ''));
       if (prefix && fs.existsSync(parentDir)) {
         try {
           const dirs = fs.readdirSync(parentDir).filter(d => {
@@ -1413,7 +1602,7 @@ class InstallerEngine {
     // ── Universal fallbacks (all tool types) ────────────────────
 
     // Fallback A: Check if defaultInstallDir exists on disk
-    const defaultDir = tool.defaultInstallDir.replace('{version}', tool.defaultVersion);
+    const defaultDir = this._resolveInstallDir(tool, tool.defaultVersion);
     if (fs.existsSync(defaultDir)) {
       try {
         const contents = fs.readdirSync(defaultDir);
@@ -1474,6 +1663,13 @@ class InstallerEngine {
   async _runUninstaller(tool, productInfo) {
     const isAdmin = this.isAdmin();
 
+    // If the tool config provides an explicit uninstall command, use it directly
+    // (e.g. Docker Desktop where the registry UninstallString points to a non-existent exe)
+    if (tool.uninstallCommand) {
+      this._log(`Using configured uninstallCommand: ${tool.uninstallCommand}`);
+      return this._runElevatedCommand(tool.id, 'uninstall', tool.uninstallCommand, isAdmin);
+    }
+
     if (productInfo.type === 'msi') {
       const cmd = `msiexec /x "${productInfo.guid}" /quiet /norestart`;
       this._log(`Uninstalling MSI: ${cmd}`);
@@ -1489,6 +1685,16 @@ class InstallerEngine {
       const cmd = `"${productInfo.uninstallerPath}" ${silentFlags}`;
       this._log(`Running uninstaller: ${cmd}`);
       return this._runElevatedCommand(tool.id, 'uninstall', cmd, isAdmin, [1]);
+    }
+
+    if (productInfo.type === 'exe' && !productInfo.uninstallString) {
+      const cachedInstaller = this._findCachedInstaller(tool);
+      if (cachedInstaller && tool.installerUninstallArgs) {
+        const cmd = `"${cachedInstaller}" ${tool.installerUninstallArgs}`;
+        this._log(`No registry uninstall string; using cached installer uninstall command: ${cmd}`);
+        return this._runElevatedCommand(tool.id, 'uninstall', cmd, isAdmin, [0, 1]);
+      }
+      throw new Error(`No uninstall string found for ${tool.name}.`);
     }
 
     if (productInfo.type === 'exe' && productInfo.uninstallString) {
@@ -1517,8 +1723,11 @@ class InstallerEngine {
 
         if (tool.silentUninstallArgs) {
           cmd += ' ' + tool.silentUninstallArgs;
-        } else {
-          // Auto-detect silent flags from the uninstaller filename
+        } else if (/\s\/uninstall\b/i.test(cmd)) {
+          // Python bundled installer: cmd already has /uninstall; add /quiet for silent operation
+          if (!/\/quiet\b/i.test(cmd)) cmd += ' /quiet';
+        } else if (!/\s\/remove\b|\s\/x\b|\s\/X\b|\s--uninstall\b/i.test(cmd)) {
+          // Auto-detect silent flags — only when registry string doesn't already include uninstall action
           const exeFromCmd = cmd.match(/"([^"]+\.exe)"/i) || cmd.match(/(\S+\.exe)/i);
           if (exeFromCmd) {
             const uninstallerName = path.basename(exeFromCmd[1]).toLowerCase();
@@ -1593,7 +1802,7 @@ class InstallerEngine {
     if (productInfo.type === 'directory') {
       const binaryName = productInfo.binaryName || `${tool.id}.exe`;
       const allLocations = productInfo.allLocations || [productInfo.location];
-      const installDir = tool.defaultInstallDir.replace('{version}', tool.defaultVersion);
+      const installDir = this._resolveInstallDir(tool, tool.defaultVersion);
 
       for (const dir of allLocations) {
         // Only remove our managed install directory; skip third-party dirs (e.g. Docker)
@@ -1771,7 +1980,7 @@ class InstallerEngine {
       } else {
         for (const ver of tool.versions) {
           const resolved = entry
-            .replace('{installDir}', tool.defaultInstallDir.replace('{version}', ver))
+            .replace('{installDir}', this._resolveInstallDir(tool, ver))
             .replace(/\\+$/, '');
           entriesToRemove.add(resolved.toLowerCase());
         }

@@ -1,0 +1,306 @@
+# ────────────────────────────────────────────────────────────────
+# Build → Self-Sign → Release → Deploy Website
+# ────────────────────────────────────────────────────────────────
+# Complete CI/CD pipeline for the DevTools Installer monorepo:
+#   1. Build the Electron Windows installer
+#   2. Self-sign the .exe with a generated certificate
+#   3. Create a GitHub Release with the signed installer
+#   4. Re-deploy the website with the updated download URL
+#
+# Triggers:
+#   • Tags matching v*.*.* → full pipeline (build + sign + release + deploy)
+#   • Push to main/master → build + sign only (no release)
+#   • Manual dispatch with optional version override
+# ────────────────────────────────────────────────────────────────
+
+name: Build, Sign & Release
+
+on:
+  push:
+    branches: [master, main]
+    tags:
+      - "v*.*.*"
+  pull_request:
+    branches: [master, main]
+  workflow_dispatch:
+    inputs:
+      skip_signing:
+        description: "Skip code signing step"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# ────────────────────────────────────────────────────────────────
+# JOB 1: Build & Sign the Windows Installer
+# ────────────────────────────────────────────────────────────────
+jobs:
+  build-and-sign:
+    name: Build & Sign Windows Installer
+    runs-on: windows-latest
+    timeout-minutes: 30
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      filename: ${{ steps.version.outputs.filename }}
+      tag: ${{ steps.version.outputs.tag }}
+      is_release: ${{ steps.version.outputs.is_release }}
+
+    steps:
+      # ── 1. Checkout ───────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Extract version info ──────────────────────────────
+      - name: Extract version info
+        id: version
+        shell: pwsh
+        run: |
+          if ("${{ github.ref_type }}" -eq "tag") {
+            $tag = "${{ github.ref_name }}"
+            $version = $tag -replace '^v', ''
+            $isRelease = "true"
+          } else {
+            $pkgJson = Get-Content "desktopapp/package.json" -Raw | ConvertFrom-Json
+            $version = $pkgJson.version
+            $tag = "v$version"
+            $isRelease = "false"
+          }
+          $filename = "DevTools-Installer-Setup-${version}.exe"
+          Write-Host "Version: $version | Tag: $tag | Filename: $filename | Release: $isRelease"
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+          echo "tag=$tag" >> $env:GITHUB_OUTPUT
+          echo "filename=$filename" >> $env:GITHUB_OUTPUT
+          echo "is_release=$isRelease" >> $env:GITHUB_OUTPUT
+
+      # ── 3. Setup Node.js ─────────────────────────────────────
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: desktopapp/package-lock.json
+
+      # ── 4. Cache Electron binaries ───────────────────────────
+      - name: Cache Electron binaries
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~\AppData\Local\electron\Cache
+            ~\AppData\Local\electron-builder\Cache
+          key: electron-${{ runner.os }}-${{ hashFiles('desktopapp/package-lock.json') }}
+          restore-keys: |
+            electron-${{ runner.os }}-
+
+      # ── 5. Install dependencies ──────────────────────────────
+      - name: Install dependencies
+        working-directory: desktopapp
+        run: npm ci
+
+      # ── 6. Generate placeholder icon if missing ──────────────
+      - name: Ensure build/icon.ico exists
+        shell: pwsh
+        working-directory: desktopapp
+        run: |
+          if (-Not (Test-Path "build/icon.ico")) {
+            Write-Host "No icon.ico found - generating placeholder"
+            New-Item -ItemType Directory -Force -Path "build" | Out-Null
+            magick -size 256x256 xc:"#4f8cff" `
+              -define icon:auto-resize="256,128,64,48,32,16" `
+              build/icon.ico
+            if (-Not (Test-Path "build/icon.ico")) {
+              throw "Failed to generate build/icon.ico"
+            }
+          }
+
+      # ── 7. Build the installer ───────────────────────────────
+      - name: Build Electron app
+        working-directory: desktopapp
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: pwsh
+        run: |
+          npm run build
+          $exe = Get-ChildItem -Path "dist/*.exe" -ErrorAction SilentlyContinue
+          if (-not $exe) { throw "No .exe found in dist/" }
+          Write-Host "Built: $($exe.Name) ($([math]::Round($exe.Length / 1MB, 2)) MB)"
+
+      # ── 8. Self-sign the installer ───────────────────────────
+      - name: Self-sign the installer
+        if: inputs.skip_signing != 'true'
+        shell: pwsh
+        working-directory: desktopapp
+        env:
+          CERT_PASSWORD: ${{ secrets.SELF_SIGN_CERT_PASSWORD }}
+        run: |
+          $exe = (Get-ChildItem -Path "dist/*.exe" | Select-Object -First 1).FullName
+          Write-Host "Signing: $exe"
+
+          # Use a real cert from secrets if available, otherwise generate self-signed
+          if ($env:CERT_PASSWORD -and "${{ secrets.WIN_CSC_LINK }}" -ne "") {
+            Write-Host "Using certificate from secrets (WIN_CSC_LINK)"
+            $pfxBytes = [Convert]::FromBase64String("${{ secrets.WIN_CSC_LINK }}")
+            $pfxPath = "$env:RUNNER_TEMP\cert.pfx"
+            [IO.File]::WriteAllBytes($pfxPath, $pfxBytes)
+          } else {
+            Write-Host "Generating self-signed certificate"
+            $pfxPath = "$env:RUNNER_TEMP\self-signed.pfx"
+            $certPassword = if ($env:CERT_PASSWORD) { $env:CERT_PASSWORD } else { "DevToolsInstaller2024" }
+            $securePwd = ConvertTo-SecureString -String $certPassword -Force -AsPlainText
+
+            $cert = New-SelfSignedCertificate `
+              -Type CodeSigningCert `
+              -Subject "CN=DevTools Installer, O=DevTools" `
+              -KeyAlgorithm RSA `
+              -KeyLength 2048 `
+              -NotAfter (Get-Date).AddYears(3) `
+              -CertStoreLocation Cert:\CurrentUser\My `
+              -HashAlgorithm SHA256
+
+            Export-PfxCertificate -Cert $cert -FilePath $pfxPath -Password $securePwd | Out-Null
+            $env:CERT_PASSWORD = $certPassword
+          }
+
+          # Locate signtool
+          $signtool = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" `
+            -Filter "signtool.exe" -Recurse | `
+            Sort-Object { $_.Directory.Name } -Descending | `
+            Select-Object -First 1
+
+          if (-not $signtool) { throw "signtool.exe not found on runner" }
+          Write-Host "Using signtool: $($signtool.FullName)"
+
+          # Sign the executable
+          & $signtool.FullName sign `
+            /f $pfxPath `
+            /p $env:CERT_PASSWORD `
+            /fd SHA256 `
+            /tr http://timestamp.digicert.com `
+            /td SHA256 `
+            /v `
+            $exe
+
+          if ($LASTEXITCODE -ne 0) { throw "Code signing failed with exit code $LASTEXITCODE" }
+          Write-Host "Successfully signed: $exe"
+
+          # Verify the signature using PowerShell (works for self-signed certs)
+          # NOTE: signtool verify /pa requires a trusted root and always fails for self-signed certs
+          $sig = Get-AuthenticodeSignature -FilePath $exe
+          Write-Host "Signature status: $($sig.Status) | Thumbprint: $($sig.SignerCertificate.Thumbprint)"
+          if ($sig.Status -notin @('Valid', 'UnknownError')) {
+            # UnknownError is expected for self-signed certs (not trusted by OS) but the sig IS present
+            # Only fail if the file is completely unsigned
+            if (-not $sig.SignerCertificate) {
+              throw "Signing failed — no signer certificate found on the file"
+            }
+          }
+          Write-Host "Signature verification complete"
+
+          # Clean up certificate
+          if (Test-Path $pfxPath) { Remove-Item $pfxPath -Force }
+
+      # ── 9. Upload artifact ───────────────────────────────────
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DevTools-Installer-Windows
+          path: |
+            desktopapp/dist/*.exe
+            desktopapp/dist/*.blockmap
+            desktopapp/dist/latest.yml
+          if-no-files-found: error
+          retention-days: 30
+
+  # ──────────────────────────────────────────────────────────────
+  # JOB 2: Create GitHub Release (tags only)
+  # ──────────────────────────────────────────────────────────────
+  release:
+    name: Create GitHub Release
+    needs: build-and-sign
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    outputs:
+      download_url: ${{ steps.urls.outputs.download_url }}
+
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: DevTools-Installer-Windows
+          path: release-assets
+
+      - name: List release assets
+        run: find release-assets -type f -ls
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "DevTools Installer ${{ needs.build-and-sign.outputs.version }}"
+          draft: false
+          generate_release_notes: true
+          files: |
+            release-assets/**/*.exe
+            release-assets/**/*.blockmap
+            release-assets/**/latest.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute download URL
+        id: urls
+        run: |
+          TAG="${{ github.ref_name }}"
+          FILENAME="${{ needs.build-and-sign.outputs.filename }}"
+          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${TAG}/${FILENAME}"
+          echo "download_url=${DOWNLOAD_URL}" >> "$GITHUB_OUTPUT"
+          echo "Release URL: ${DOWNLOAD_URL}"
+
+  # ──────────────────────────────────────────────────────────────
+  # JOB 3: Deploy Website with Updated Download Link
+  # ──────────────────────────────────────────────────────────────
+  deploy-website:
+    name: Deploy Website
+    needs: [build-and-sign, release]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: webapp/package-lock.json
+
+      - name: Install webapp dependencies
+        working-directory: webapp
+        run: npm ci
+
+      - name: Build website with release info
+        working-directory: webapp
+        env:
+          VITE_APP_VERSION: ${{ needs.build-and-sign.outputs.version }}
+          VITE_DOWNLOAD_URL: ${{ needs.release.outputs.download_url }}
+          VITE_INSTALLER_FILENAME: ${{ needs.build-and-sign.outputs.filename }}
+        run: |
+          echo "Building website with:"
+          echo "  Version:  $VITE_APP_VERSION"
+          echo "  URL:      $VITE_DOWNLOAD_URL"
+          echo "  Filename: $VITE_INSTALLER_FILENAME"
+          npm run build
+
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          channelId: live
+          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}

@@ -2,11 +2,13 @@ name: Deploy Website to Firebase Hosting
 
 on:
   push:
-    branches: [main]
-    paths:
-      - 'webapp/**'
-      - 'firebase.json'
-      - '.firebaserc'
+    branches: [master]
+    # paths:
+    #   - 'webapp/**'
+    #   - 'firebase.json'
+    #   - '.firebaserc'
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
@@ -19,6 +21,8 @@ concurrency:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_REPO: ${{ github.repository }}
     steps:
       - uses: actions/checkout@v4
 
@@ -32,8 +36,46 @@ jobs:
         working-directory: webapp
         run: npm ci
 
+      - name: Resolve release version and download URL
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # If triggered by a release event, use that version
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            TAG="${{ github.event.release.tag_name }}"
+          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            TAG="${{ github.ref_name }}"
+          else
+            # For branch pushes, fetch the latest published release
+            TAG=$(gh api "repos/${GITHUB_REPO}/releases/latest" --jq '.tag_name' 2>/dev/null) || TAG=""
+            # Validate it looks like a version tag
+            if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+              TAG=""
+            fi
+          fi
+
+          if [[ -n "$TAG" ]]; then
+            VERSION="${TAG#v}"
+            FILENAME="DevTools-Installer-Setup-${VERSION}.exe"
+            DOWNLOAD_URL="https://github.com/${GITHUB_REPO}/releases/download/${TAG}/${FILENAME}"
+          else
+            VERSION="1.0.0"
+            FILENAME="DevTools-Installer-Setup-${VERSION}.exe"
+            DOWNLOAD_URL="https://github.com/${GITHUB_REPO}/releases"
+          fi
+
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "download_url=${DOWNLOAD_URL}" >> "$GITHUB_OUTPUT"
+          echo "filename=${FILENAME}" >> "$GITHUB_OUTPUT"
+          echo "Resolved: v${VERSION} → ${DOWNLOAD_URL}"
+
       - name: Build
         working-directory: webapp
+        env:
+          VITE_APP_VERSION: ${{ steps.release.outputs.version }}
+          VITE_DOWNLOAD_URL: ${{ steps.release.outputs.download_url }}
+          VITE_INSTALLER_FILENAME: ${{ steps.release.outputs.filename }}
         run: npm run build
 
       - name: Deploy to Firebase Hosting

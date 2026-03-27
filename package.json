@@ -1,31 +1,13 @@
 {
-  "name": "dev-tools-installer",
+  "name": "devtools-installer-monorepo",
   "version": "1.0.0",
-  "description": "One-click developer tools installer for Windows",
-  "main": "src/main.js",
-  "homepage": "https://github.com/YOUR_USERNAME/dev-tools-installer",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/YOUR_USERNAME/dev-tools-installer.git"
-  },
+  "private": true,
+  "description": "Monorepo containing the DevTools Installer desktop app and marketing website",
   "scripts": {
-    "start": "electron .",
-    "build": "electron-builder --win --publish never",
-    "build:publish": "electron-builder --win --publish always",
-    "dist": "electron-builder --win --publish never",
-    "postinstall": "electron-builder install-app-deps"
-  },
-  "author": {
-    "name": "DevTools Installer",
-    "email": "your-email@example.com"
-  },
-  "license": "MIT",
-  "devDependencies": {
-    "electron": "^28.0.0",
-    "electron-builder": "^24.13.3",
-    "electron-updater": "^6.1.7"
-  },
-  "dependencies": {
-    "adm-zip": "^0.5.16"
+    "start:desktop": "cd desktopapp && npm start",
+    "build:desktop": "cd desktopapp && npm run build",
+    "start:web": "cd webapp && npm run dev",
+    "build:web": "cd webapp && npm run build",
+    "install:all": "cd desktopapp && npm ci && cd ../webapp && npm ci"
   }
 }

@@ -1,4 +1,5 @@
 import { FiDownload, FiCheck } from 'react-icons/fi'
+import release from '../config/release'
 
 export default function Hero() {
   return (
@@ -26,7 +27,7 @@ export default function Hero() {
             {/* Download button */}
             <div className="mt-8 flex flex-col sm:flex-row items-center lg:items-start gap-4">
               <a
-                href="https://github.com"
+                href={release.downloadUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] transition-all duration-200"
@@ -35,7 +36,7 @@ export default function Hero() {
                 <div className="text-left">
                   <div className="text-base">Download Installer (.exe)</div>
                   <div className="text-xs font-normal opacity-80">
-                    Version 1.00 | Windows 10/11
+                    Version {release.version} | Windows 10/11
                   </div>
                 </div>
               </a>
