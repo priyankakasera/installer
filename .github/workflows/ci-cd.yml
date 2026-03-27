@@ -350,13 +350,8 @@ jobs:
 
           # Write a public latest.json manifest so deploy-website can always
           # find the current download URL without listing bucket contents.
-          cat > /tmp/latest.json <<EOF
-{
-  "version": "${VERSION}",
-  "filename": "${FILENAME}",
-  "downloadUrl": "${DOWNLOAD_URL}"
-}
-EOF
+          printf '{"version":"%s","filename":"%s","downloadUrl":"%s"}\n' \
+            "${VERSION}" "${FILENAME}" "${DOWNLOAD_URL}" > /tmp/latest.json
           gsutil -h "Content-Type:application/json" \
                  -h "Cache-Control:no-cache, max-age=0" \
             cp -a public-read /tmp/latest.json \
