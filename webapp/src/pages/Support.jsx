@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { FiChevronDown, FiMail, FiGithub } from 'react-icons/fi'
+import { FiChevronDown, FiMail, FiSend } from 'react-icons/fi'
 
 const faqs = [
   {
@@ -107,31 +107,75 @@ export default function Support() {
       {/* Contact */}
       <section className="py-16 bg-dark-lighter/50" id="contact">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-white mb-8">Contact Us</h2>
-          <div className="grid sm:grid-cols-2 gap-6">
+          <h2 className="text-2xl font-bold text-white mb-2">Contact Us</h2>
+          <p className="text-gray-400 mb-8">
+            Have a question or found a bug? Fill out the form below or email us
+            directly at{' '}
             <a
-              href="https://github.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-4 bg-dark-card border border-dark-border rounded-2xl p-6 hover:border-primary/40 transition-all duration-300"
+              href="mailto:support@devtools-installer.web.app"
+              className="text-primary-light hover:underline"
             >
-              <FiGithub className="w-8 h-8 text-white" />
-              <div>
-                <h3 className="font-semibold text-white">GitHub Issues</h3>
-                <p className="text-sm text-gray-400">Report bugs and request features</p>
-              </div>
+              support@devtools-installer.web.app
             </a>
-            <a
-              href="mailto:support@devtools-installer.example.com"
-              className="flex items-center gap-4 bg-dark-card border border-dark-border rounded-2xl p-6 hover:border-primary/40 transition-all duration-300"
+          </p>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              const fd = new FormData(e.target)
+              const mailto = `mailto:support@devtools-installer.web.app?subject=${encodeURIComponent(fd.get('subject'))}&body=${encodeURIComponent(`From: ${fd.get('email')}\n\n${fd.get('message')}`)}`
+              window.location.href = mailto
+            }}
+            className="space-y-5"
+          >
+            <div className="grid sm:grid-cols-2 gap-5">
+              <div>
+                <label htmlFor="contact-email" className="block text-sm font-medium text-gray-400 mb-1.5">
+                  Your Email
+                </label>
+                <input
+                  id="contact-email"
+                  name="email"
+                  type="email"
+                  required
+                  placeholder="you@example.com"
+                  className="w-full px-4 py-3 bg-dark-card border border-dark-border rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-primary/60 transition-colors"
+                />
+              </div>
+              <div>
+                <label htmlFor="contact-subject" className="block text-sm font-medium text-gray-400 mb-1.5">
+                  Subject
+                </label>
+                <input
+                  id="contact-subject"
+                  name="subject"
+                  type="text"
+                  required
+                  placeholder="Bug report, feature request..."
+                  className="w-full px-4 py-3 bg-dark-card border border-dark-border rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-primary/60 transition-colors"
+                />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="contact-message" className="block text-sm font-medium text-gray-400 mb-1.5">
+                Message
+              </label>
+              <textarea
+                id="contact-message"
+                name="message"
+                required
+                rows={5}
+                placeholder="Describe your issue or feedback..."
+                className="w-full px-4 py-3 bg-dark-card border border-dark-border rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-primary/60 transition-colors resize-y"
+              />
+            </div>
+            <button
+              type="submit"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.02] transition-all duration-200"
             >
-              <FiMail className="w-8 h-8 text-primary-light" />
-              <div>
-                <h3 className="font-semibold text-white">Email Support</h3>
-                <p className="text-sm text-gray-400">Get help via email</p>
-              </div>
-            </a>
-          </div>
+              <FiSend className="w-4 h-4" />
+              Send Message
+            </button>
+          </form>
         </div>
       </section>
     </>

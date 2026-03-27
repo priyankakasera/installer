@@ -5,6 +5,7 @@ import { FiDownload } from 'react-icons/fi'
 import release from '../config/release'
 
 const navLinks = [
+  { label: 'Home', to: '/' },
   { label: 'Product', to: '/product' },
   { label: 'How-To Guides', to: '/guides' },
   { label: 'Data Facting', to: '/data-facting' },

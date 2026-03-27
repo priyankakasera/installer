@@ -2,11 +2,8 @@ import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
 import { FiArrowRight } from 'react-icons/fi'
 import Hero from '../components/Hero'
-import WhyChoose from '../components/WhyChoose'
 import IncludedTools from '../components/IncludedTools'
 import HowItWorks from '../components/HowItWorks'
-import BehindTheScenes from '../components/BehindTheScenes'
-import UnknownPublisher from '../components/UnknownPublisher'
 
 function Divider() {
   return <hr className="section-divider" />
@@ -34,13 +31,7 @@ export default function Home() {
       <Divider />
       <IncludedTools />
       <Divider />
-      <WhyChoose />
-      <Divider />
       <HowItWorks />
-      <Divider />
-      <BehindTheScenes />
-      <Divider />
-      <UnknownPublisher />
 
       {/* Guides teaser */}
       <Divider />

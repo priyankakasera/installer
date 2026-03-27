@@ -1,4 +1,7 @@
-import { FiDownload, FiCheck, FiTrash2 } from 'react-icons/fi'
+import { FiDownload, FiCheck, FiInfo, FiSearch, FiRefreshCw } from 'react-icons/fi'
+import { FaJava } from 'react-icons/fa'
+import { SiApachemaven, SiGradle } from 'react-icons/si'
+import { FaGitAlt } from 'react-icons/fa'
 import release from '../config/release'
 
 export default function Hero() {
@@ -8,13 +11,13 @@ export default function Hero() {
       <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/10 rounded-full blur-[120px] -translate-y-1/2" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24 lg:pt-28 lg:pb-32">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16 lg:pt-16 lg:pb-20">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
           {/* Left content */}
           <div className="text-center lg:text-left">
             {/* Pill badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 rounded-full bg-primary/10 border border-primary/20 text-sm text-primary-light">
-              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-primary-light animate-pulse" />
               One-click install &amp; cleanup for Windows
             </div>
 
@@ -50,81 +53,175 @@ export default function Hero() {
             {/* Trust badges */}
             <div className="mt-6 flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-sm text-gray-400">
               <span className="flex items-center gap-1.5">
-                <FiCheck className="w-4 h-4 text-green-400" /> 4 Setup Bundles
+                <FiCheck className="w-4 h-4 text-primary-light" /> 4 Setup Bundles
               </span>
               <span className="flex items-center gap-1.5">
-                <FiCheck className="w-4 h-4 text-green-400" /> One-Click Cleanup
+                <FiCheck className="w-4 h-4 text-primary-light" /> One-Click Cleanup
               </span>
               <span className="flex items-center gap-1.5">
-                <FiCheck className="w-4 h-4 text-green-400" /> Official Sources
+                <FiCheck className="w-4 h-4 text-primary-light" /> Official Sources
               </span>
               <span className="flex items-center gap-1.5">
-                <FiCheck className="w-4 h-4 text-green-400" /> 100% Free
+                <FiCheck className="w-4 h-4 text-primary-light" /> 100% Free
               </span>
+            </div>
+
+            {/* Unknown Publisher notice */}
+            <div className="mt-5 max-w-xl mx-auto lg:mx-0 bg-dark-card/60 border border-dark-border rounded-lg px-4 py-3">
+              <div className="flex gap-2.5 mb-2">
+                <FiInfo className="w-4 h-4 text-blue-400 shrink-0 mt-px" />
+                <p className="text-xs text-gray-400 leading-relaxed">
+                  Windows shows an &ldquo;Unknown Publisher&rdquo; warning because the app isn&apos;t signed with a code-signing certificate (<strong className="text-gray-300">$200–$400/yr</strong> — steep for a free project). This <strong className="text-gray-300">doesn&apos;t mean it&apos;s unsafe</strong> — every tool is fetched directly from its official source with no adware or telemetry.
+                </p>
+              </div>
+              <p className="text-xs text-gray-500 pl-6.5">
+                To proceed: click <strong className="text-gray-300">&ldquo;More info&rdquo;</strong> → <strong className="text-gray-300">&ldquo;Run anyway&rdquo;</strong>
+              </p>
             </div>
           </div>
 
-          {/* Right — App preview */}
-          <div className="relative flex justify-center lg:justify-end">
-            <div className="w-full max-w-md">
-              {/* Window chrome */}
-              <div className="bg-dark-card border border-dark-border rounded-2xl shadow-2xl shadow-black/40 overflow-hidden">
+          {/* Right — App UI mockup matching actual desktop app */}
+          <div className="relative flex items-center justify-center lg:justify-end">
+            <div className="w-full max-w-lg relative">
+              {/* Glow effect */}
+              <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/15 to-accent/15 rounded-3xl blur-2xl scale-110 opacity-50 animate-pulse" style={{ animationDuration: '4s' }} />
+
+              {/* App window */}
+              <div className="bg-dark-card border border-dark-border rounded-2xl shadow-2xl shadow-primary/10 overflow-hidden animate-[fadeInUp_0.8s_ease-out]">
                 {/* Title bar */}
-                <div className="flex items-center gap-2 px-4 py-3 bg-dark-lighter border-b border-dark-border">
-                  <div className="w-3 h-3 rounded-full bg-red-500" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                  <div className="w-3 h-3 rounded-full bg-green-500" />
-                  <span className="ml-2 text-xs text-gray-500 font-medium">
-                    DevTools Installer
-                  </span>
+                <div className="flex items-center justify-between px-4 py-2.5 bg-dark-lighter border-b border-dark-border">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-primary-light">⚙</span>
+                    <span className="text-xs text-gray-400 font-medium">DevTools Installer</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <FiSearch className="w-3 h-3 text-gray-600" />
+                    <div className="flex gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-gray-700 hover:bg-yellow-500/60" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-gray-700 hover:bg-green-500/60" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-gray-700 hover:bg-red-500/60" />
+                    </div>
+                  </div>
                 </div>
-                {/* App body */}
-                <div className="p-6 space-y-5">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-white">
-                      Full-Stack Bundle
-                    </h3>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
-                      Installing
-                    </span>
-                  </div>
-                  {/* Progress bar */}
-                  <div className="w-full bg-dark-border rounded-full h-2 overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-primary to-accent rounded-full w-[75%] animate-pulse" />
-                  </div>
-                  {/* Status items */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm">
-                      <FiCheck className="w-4 h-4 text-green-400 shrink-0" />
-                      <span className="text-gray-300">Java 21 — Installed</span>
-                      <span className="ml-auto text-xs text-green-400/70">PATH ✓</span>
+
+                <div className="flex">
+                  {/* Sidebar */}
+                  <div className="w-40 shrink-0 border-r border-dark-border bg-dark-lighter/50 py-3 px-2.5 hidden sm:block">
+                    <p className="text-[10px] font-semibold text-gray-600 uppercase tracking-wider px-2 mb-1.5">Quick Setup</p>
+                    <div className="space-y-0.5 mb-3">
+                      <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-primary/10 border border-primary/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary-light" />
+                        <span className="text-[11px] text-primary-light font-medium truncate">Java Developer</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-white/3 transition-colors">
+                        <span className="w-1.5 h-1.5 rounded-full bg-pink-400" />
+                        <span className="text-[11px] text-gray-500 truncate">Full-Stack Dev</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-white/3 transition-colors">
+                        <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                        <span className="text-[11px] text-gray-500 truncate">Frontend Dev</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-white/3 transition-colors">
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                        <span className="text-[11px] text-gray-500 truncate">Cloud & DevOps</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <FiCheck className="w-4 h-4 text-green-400 shrink-0" />
-                      <span className="text-gray-300">Node.js 22 — Installed</span>
-                      <span className="ml-auto text-xs text-green-400/70">PATH ✓</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin shrink-0" />
-                      <span className="text-gray-400">Maven — Configuring PATH...</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-4 h-4 rounded-full border border-dark-border shrink-0" />
-                      <span className="text-gray-500">Python 3.x</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-4 h-4 rounded-full border border-dark-border shrink-0" />
-                      <span className="text-gray-500">Git</span>
+                    <p className="text-[10px] font-semibold text-gray-600 uppercase tracking-wider px-2 mb-1.5">Categories</p>
+                    <div className="space-y-0.5">
+                      {['Installed', 'Core Runtimes', 'Package Mgrs', 'Version Control', 'Cloud & DevOps', 'IDEs & Editors'].map((cat, i) => (
+                        <div key={cat} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-white/3 transition-colors">
+                          <span className="text-[11px] text-gray-500 truncate">{cat}</span>
+                          <span className="text-[9px] text-gray-600 bg-dark-border rounded-full px-1.5">{[8, 3, 4, 1, 4, 3][i]}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                  {/* Buttons */}
-                  <div className="flex gap-2">
-                    <button className="flex-1 py-2.5 bg-white/5 border border-dark-border rounded-lg text-sm text-gray-400 cursor-default">
-                      Details
-                    </button>
-                    <button className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400 cursor-default">
-                      <FiTrash2 className="w-3.5 h-3.5" /> Cleanup
-                    </button>
+
+                  {/* Main content */}
+                  <div className="flex-1 p-4">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="text-sm font-semibold text-white">Java Developer Setup</h3>
+                        <p className="text-[10px] text-gray-500">Complete Java development environment</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="flex items-center gap-1 text-[10px] text-gray-500"><FiRefreshCw className="w-3 h-3" /> Refresh</span>
+                        <span className="text-[10px] text-accent">Select All</span>
+                      </div>
+                    </div>
+
+                    {/* Tool cards grid */}
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {/* Java */}
+                      <div className="bg-dark-lighter border border-dark-border rounded-xl p-3 hover:border-primary/30 transition-colors animate-[fadeInUp_0.5s_ease-out_0.2s_both]">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FaJava className="w-4 h-4 text-orange-400" />
+                          <div>
+                            <p className="text-xs font-medium text-white">Java (JDK)</p>
+                            <p className="text-[9px] text-gray-500">Required for Java development</p>
+                          </div>
+                        </div>
+                        <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-dark-card border border-dark-border rounded text-[10px] text-gray-400">
+                          21.0.10 <span className="text-gray-600">▾</span>
+                        </div>
+                      </div>
+
+                      {/* Maven */}
+                      <div className="bg-dark-lighter border border-dark-border rounded-xl p-3 hover:border-primary/30 transition-colors animate-[fadeInUp_0.5s_ease-out_0.35s_both]">
+                        <div className="flex items-center gap-2 mb-1">
+                          <SiApachemaven className="w-4 h-4 text-red-400" />
+                          <div>
+                            <p className="text-xs font-medium text-white">Apache Maven</p>
+                            <p className="text-[9px] text-gray-500">Build automation tool</p>
+                          </div>
+                        </div>
+                        <p className="text-[9px] text-amber-400 mb-1.5">⚠ Requires Java (JDK)</p>
+                        <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-dark-card border border-dark-border rounded text-[10px] text-gray-400">
+                          3.9.14 <span className="text-gray-600">▾</span>
+                        </div>
+                      </div>
+
+                      {/* Gradle */}
+                      <div className="bg-dark-lighter border border-dark-border rounded-xl p-3 hover:border-primary/30 transition-colors animate-[fadeInUp_0.5s_ease-out_0.5s_both]">
+                        <div className="flex items-center gap-2 mb-1">
+                          <SiGradle className="w-4 h-4 text-teal-400" />
+                          <div>
+                            <p className="text-xs font-medium text-white">Gradle</p>
+                            <p className="text-[9px] text-gray-500">Multi-language build tool</p>
+                          </div>
+                        </div>
+                        <p className="text-[9px] text-amber-400 mb-1.5">⚠ Requires Java (JDK)</p>
+                        <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-dark-card border border-dark-border rounded text-[10px] text-gray-400">
+                          9.4.1 <span className="text-gray-600">▾</span>
+                        </div>
+                      </div>
+
+                      {/* Git */}
+                      <div className="bg-dark-lighter border border-dark-border rounded-xl p-3 hover:border-primary/30 transition-colors animate-[fadeInUp_0.5s_ease-out_0.65s_both]">
+                        <div className="flex items-center gap-2 mb-1">
+                          <FaGitAlt className="w-4 h-4 text-orange-500" />
+                          <div>
+                            <p className="text-xs font-medium text-white">Git</p>
+                            <p className="text-[9px] text-gray-500">Version control system</p>
+                          </div>
+                        </div>
+                        <p className="text-[9px] text-primary-light mb-1.5">✓ Installed: git 2.53.0</p>
+                        <div className="flex items-center justify-between">
+                          <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-dark-card border border-dark-border rounded text-[10px] text-gray-400">
+                            2.53.0 <span className="text-gray-600">▾</span>
+                          </div>
+                          <span className="text-[9px] px-2 py-0.5 bg-red-500/10 border border-red-500/20 text-red-400 rounded cursor-default">Uninstall</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Install button */}
+                    <div className="flex justify-end mt-4">
+                      <div className="px-4 py-1.5 bg-gradient-to-r from-primary to-accent text-white text-xs font-semibold rounded-lg shadow-lg shadow-primary/20 cursor-default">
+                        Install Selected
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

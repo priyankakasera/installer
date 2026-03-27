@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { FaGithub, FaTwitter } from 'react-icons/fa'
 
 const toolGuideLinks = [
   { label: 'Install Java', to: '/guides/java' },
@@ -29,26 +28,7 @@ export default function Footer() {
               Free one-click development environment setup for Windows.
               Install, configure, and cleanly remove 16+ developer tools.
             </p>
-            <div className="flex gap-3 mt-5">
-              <a
-                href="https://github.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-9 h-9 bg-white/5 border border-dark-border rounded-lg flex items-center justify-center text-gray-500 hover:text-white hover:border-primary/40 transition-all"
-                aria-label="GitHub"
-              >
-                <FaGithub className="w-4 h-4" />
-              </a>
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-9 h-9 bg-white/5 border border-dark-border rounded-lg flex items-center justify-center text-gray-500 hover:text-white hover:border-primary/40 transition-all"
-                aria-label="Twitter"
-              >
-                <FaTwitter className="w-4 h-4" />
-              </a>
-            </div>
+
           </div>
 
           {/* Product */}
