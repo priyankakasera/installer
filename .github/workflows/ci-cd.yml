@@ -4,17 +4,16 @@
 #
 # Branch strategy & what runs where:
 #
-#  Branch          │ Desktop changed │ Webapp changed
-#  ────────────────┼─────────────────┼──────────────────────────
-#  feature/* / PR  │ build only      │ nothing
-#  develop          │ build + sign    │ deploy (latest release URL)
-#  main            │ build + sign    │ auto-create release
-#                  │ + release       │ + deploy (new release URL)
+#  Branch          │ Desktop changed                           │ Webapp changed
+#  ────────────────┼───────────────────────────────────────────┼──────────────────
+#  feature/* / PR  │ build only                                │ nothing
+#  develop / main  │ version bump → build + sign → upload      │ deploy website
+#                  │   → cleanup (keep latest 3 versions)      │
 #
 # Job dependency graph:
-#   changes ──► build-desktop ──► create-release (main only)
-#                    │                   │
-#                    └───────────────────┴──► deploy-website (develop/main)
+#   changes ──► version-bump ──► build-desktop ──► upload-to-storage ──► cleanup-storage
+#                                      │                  │
+#                                      └──────────────────┴──► deploy-website
 #
 # ════════════════════════════════════════════════════════════════
 
@@ -58,18 +57,107 @@ jobs:
               - 'webapp/**'
               - 'firebase.json'
               - '.firebaserc'
-              - 'desktopapp/**'   # webapp redeploys when desktop cuts a new release
+              - 'desktopapp/**'   # webapp redeploys when desktop builds a new version
 
 # ────────────────────────────────────────────────────────────────
-# JOB 2 — Build & Sign the Windows installer
+# JOB 2 — Auto-bump version based on conventional commits
+#
+# Runs on:  develop and main, when desktopapp/ changed
+# Convention:
+#   feat:  → minor bump   (e.g. 1.0.0 → 1.1.0)
+#   fix:   → patch bump   (e.g. 1.0.0 → 1.0.1)
+#   BREAKING CHANGE / feat!: / fix!:  → major bump
+#   anything else → patch bump
+# ────────────────────────────────────────────────────────────────
+  version-bump:
+    name: Version Bump
+    needs: changes
+    if: |
+      needs.changes.outputs.desktop == 'true' &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') &&
+      github.event_name == 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+      filename: ${{ steps.bump.outputs.filename }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine version bump from commit messages
+        id: bump
+        run: |
+          # Get commit messages since last version tag (or all if no tags)
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [[ -n "$LAST_TAG" ]]; then
+            COMMITS=$(git log "${LAST_TAG}..HEAD" --pretty=format:"%s" -- desktopapp/)
+          else
+            COMMITS=$(git log --pretty=format:"%s" -- desktopapp/)
+          fi
+
+          echo "Commits since last tag:"
+          echo "$COMMITS"
+
+          # Determine bump type from conventional commit messages
+          BUMP="patch"
+          if echo "$COMMITS" | grep -qiE "^(feat|fix)(\(.+\))?!:|BREAKING CHANGE"; then
+            BUMP="major"
+          elif echo "$COMMITS" | grep -qiE "^feat(\(.+\))?:"; then
+            BUMP="minor"
+          fi
+
+          echo "Determined bump type: $BUMP"
+
+          # Read current version
+          CURRENT=$(jq -r '.version' desktopapp/package.json)
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+
+          case "$BUMP" in
+            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH + 1)) ;;
+          esac
+
+          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          FILENAME="DevTools-Installer-Setup-${NEW_VERSION}.exe"
+
+          echo "Version: $CURRENT → $NEW_VERSION ($BUMP)"
+          echo "version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "filename=${FILENAME}" >> "$GITHUB_OUTPUT"
+
+          # Update package.json
+          jq --arg v "$NEW_VERSION" '.version = $v' desktopapp/package.json > tmp.json
+          mv tmp.json desktopapp/package.json
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add desktopapp/package.json
+          if git diff --cached --quiet; then
+            echo "No version change to commit"
+          else
+            git commit -m "chore: bump version to ${{ steps.bump.outputs.version }} [skip ci]"
+            git push
+          fi
+
+# ────────────────────────────────────────────────────────────────
+# JOB 3 — Build & Sign the Windows installer
 #
 # Runs on:    all branches, when desktopapp/ changed
 # Signing:    develop and main only (skipped on feature branches)
 # ────────────────────────────────────────────────────────────────
   build-desktop:
     name: Build Desktop App
-    needs: changes
-    if: needs.changes.outputs.desktop == 'true'
+    needs: [changes, version-bump]
+    if: |
+      always() &&
+      needs.changes.outputs.desktop == 'true' &&
+      (needs.version-bump.result == 'success' || needs.version-bump.result == 'skipped')
     runs-on: windows-latest
     timeout-minutes: 30
     outputs:
@@ -79,11 +167,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
 
       - name: Read version from package.json
         id: version
         shell: pwsh
         run: |
+          # Pull latest in case version-bump just pushed
+          git pull --ff-only origin ${{ github.ref_name }} 2>$null
           $pkg = Get-Content "desktopapp/package.json" -Raw | ConvertFrom-Json
           $version = $pkg.version
           $filename = "DevTools-Installer-Setup-${version}.exe"
@@ -195,34 +287,35 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: DevTools-Installer-Windows
-          path: |
-            desktopapp/dist/*.exe
-            desktopapp/dist/*.blockmap
-            desktopapp/dist/latest.yml
+          path: desktopapp/dist/*.exe
           if-no-files-found: error
           retention-days: 30
 
 # ────────────────────────────────────────────────────────────────
-# JOB 3 — Auto-create GitHub Release
+# JOB 4 — Upload Installer to Firebase Storage
 #
-# Runs on:  main branch only, when desktopapp/ changed
-# Purpose:  Triggered automatically when develop is merged into main.
-#           Tags the commit as v{version} and publishes the release.
+# Runs on:  develop and main, when desktopapp/ changed
+# Uploads only the .exe to a versioned path in the bucket.
 # ────────────────────────────────────────────────────────────────
-  create-release:
-    name: Create GitHub Release
+  upload-to-storage:
+    name: Upload to Firebase Storage
     needs: [changes, build-desktop]
     if: |
-      github.ref == 'refs/heads/main' &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') &&
       needs.changes.outputs.desktop == 'true' &&
       needs.build-desktop.result == 'success'
     runs-on: ubuntu-latest
     outputs:
-      download_url: ${{ steps.release-url.outputs.download_url }}
-      tag: ${{ steps.release-url.outputs.tag }}
+      download_url: ${{ steps.upload.outputs.download_url }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
 
       - name: Download build artifact
         uses: actions/download-artifact@v4
@@ -230,40 +323,93 @@ jobs:
           name: DevTools-Installer-Windows
           path: release-assets
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: "v${{ needs.build-desktop.outputs.version }}"
-          name: "DevTools Installer v${{ needs.build-desktop.outputs.version }}"
-          draft: false
-          generate_release_notes: true
-          files: |
-            release-assets/**/*.exe
-            release-assets/**/*.blockmap
-            release-assets/**/latest.yml
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Output download URL
-        id: release-url
+      - name: Upload .exe to Firebase Storage
+        id: upload
         run: |
-          TAG="v${{ needs.build-desktop.outputs.version }}"
+          VERSION="${{ needs.build-desktop.outputs.version }}"
           FILENAME="${{ needs.build-desktop.outputs.filename }}"
-          URL="https://github.com/${{ github.repository }}/releases/download/${TAG}/${FILENAME}"
-          echo "download_url=${URL}" >> "$GITHUB_OUTPUT"
-          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
-          echo "Release download URL: ${URL}"
+          BUCKET="${{ secrets.FIREBASE_STORAGE_BUCKET }}"
+
+          EXE_PATH=$(find release-assets -name "*.exe" | head -1)
+          if [[ -z "$EXE_PATH" ]]; then
+            echo "::error::No .exe found in release-assets"
+            exit 1
+          fi
+
+          echo "Uploading ${FILENAME} to gs://${BUCKET}/releases/v${VERSION}/"
+
+          # Upload versioned copy
+          gsutil -h "Content-Type:application/octet-stream" \
+                 -h "Content-Disposition:attachment; filename=${FILENAME}" \
+            cp -a public-read "$EXE_PATH" \
+            "gs://${BUCKET}/releases/v${VERSION}/${FILENAME}"
+
+          DOWNLOAD_URL="https://storage.googleapis.com/${BUCKET}/releases/v${VERSION}/${FILENAME}"
+          echo "download_url=${DOWNLOAD_URL}" >> "$GITHUB_OUTPUT"
+          echo "Download URL: ${DOWNLOAD_URL}"
 
 # ────────────────────────────────────────────────────────────────
-# JOB 4 — Deploy Website to Firebase Hosting
+# JOB 5 — Cleanup old versions in Firebase Storage
 #
-# Runs on:  develop and main, when webapp/ or desktopapp/ changed
-# develop:   fetches the latest existing release URL
-# main:     uses the URL from the release just created in Job 3
+# Runs after successful upload. Keeps only the latest 3 versions.
+# ────────────────────────────────────────────────────────────────
+  cleanup-storage:
+    name: Cleanup Old Versions
+    needs: [upload-to-storage]
+    if: needs.upload-to-storage.result == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Remove old versions (keep latest 3)
+        run: |
+          BUCKET="${{ secrets.FIREBASE_STORAGE_BUCKET }}"
+
+          echo "Listing version folders in gs://${BUCKET}/releases/..."
+
+          # List all versioned directories (v1.0.0, v1.1.0, etc.)
+          VERSIONS=$(gsutil ls "gs://${BUCKET}/releases/" 2>/dev/null \
+            | grep -oP 'v\d+\.\d+\.\d+' \
+            | sort -t. -k1,1n -k2,2n -k3,3n \
+            | uniq)
+
+          COUNT=$(echo "$VERSIONS" | grep -c . || true)
+          echo "Found $COUNT version(s): $VERSIONS"
+
+          if [[ "$COUNT" -le 3 ]]; then
+            echo "3 or fewer versions present — nothing to clean up."
+            exit 0
+          fi
+
+          # Calculate how many to delete (keep the latest 3)
+          DELETE_COUNT=$((COUNT - 3))
+          TO_DELETE=$(echo "$VERSIONS" | head -n "$DELETE_COUNT")
+
+          echo "Deleting $DELETE_COUNT old version(s):"
+          for VER in $TO_DELETE; do
+            echo "  Removing gs://${BUCKET}/releases/${VER}/"
+            gsutil -m rm -r "gs://${BUCKET}/releases/${VER}/" || true
+          done
+
+          echo "Cleanup complete. Remaining versions:"
+          gsutil ls "gs://${BUCKET}/releases/" 2>/dev/null | grep -oP 'v\d+\.\d+\.\d+' | sort -t. -k1,1n -k2,2n -k3,3n | uniq
+
+# ────────────────────────────────────────────────────────────────
+# JOB 6 — Deploy Website to Firebase Hosting
+#
+# Runs on:  develop and main, when webapp/ or desktopapp/ changed.
+# Download URL points to the Firebase Storage .exe.
 # ────────────────────────────────────────────────────────────────
   deploy-website:
     name: Deploy Website
-    needs: [changes, build-desktop, create-release]
+    needs: [changes, build-desktop, upload-to-storage]
     if: |
       always() &&
       !failure() && !cancelled() &&
@@ -286,31 +432,32 @@ jobs:
 
       - name: Resolve release info
         id: release
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
-          # If a release was created in this run (main branch), use it directly.
-          # Otherwise (develop branch), fetch the latest published release.
-          if [[ "${{ needs.create-release.result }}" == "success" ]]; then
+          BUCKET="${{ secrets.FIREBASE_STORAGE_BUCKET }}"
+
+          # If upload-to-storage ran in this workflow, use its URL directly.
+          if [[ "${{ needs.upload-to-storage.result }}" == "success" ]]; then
             VERSION="${{ needs.build-desktop.outputs.version }}"
             FILENAME="${{ needs.build-desktop.outputs.filename }}"
-            DOWNLOAD_URL="${{ needs.create-release.outputs.download_url }}"
-            echo "Using newly created release: v${VERSION}"
+            DOWNLOAD_URL="${{ needs.upload-to-storage.outputs.download_url }}"
+            echo "Using newly uploaded Firebase Storage URL: v${VERSION}"
           else
-            RELEASE_JSON=$(gh api "repos/${{ github.repository }}/releases/latest" 2>/dev/null || echo "{}")
-            TAG=$(echo "$RELEASE_JSON" | jq -r '.tag_name // ""')
+            # No new desktop build — find the latest version in the bucket.
+            LATEST_VER=$(gsutil ls "gs://${BUCKET}/releases/" 2>/dev/null \
+              | grep -oP 'v\d+\.\d+\.\d+' \
+              | sort -t. -k1,1n -k2,2n -k3,3n \
+              | uniq | tail -1)
 
-            if [[ -n "$TAG" && "$TAG" =~ ^v[0-9] ]]; then
-              VERSION="${TAG#v}"
+            if [[ -n "$LATEST_VER" ]]; then
+              VERSION="${LATEST_VER#v}"
               FILENAME="DevTools-Installer-Setup-${VERSION}.exe"
-              DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${TAG}/${FILENAME}"
-              echo "Using latest existing release: ${TAG}"
+              DOWNLOAD_URL="https://storage.googleapis.com/${BUCKET}/releases/${LATEST_VER}/${FILENAME}"
+              echo "Using latest Firebase Storage version: ${LATEST_VER}"
             else
-              # No release published yet — link to the releases page
               VERSION="1.0.0"
               FILENAME="DevTools-Installer-Setup-${VERSION}.exe"
-              DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases"
-              echo "No release found — linking to releases page"
+              DOWNLOAD_URL=""
+              echo "No versions found in Storage — download URL will be empty"
             fi
           fi
 
