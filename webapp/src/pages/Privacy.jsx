@@ -45,7 +45,7 @@ export default function Privacy() {
             <div>
               <h2 className="text-lg font-semibold text-white mb-3">Website</h2>
               <ul className="list-disc list-inside space-y-2">
-                <li>This website is a static site hosted on GitHub Pages.</li>
+                <li>This website is a static site hosted on Firebase.</li>
                 <li>We do not use cookies, analytics services, or tracking scripts.</li>
                 <li>Google Fonts are loaded from Google's CDN; Google's own privacy policy applies to that request.</li>
               </ul>
@@ -63,8 +63,8 @@ export default function Privacy() {
             <div>
               <h2 className="text-lg font-semibold text-white mb-3">Contact</h2>
               <p>
-                If you have questions about this policy, please open an issue on our GitHub
-                repository.
+                If you have questions about this policy, please drop an email to{' '}
+                <a href="mailto:support@devtools-installer.web.app" className="text-primary-light hover:underline">support@devtools-installer.web.app</a>
               </p>
             </div>
           </div>

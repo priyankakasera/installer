@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Outer hexagon -->
+  <polygon points="64,4 120,35 120,93 64,124 8,93 8,35"
+           fill="#333333"/>
+  <!-- Inner hexagon (green) -->
+  <polygon points="64,14 110,40 110,88 64,114 18,88 18,40"
+           fill="#44883E"/>
+  <!-- Node.js hex icon - stylized N or wordmark -->
+  <text x="64" y="62" font-family="Arial Black, Arial, sans-serif" font-weight="900"
+        font-size="36" fill="white" text-anchor="middle">N</text>
+  <text x="64" y="85" font-family="Arial, sans-serif" font-weight="700"
+        font-size="13.5" fill="white" text-anchor="middle" letter-spacing="-0.3">node.js</text>
+</svg>

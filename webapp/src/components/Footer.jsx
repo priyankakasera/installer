@@ -120,12 +120,6 @@ export default function Footer() {
             >
               Support
             </Link>
-            <Link
-              to="/authors"
-              className="text-xs text-gray-600 hover:text-gray-400 transition-colors"
-            >
-              Authors
-            </Link>
           </div>
         </div>
       </div>

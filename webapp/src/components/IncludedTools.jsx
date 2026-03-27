@@ -1,22 +1,5 @@
 import {
-  FaJava,
-  FaNodeJs,
-  FaPython,
-  FaGitAlt,
-  FaDocker,
-  FaAws,
-} from 'react-icons/fa'
-import {
-  SiApachemaven,
-  SiGradle,
-  SiYarn,
-  SiKubernetes,
-  SiPostman,
-} from 'react-icons/si'
-import { VscCode, VscAzure } from 'react-icons/vsc'
-import {
   FiPackage,
-  FiBox,
   FiCode,
   FiCloud,
   FiTerminal,
@@ -28,74 +11,74 @@ const categories = [
     name: 'Core Runtimes',
     icon: FiCode,
     tools: [
-      { name: 'Java', icon: FaJava, color: '#e76f00' },
-      { name: 'Node.js', icon: FaNodeJs, color: '#68a063' },
-      { name: 'Python', icon: FaPython, color: '#3776ab' },
+      { name: 'Java', logo: '/icons/java.png' },
+      { name: 'Node.js', logo: '/icons/nodejs.svg' },
+      { name: 'Python', logo: '/icons/python.svg' },
     ],
   },
   {
     name: 'Package Managers',
     icon: FiPackage,
     tools: [
-      { name: 'Maven', icon: SiApachemaven, color: '#c71a36' },
-      { name: 'Gradle', icon: SiGradle, color: '#02303a' },
-      { name: 'Yarn', icon: SiYarn, color: '#2c8ebb' },
-      { name: 'Chocolatey', icon: FiBox, color: '#80b5e3' },
+      { name: 'Maven', logo: '/icons/maven.svg' },
+      { name: 'Gradle', logo: '/icons/gradle.svg' },
+      { name: 'Yarn', logo: '/icons/yarn.svg' },
+      { name: 'Chocolatey', logo: '/icons/chocolatey.png' },
     ],
   },
   {
     name: 'Version Control',
     icon: FiTerminal,
-    tools: [{ name: 'Git', icon: FaGitAlt, color: '#f05032' }],
+    tools: [{ name: 'Git', logo: '/icons/github.svg' }],
   },
   {
     name: 'Cloud & DevOps',
     icon: FiCloud,
     tools: [
-      { name: 'Docker', icon: FaDocker, color: '#2496ed' },
-      { name: 'kubectl', icon: SiKubernetes, color: '#326ce5' },
-      { name: 'AWS CLI', icon: FaAws, color: '#ff9900' },
-      { name: 'Azure CLI', icon: VscAzure, color: '#0078d4' },
+      { name: 'Docker', logo: '/icons/docker.svg' },
+      { name: 'kubectl', logo: '/icons/kubernetes.png' },
+      { name: 'AWS CLI', logo: '/icons/aws.jpeg' },
+      { name: 'Azure CLI', logo: '/icons/azure.png' },
     ],
   },
   {
     name: 'IDEs & Editors',
     icon: FiTool,
     tools: [
-      { name: 'VS Code', icon: VscCode, color: '#007acc' },
-      { name: 'IntelliJ IDEA', icon: FiCode, color: '#fe315d' },
-      { name: 'Notepad++', icon: FiTerminal, color: '#90e59a' },
+      { name: 'VS Code', logo: '/icons/vscode.png' },
+      { name: 'IntelliJ IDEA', logo: '/icons/intellij.png' },
+      { name: 'Notepad++', logo: '/icons/notepadpp.png' },
     ],
   },
   {
     name: 'API Tools',
     icon: FiPackage,
-    tools: [{ name: 'Postman', icon: SiPostman, color: '#ff6c37' }],
+    tools: [{ name: 'Postman', logo: '/icons/postman.svg' }],
   },
 ]
 
 const bundles = [
   {
     name: 'Java Developer',
-    tools: 'Java, Maven, Gradle, Git, IntelliJ IDEA',
+    tools: 'Java, Maven, Gradle, Git',
     color: 'from-orange-500/20 to-red-500/20',
     border: 'border-orange-500/20',
   },
   {
     name: 'Full-Stack Developer',
-    tools: 'Java, Node.js, Python, Maven, Git, VS Code',
+    tools: 'Java, Node.js, Python, Git',
     color: 'from-blue-500/20 to-purple-500/20',
     border: 'border-blue-500/20',
   },
   {
     name: 'Frontend Developer',
-    tools: 'Node.js, Yarn, Git, VS Code',
+    tools: 'Node.js, Git',
     color: 'from-green-500/20 to-teal-500/20',
     border: 'border-green-500/20',
   },
   {
     name: 'Cloud & DevOps',
-    tools: 'Docker, kubectl, AWS CLI, Azure CLI, Git',
+    tools: 'Docker Desktop, kubectl, AWS CLI, Azure CLI',
     color: 'from-cyan-500/20 to-blue-500/20',
     border: 'border-cyan-500/20',
   },
@@ -133,9 +116,10 @@ export default function IncludedTools() {
                     key={tool.name}
                     className="flex items-center gap-2 px-3 py-1.5 bg-dark-lighter rounded-lg border border-dark-border"
                   >
-                    <tool.icon
-                      className="w-4 h-4 shrink-0"
-                      style={{ color: tool.color }}
+                    <img
+                      src={tool.logo}
+                      alt={tool.name}
+                      className="w-4 h-4 shrink-0 object-contain"
                     />
                     <span className="text-sm text-gray-300">{tool.name}</span>
                   </div>

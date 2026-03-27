@@ -1,36 +1,41 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { FaJava, FaNodeJs, FaPython, FaGitAlt, FaDocker, FaYarn } from 'react-icons/fa'
-import {
-  SiApachemaven, SiGradle, SiKubernetes,
-} from 'react-icons/si'
-import { VscCode } from 'react-icons/vsc'
 import {
   FiMousePointer, FiSettings, FiCheckCircle, FiShield, FiZap,
-  FiDownload, FiList, FiMonitor
+  FiDownload, FiList, FiMonitor, FiTrash2, FiLayers
 } from 'react-icons/fi'
+import { HiOutlineDesktopComputer } from 'react-icons/hi'
 
 const features = [
   { icon: FiMousePointer, title: 'One-Click Setup', desc: 'Select tools and hit install — everything is handled automatically.' },
+  { icon: FiTrash2, title: 'One-Click Cleanup', desc: 'Cleanly uninstall tools, remove PATH entries, and delete environment variables in one click.' },
+  { icon: FiLayers, title: 'Bundle Installation', desc: 'Pre-configured bundles for Java, Full-Stack, Frontend, and Cloud & DevOps workflows.' },
   { icon: FiSettings, title: 'Automatic Config', desc: 'PATH, JAVA_HOME, MAVEN_HOME, and all environment variables are set for you.' },
   { icon: FiCheckCircle, title: 'Hassle-Free', desc: 'Avoid setup errors, version conflicts, and manual configuration.' },
   { icon: FiShield, title: 'Safe & Secure', desc: 'Downloads directly from official sources. No bundled adware or telemetry.' },
   { icon: FiZap, title: 'Fast & Lightweight', desc: 'Small installer size with parallel downloads for maximum speed.' },
   { icon: FiDownload, title: 'Version Selection', desc: 'Choose exactly which version of each tool you want to install.' },
+  { icon: HiOutlineDesktopComputer, title: 'Tested on Windows 11', desc: 'Built and tested on Windows 11 64-bit. Compatible with Windows 10 and 11.' },
 ]
 
 const tools = [
-  { name: 'Java (JDK)', icon: FaJava, color: '#e76f00', desc: 'Oracle JDK & Adoptium Temurin — multiple versions' },
-  { name: 'Node.js', icon: FaNodeJs, color: '#68a063', desc: 'JavaScript runtime — LTS and Current releases' },
-  { name: 'Python', icon: FaPython, color: '#3776ab', desc: 'Python 3.x with pip and Scripts in PATH' },
-  { name: 'Maven', icon: SiApachemaven, color: '#c71a36', desc: 'Build automation for Java projects' },
-  { name: 'Git', icon: FaGitAlt, color: '#f05032', desc: 'Distributed version control system' },
-  { name: 'Docker Desktop', icon: FaDocker, color: '#2496ed', desc: 'Container platform with Engine, CLI, and Compose' },
-  { name: 'Gradle', icon: SiGradle, color: '#02303a', desc: 'Multi-language build automation tool' },
-  { name: 'Yarn', icon: FaYarn, color: '#2c8ebb', desc: 'Fast dependency management for Node.js' },
-  { name: 'Kubernetes CLI', icon: SiKubernetes, color: '#326ce5', desc: 'kubectl for controlling K8s clusters' },
-  { name: 'VS Code', icon: VscCode, color: '#007acc', desc: 'Lightweight but powerful code editor' },
+  { name: 'Java (JDK)', logo: '/icons/java.png', desc: 'Oracle JDK & Adoptium Temurin — multiple versions' },
+  { name: 'Node.js', logo: '/icons/nodejs.svg', desc: 'JavaScript runtime — LTS and Current releases' },
+  { name: 'Python', logo: '/icons/python.svg', desc: 'Python 3.x with pip and Scripts in PATH' },
+  { name: 'Maven', logo: '/icons/maven.svg', desc: 'Build automation for Java projects' },
+  { name: 'Gradle', logo: '/icons/gradle.svg', desc: 'Multi-language build automation tool' },
+  { name: 'Yarn', logo: '/icons/yarn.svg', desc: 'Fast dependency management for Node.js' },
+  { name: 'Chocolatey', logo: '/icons/chocolatey.png', desc: 'The package manager for Windows' },
+  { name: 'Git', logo: '/icons/github.svg', desc: 'Distributed version control system' },
+  { name: 'Docker Desktop', logo: '/icons/docker.svg', desc: 'Container platform with Engine, CLI, and Compose' },
+  { name: 'Kubernetes CLI', logo: '/icons/kubernetes.png', desc: 'kubectl for controlling K8s clusters' },
+  { name: 'AWS CLI', logo: '/icons/aws.jpeg', desc: 'Command-line interface for Amazon Web Services' },
+  { name: 'Azure CLI', logo: '/icons/azure.png', desc: 'Command-line interface for Microsoft Azure' },
+  { name: 'VS Code', logo: '/icons/vscode.png', desc: 'Lightweight but powerful code editor' },
+  { name: 'IntelliJ IDEA', logo: '/icons/intellij.png', desc: 'Professional IDE for Java and Kotlin development' },
+  { name: 'Notepad++', logo: '/icons/notepadpp.png', desc: 'Free source code editor and Notepad replacement' },
+  { name: 'Postman', logo: '/icons/postman.svg', desc: 'API platform for building, testing, and documenting APIs' },
 ]
 
 const steps = [
@@ -89,7 +94,7 @@ export default function Product() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {tools.map((t) => (
               <div key={t.name} className="flex items-start gap-4 bg-dark-card border border-dark-border rounded-2xl p-6 hover:border-primary/40 transition-all duration-300">
-                <t.icon className="w-8 h-8 shrink-0 mt-0.5" style={{ color: t.color }} />
+                <img src={t.logo} alt={t.name} className="w-8 h-8 shrink-0 mt-0.5 object-contain" />
                 <div>
                   <h3 className="font-semibold text-white">{t.name}</h3>
                   <p className="text-sm text-gray-400 mt-1">{t.desc}</p>

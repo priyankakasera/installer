@@ -6,11 +6,11 @@ import { FiChevronDown, FiMail, FiSend } from 'react-icons/fi'
 const faqs = [
   {
     q: 'Is DevTools Installer free?',
-    a: 'Yes, DevTools Installer is 100% free and open source. No hidden costs, subscriptions, or ads.',
+    a: 'Yes, DevTools Installer is 100% free and open source. No hidden costs or subscriptions.',
   },
   {
     q: 'Which versions of Windows are supported?',
-    a: 'DevTools Installer supports Windows 10 and Windows 11 (64-bit). Both Home and Pro editions are compatible.',
+    a: 'DevTools Installer is tested on Windows 11 64-bit and is compatible with both Windows 10 and Windows 11 (Home and Pro editions).',
   },
   {
     q: 'Does the installer require administrator privileges?',
@@ -30,7 +30,7 @@ const faqs = [
   },
   {
     q: 'How do I uninstall tools?',
-    a: 'All tools are installed using their standard installers. You can remove them via Windows Settings → Apps & Features, just like any other program.',
+    a: 'DevTools Installer includes a built-in one-click uninstall feature that removes the tool, cleans up PATH entries, and deletes related environment variables. You can also remove tools manually via Windows Settings → Apps & Features.',
   },
   {
     q: 'Can I use this on macOS or Linux?',

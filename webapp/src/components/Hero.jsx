@@ -44,7 +44,7 @@ export default function Hero() {
                 <div className="text-left">
                   <div className="text-base">Download Free Installer (.exe)</div>
                   <div className="text-xs font-normal opacity-80">
-                    v{release.version} &middot; Windows 10/11 &middot; ~5 MB
+                    v{release.version} &middot; Windows 10/11 64-bit &middot; ~5 MB
                   </div>
                 </div>
               </a>
@@ -52,6 +52,9 @@ export default function Hero() {
 
             {/* Trust badges */}
             <div className="mt-6 flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-sm text-gray-400">
+              <span className="flex items-center gap-1.5">
+                <FiCheck className="w-4 h-4 text-primary-light" /> One-Click Setup
+              </span>
               <span className="flex items-center gap-1.5">
                 <FiCheck className="w-4 h-4 text-primary-light" /> 4 Setup Bundles
               </span>
