@@ -7,14 +7,14 @@
 #  Branch          │ Desktop changed │ Webapp changed
 #  ────────────────┼─────────────────┼──────────────────────────
 #  feature/* / PR  │ build only      │ nothing
-#  master          │ build + sign    │ deploy (latest release URL)
+#  develop          │ build + sign    │ deploy (latest release URL)
 #  main            │ build + sign    │ auto-create release
 #                  │ + release       │ + deploy (new release URL)
 #
 # Job dependency graph:
 #   changes ──► build-desktop ──► create-release (main only)
 #                    │                   │
-#                    └───────────────────┴──► deploy-website (master/main)
+#                    └───────────────────┴──► deploy-website (develop/main)
 #
 # ════════════════════════════════════════════════════════════════
 
@@ -22,9 +22,9 @@ name: CI/CD
 
 on:
   push:
-    branches: [main, master, "feature/**"]
+    branches: [main, develop, "feature/**"]
   pull_request:
-    branches: [main, master]
+    branches: [main, develop]
   workflow_dispatch:
 
 permissions:
@@ -64,7 +64,7 @@ jobs:
 # JOB 2 — Build & Sign the Windows installer
 #
 # Runs on:    all branches, when desktopapp/ changed
-# Signing:    master and main only (skipped on feature branches)
+# Signing:    develop and main only (skipped on feature branches)
 # ────────────────────────────────────────────────────────────────
   build-desktop:
     name: Build Desktop App
@@ -134,9 +134,9 @@ jobs:
           if (-not $exe) { throw "No .exe found in dist/" }
           Write-Host "Built: $($exe.Name) ($([math]::Round($exe.Length / 1MB, 2)) MB)"
 
-      # ── Signing: master and main only ─────────────────────────
+      # ── Signing: develop and main only ─────────────────────────
       - name: Sign installer
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
         shell: pwsh
         working-directory: desktopapp
         env:
@@ -206,7 +206,7 @@ jobs:
 # JOB 3 — Auto-create GitHub Release
 #
 # Runs on:  main branch only, when desktopapp/ changed
-# Purpose:  Triggered automatically when master is merged into main.
+# Purpose:  Triggered automatically when develop is merged into main.
 #           Tags the commit as v{version} and publishes the release.
 # ────────────────────────────────────────────────────────────────
   create-release:
@@ -257,8 +257,8 @@ jobs:
 # ────────────────────────────────────────────────────────────────
 # JOB 4 — Deploy Website to Firebase Hosting
 #
-# Runs on:  master and main, when webapp/ or desktopapp/ changed
-# master:   fetches the latest existing release URL
+# Runs on:  develop and main, when webapp/ or desktopapp/ changed
+# develop:   fetches the latest existing release URL
 # main:     uses the URL from the release just created in Job 3
 # ────────────────────────────────────────────────────────────────
   deploy-website:
@@ -267,7 +267,7 @@ jobs:
     if: |
       always() &&
       !failure() && !cancelled() &&
-      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') &&
       needs.changes.outputs.webapp == 'true'
     runs-on: ubuntu-latest
 
@@ -290,7 +290,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           # If a release was created in this run (main branch), use it directly.
-          # Otherwise (master branch), fetch the latest published release.
+          # Otherwise (develop branch), fetch the latest published release.
           if [[ "${{ needs.create-release.result }}" == "success" ]]; then
             VERSION="${{ needs.build-desktop.outputs.version }}"
             FILENAME="${{ needs.build-desktop.outputs.filename }}"
