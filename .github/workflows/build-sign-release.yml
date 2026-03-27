@@ -221,10 +221,10 @@ jobs:
   release:
     name: Create GitHub Release
     needs: build-and-sign
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: needs.build-and-sign.outputs.is_release == 'true'
     runs-on: ubuntu-latest
     outputs:
-      download_url: ${{ steps.urls.outputs.download_url }}
+      download_url: ${{ steps.storage.outputs.download_url }}
 
     steps:
       - name: Download build artifact
@@ -251,14 +251,32 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Compute download URL
-        id: urls
+      # Upload .exe to Firebase Storage so the website can link directly
+      # without depending on GitHub release timing or availability.
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Upload installer to Firebase Storage
+        id: storage
         run: |
-          TAG="${{ github.ref_name }}"
           FILENAME="${{ needs.build-and-sign.outputs.filename }}"
-          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${TAG}/${FILENAME}"
+          EXE_PATH=$(find release-assets -name "*.exe" | head -1)
+          BUCKET="${{ secrets.FIREBASE_PROJECT_ID }}.appspot.com"
+          GCS_PATH="gs://${BUCKET}/releases/${FILENAME}"
+
+          echo "Uploading ${EXE_PATH} → ${GCS_PATH}"
+          gcloud storage cp "${EXE_PATH}" "${GCS_PATH}"
+
+          # Make the object publicly readable
+          gcloud storage objects update "${GCS_PATH}" --add-acl-grant=entity=allUsers,role=READER
+
+          # Build the public HTTPS URL
+          ENCODED=$(python3 -c "import urllib.parse; print(urllib.parse.quote('releases/${FILENAME}', safe=''))")
+          DOWNLOAD_URL="https://firebasestorage.googleapis.com/v0/b/${BUCKET}/o/${ENCODED}?alt=media"
+          echo "Download URL: ${DOWNLOAD_URL}"
           echo "download_url=${DOWNLOAD_URL}" >> "$GITHUB_OUTPUT"
-          echo "Release URL: ${DOWNLOAD_URL}"
 
   # ──────────────────────────────────────────────────────────────
   # JOB 3: Deploy Website with Updated Download Link
@@ -266,7 +284,7 @@ jobs:
   deploy-website:
     name: Deploy Website
     needs: [build-and-sign, release]
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: needs.build-and-sign.outputs.is_release == 'true'
     runs-on: ubuntu-latest
 
     steps:

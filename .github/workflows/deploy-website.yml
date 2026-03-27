@@ -3,12 +3,11 @@ name: Deploy Website to Firebase Hosting
 on:
   push:
     branches: [master]
-    # paths:
-    #   - 'webapp/**'
-    #   - 'firebase.json'
-    #   - '.firebaserc'
-  release:
-    types: [published]
+    paths:
+      - 'webapp/**'
+      - 'firebase.json'
+      - '.firebaserc'
+  # Note: release-triggered website deploys are handled by build-sign-release.yml
   workflow_dispatch:
 
 permissions:
