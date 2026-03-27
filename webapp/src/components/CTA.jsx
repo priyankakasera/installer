@@ -14,7 +14,7 @@ export default function CTA() {
         </p>
         <a
           href={release.downloadUrl}
-          target="_blank"
+          download={release.fileName}
           rel="noopener noreferrer"
           className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] transition-all duration-200"
         >
