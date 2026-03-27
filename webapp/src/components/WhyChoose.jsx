@@ -1,20 +1,48 @@
-import { FiMousePointer, FiSettings, FiCheckCircle } from 'react-icons/fi'
+import {
+  FiMousePointer,
+  FiTrash2,
+  FiDollarSign,
+  FiPackage,
+  FiMonitor,
+  FiShield,
+} from 'react-icons/fi'
 
 const features = [
   {
     icon: FiMousePointer,
-    title: 'One-Click Setup',
-    description: 'Install Java, Maven, Node.js, and more with a single click.',
+    title: 'One-Click Setup Bundles',
+    description:
+      'Choose from ready-made bundles — Java Developer, Full-Stack, Frontend, or Cloud & DevOps — and install everything in one click.',
   },
   {
-    icon: FiSettings,
-    title: 'Automatic Config',
-    description: 'Sets PATH and environment variables for you.',
+    icon: FiTrash2,
+    title: 'One-Click Cleanup',
+    description:
+      'Completely remove tools along with their binaries, PATH entries, and environment variables. No leftover junk.',
   },
   {
-    icon: FiCheckCircle,
-    title: 'Hassle-Free',
-    description: 'Avoid setup errors and conflicts.',
+    icon: FiDollarSign,
+    title: '100% Free',
+    description:
+      'No subscriptions, no trials, no hidden costs. DevTools Installer is completely free and open for everyone.',
+  },
+  {
+    icon: FiPackage,
+    title: 'All Tools in One Place',
+    description:
+      'Java, Node.js, Python, Maven, Docker, Git, VS Code, and 10+ more tools — no more hunting across different websites.',
+  },
+  {
+    icon: FiMonitor,
+    title: 'Tested on Windows 11',
+    description:
+      'Built and tested specifically for Windows 10 and 11. Handles PATH configuration and environment variables automatically.',
+  },
+  {
+    icon: FiShield,
+    title: 'Safe & Secure',
+    description:
+      'Every tool is downloaded directly from its official source. No bundled adware, no telemetry, no surprises.',
   },
 ]
 
@@ -22,9 +50,12 @@ export default function WhyChoose() {
   return (
     <section className="py-20 lg:py-28" id="features">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl sm:text-4xl font-bold text-white text-center mb-14">
-          Why Choose DevTools Installer?
-        </h2>
+        <div className="text-center mb-14">
+          <span className="section-label">Features</span>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mt-4">
+            Why Choose DevTools Installer?
+          </h2>
+        </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((f) => (

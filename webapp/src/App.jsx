@@ -2,6 +2,8 @@ import { Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
 import Home from './pages/Home'
 import Product from './pages/Product'
+import Guides from './pages/Guides'
+import ToolGuide from './pages/ToolGuide'
 import DataFacting from './pages/DataFacting'
 import Support from './pages/Support'
 import Authors from './pages/Authors'
@@ -13,6 +15,8 @@ export default function App() {
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
         <Route path="/product" element={<Product />} />
+        <Route path="/guides" element={<Guides />} />
+        <Route path="/guides/:toolId" element={<ToolGuide />} />
         <Route path="/data-facting" element={<DataFacting />} />
         <Route path="/support" element={<Support />} />
         <Route path="/authors" element={<Authors />} />
