@@ -446,11 +446,13 @@ jobs:
           BUCKET="${{ secrets.FIREBASE_STORAGE_BUCKET }}"
           MANIFEST_URL="https://storage.googleapis.com/${BUCKET}/releases/latest.json"
 
-          # If upload-to-storage ran in this workflow, use its output directly.
+          # If upload-to-storage ran in this workflow, construct the URL
+          # directly from build outputs + bucket (job outputs containing
+          # secret values get masked/emptied by GitHub Actions).
           if [[ "${{ needs.upload-to-storage.result }}" == "success" ]]; then
             VERSION="${{ needs.build-desktop.outputs.version }}"
             FILENAME="${{ needs.build-desktop.outputs.filename }}"
-            DOWNLOAD_URL="${{ needs.upload-to-storage.outputs.download_url }}"
+            DOWNLOAD_URL="https://storage.googleapis.com/${BUCKET}/releases/v${VERSION}/${FILENAME}"
             echo "Using newly uploaded version: v${VERSION}"
           else
             # No new desktop build this run — fetch the latest.json manifest
