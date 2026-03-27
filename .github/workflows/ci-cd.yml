@@ -348,6 +348,21 @@ jobs:
           echo "download_url=${DOWNLOAD_URL}" >> "$GITHUB_OUTPUT"
           echo "Download URL: ${DOWNLOAD_URL}"
 
+          # Write a public latest.json manifest so deploy-website can always
+          # find the current download URL without listing bucket contents.
+          cat > /tmp/latest.json <<EOF
+{
+  "version": "${VERSION}",
+  "filename": "${FILENAME}",
+  "downloadUrl": "${DOWNLOAD_URL}"
+}
+EOF
+          gsutil -h "Content-Type:application/json" \
+                 -h "Cache-Control:no-cache, max-age=0" \
+            cp -a public-read /tmp/latest.json \
+            "gs://${BUCKET}/releases/latest.json"
+          echo "Manifest written to gs://${BUCKET}/releases/latest.json"
+
 # ────────────────────────────────────────────────────────────────
 # JOB 5 — Cleanup old versions in Firebase Storage
 #
@@ -426,14 +441,6 @@ jobs:
           cache: npm
           cache-dependency-path: webapp/package-lock.json
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
       - name: Install dependencies
         working-directory: webapp
         run: npm ci
@@ -442,30 +449,30 @@ jobs:
         id: release
         run: |
           BUCKET="${{ secrets.FIREBASE_STORAGE_BUCKET }}"
+          MANIFEST_URL="https://storage.googleapis.com/${BUCKET}/releases/latest.json"
 
-          # If upload-to-storage ran in this workflow, use its URL directly.
+          # If upload-to-storage ran in this workflow, use its output directly.
           if [[ "${{ needs.upload-to-storage.result }}" == "success" ]]; then
             VERSION="${{ needs.build-desktop.outputs.version }}"
             FILENAME="${{ needs.build-desktop.outputs.filename }}"
             DOWNLOAD_URL="${{ needs.upload-to-storage.outputs.download_url }}"
-            echo "Using newly uploaded Firebase Storage URL: v${VERSION}"
+            echo "Using newly uploaded version: v${VERSION}"
           else
-            # No new desktop build — find the latest version in the bucket.
-            LATEST_VER=$(gsutil ls "gs://${BUCKET}/releases/" 2>/dev/null \
-              | grep -oP 'v\d+\.\d+\.\d+' \
-              | sort -t. -k1,1n -k2,2n -k3,3n \
-              | uniq | tail -1)
+            # No new desktop build this run — fetch the latest.json manifest
+            # written to the bucket by the last successful upload.
+            echo "Fetching latest.json from: ${MANIFEST_URL}"
+            MANIFEST=$(curl -sf "${MANIFEST_URL}" || echo "{}")
+            VERSION=$(echo "$MANIFEST" | jq -r '.version // ""')
+            FILENAME=$(echo "$MANIFEST" | jq -r '.filename // ""')
+            DOWNLOAD_URL=$(echo "$MANIFEST" | jq -r '.downloadUrl // ""')
 
-            if [[ -n "$LATEST_VER" ]]; then
-              VERSION="${LATEST_VER#v}"
-              FILENAME="DevTools-Installer-Setup-${VERSION}.exe"
-              DOWNLOAD_URL="https://storage.googleapis.com/${BUCKET}/releases/${LATEST_VER}/${FILENAME}"
-              echo "Using latest Firebase Storage version: ${LATEST_VER}"
+            if [[ -n "$DOWNLOAD_URL" ]]; then
+              echo "Resolved from manifest: v${VERSION}"
             else
+              echo "::warning::latest.json not found or empty — no download URL will be set"
               VERSION="1.0.0"
               FILENAME="DevTools-Installer-Setup-${VERSION}.exe"
               DOWNLOAD_URL=""
-              echo "No versions found in Storage — download URL will be empty"
             fi
           fi
 
