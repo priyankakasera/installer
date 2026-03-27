@@ -28,7 +28,6 @@ export default function Hero() {
             <div className="mt-8 flex flex-col sm:flex-row items-center lg:items-start gap-4">
               <a
                 href={release.downloadUrl}
-                download={release.fileName}
                 rel="noopener noreferrer"
                 className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] transition-all duration-200"
               >
