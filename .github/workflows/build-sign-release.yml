@@ -131,7 +131,7 @@ jobs:
 
       # ── 8. Self-sign the installer ───────────────────────────
       - name: Self-sign the installer
-        if: inputs.skip_signing != true
+        if: inputs.skip_signing != 'true'
         shell: pwsh
         working-directory: desktopapp
         env:
@@ -187,8 +187,17 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Code signing failed with exit code $LASTEXITCODE" }
           Write-Host "Successfully signed: $exe"
 
-          # Verify the signature
-          & $signtool.FullName verify /pa /v $exe
+          # Verify the signature using PowerShell (works for self-signed certs)
+          # NOTE: signtool verify /pa requires a trusted root and always fails for self-signed certs
+          $sig = Get-AuthenticodeSignature -FilePath $exe
+          Write-Host "Signature status: $($sig.Status) | Thumbprint: $($sig.SignerCertificate.Thumbprint)"
+          if ($sig.Status -notin @('Valid', 'UnknownError')) {
+            # UnknownError is expected for self-signed certs (not trusted by OS) but the sig IS present
+            # Only fail if the file is completely unsigned
+            if (-not $sig.SignerCertificate) {
+              throw "Signing failed — no signer certificate found on the file"
+            }
+          }
           Write-Host "Signature verification complete"
 
           # Clean up certificate
