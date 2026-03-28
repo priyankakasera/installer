@@ -44,7 +44,7 @@ export default function Hero() {
                 <div className="text-left">
                   <div className="text-base">Download Free Installer (.exe)</div>
                   <div className="text-xs font-normal opacity-80">
-                    v{release.version} &middot; Windows 10/11 64-bit &middot; ~5 MB
+                    v{release.version} &middot; Windows 10/11 64-bit
                   </div>
                 </div>
               </a>
@@ -56,7 +56,7 @@ export default function Hero() {
                 <FiCheck className="w-4 h-4 text-primary-light" /> One-Click Setup
               </span>
               <span className="flex items-center gap-1.5">
-                <FiCheck className="w-4 h-4 text-primary-light" /> 4 Setup Bundles
+                <FiCheck className="w-4 h-4 text-primary-light" /> 4 Quick Setup Bundles
               </span>
               <span className="flex items-center gap-1.5">
                 <FiCheck className="w-4 h-4 text-primary-light" /> One-Click Cleanup

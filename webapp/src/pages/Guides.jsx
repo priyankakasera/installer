@@ -74,7 +74,7 @@ export default function Guides() {
                       {tool.description}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-1.5">
-                      {tool.versions.slice(0, 3).map((v) => (
+                      {tool.versions.map((v) => (
                         <span
                           key={v}
                           className="px-2 py-0.5 text-xs rounded bg-dark-lighter border border-dark-border text-gray-500"

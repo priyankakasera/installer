@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { FiChevronDown, FiMail, FiSend } from 'react-icons/fi'
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { db } from '../config/firebase'
 
 const faqs = [
   {
@@ -68,6 +70,9 @@ function FAQItem({ q, a }) {
 
 export default function Support() {
   const { hash } = useLocation()
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (hash) {
@@ -75,6 +80,27 @@ export default function Support() {
       if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 100)
     }
   }, [hash])
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setSending(true)
+    setError('')
+    const fd = new FormData(e.target)
+    try {
+      await addDoc(collection(db, 'contactMessages'), {
+        email: fd.get('email'),
+        subject: fd.get('subject'),
+        message: fd.get('message'),
+        createdAt: serverTimestamp(),
+      })
+      setSent(true)
+      e.target.reset()
+    } catch (err) {
+      setError('Failed to send message. Please try again later.')
+    } finally {
+      setSending(false)
+    }
+  }
 
   return (
     <>
@@ -119,12 +145,7 @@ export default function Support() {
             </a>
           </p>
           <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              const fd = new FormData(e.target)
-              const mailto = `mailto:support@devtools-installer.web.app?subject=${encodeURIComponent(fd.get('subject'))}&body=${encodeURIComponent(`From: ${fd.get('email')}\n\n${fd.get('message')}`)}`
-              window.location.href = mailto
-            }}
+            onSubmit={handleSubmit}
             className="space-y-5"
           >
             <div className="grid sm:grid-cols-2 gap-5">
@@ -170,11 +191,18 @@ export default function Support() {
             </div>
             <button
               type="submit"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.02] transition-all duration-200"
+              disabled={sending}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <FiSend className="w-4 h-4" />
-              Send Message
+              {sending ? 'Sending...' : 'Send Message'}
             </button>
+            {sent && (
+              <p className="text-sm text-green-400 mt-2">Message sent successfully!</p>
+            )}
+            {error && (
+              <p className="text-sm text-red-400 mt-2">{error}</p>
+            )}
           </form>
         </div>
       </section>

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 const toolGuideLinks = [
   { label: 'Install Java', to: '/guides/java' },
@@ -8,6 +8,37 @@ const toolGuideLinks = [
   { label: 'Install Git', to: '/guides/git' },
   { label: 'All Guides →', to: '/guides' },
 ]
+
+function FooterLink({ to, children }) {
+  const navigate = useNavigate()
+
+  function handleClick(e) {
+    const [path, hash] = to.split('#')
+    const targetPath = path || '/'
+    if (hash) {
+      e.preventDefault()
+      if (window.location.pathname === targetPath) {
+        const el = document.getElementById(hash)
+        if (el) el.scrollIntoView({ behavior: 'smooth' })
+      } else {
+        navigate(to)
+      }
+    } else {
+      // For non-hash links, let the Link handle navigation
+      // ScrollToTop in Layout will scroll to top
+    }
+  }
+
+  return (
+    <Link
+      to={to}
+      onClick={handleClick}
+      className="text-sm text-gray-500 hover:text-white transition-colors"
+    >
+      {children}
+    </Link>
+  )
+}
 
 export default function Footer() {
   return (
@@ -38,44 +69,24 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2.5">
               <li>
-                <Link
-                  to="/product"
-                  className="text-sm text-gray-500 hover:text-white transition-colors"
-                >
+                <FooterLink to="/product#features">
                   Features
-                </Link>
+                </FooterLink>
               </li>
               <li>
-                <Link
-                  to="/product#tools"
-                  className="text-sm text-gray-500 hover:text-white transition-colors"
-                >
+                <FooterLink to="/product#tools">
                   Included Tools
-                </Link>
+                </FooterLink>
               </li>
               <li>
-                <Link
-                  to="/data-facting"
-                  className="text-sm text-gray-500 hover:text-white transition-colors"
-                >
-                  Data Facting
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/support"
-                  className="text-sm text-gray-500 hover:text-white transition-colors"
-                >
+                <FooterLink to="/support">
                   Support &amp; FAQ
-                </Link>
+                </FooterLink>
               </li>
               <li>
-                <Link
-                  to="/privacy"
-                  className="text-sm text-gray-500 hover:text-white transition-colors"
-                >
+                <FooterLink to="/privacy">
                   Privacy Policy
-                </Link>
+                </FooterLink>
               </li>
             </ul>
           </div>
@@ -88,12 +99,9 @@ export default function Footer() {
             <ul className="space-y-2.5">
               {toolGuideLinks.map((link) => (
                 <li key={link.to}>
-                  <Link
-                    to={link.to}
-                    className="text-sm text-gray-500 hover:text-white transition-colors"
-                  >
+                  <FooterLink to={link.to}>
                     {link.label}
-                  </Link>
+                  </FooterLink>
                 </li>
               ))}
             </ul>

@@ -31,6 +31,21 @@ function CodeBlock({ children }) {
   )
 }
 
+function Linkify({ children }) {
+  if (typeof children !== 'string') return children
+  const urlRegex = /(https?:\/\/[^\s)]+)/g
+  const parts = children.split(urlRegex)
+  return parts.map((part, i) =>
+    urlRegex.test(part) ? (
+      <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-primary-light hover:underline break-all">
+        {part}
+      </a>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  )
+}
+
 export default function ToolGuide() {
   const { toolId } = useParams()
   const tool = toolGuides.find((t) => t.id === toolId)
@@ -70,11 +85,15 @@ export default function ToolGuide() {
         <div className="grid sm:grid-cols-3 gap-4 mb-12">
           <div className="bg-dark-card border border-dark-border rounded-xl p-4">
             <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">
-              Version
+              Supported Versions
             </p>
-            <p className="text-white font-medium">
-              {tool.defaultVersion || tool.versions?.[0] || '—'}
-            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {tool.versions.map((v) => (
+                <span key={v} className="px-2 py-0.5 text-xs rounded bg-dark-lighter border border-dark-border text-white font-medium">
+                  {v}
+                </span>
+              ))}
+            </div>
           </div>
           <div className="bg-dark-card border border-dark-border rounded-xl p-4">
             <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">
@@ -200,7 +219,7 @@ export default function ToolGuide() {
                   <span className="w-6 h-6 rounded-full bg-dark-border text-gray-400 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                     {i + 1}
                   </span>
-                  <span className="text-gray-300 leading-relaxed">{step}</span>
+                  <span className="text-gray-300 leading-relaxed"><Linkify>{step}</Linkify></span>
                 </li>
               ))}
             </ol>
