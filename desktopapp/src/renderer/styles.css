@@ -74,6 +74,10 @@ svg.lucide {
   gap: 8px;
 }
 
+.header h1 .app-icon {
+  color: var(--primary);
+}
+
 .subtitle {
   font-size: 12px;
   color: var(--text-muted);
@@ -233,6 +237,30 @@ svg.lucide {
   width: 22px;
   text-align: center;
   flex-shrink: 0;
+  transition: color 0.15s, filter 0.15s;
+}
+
+/* Per-item icon colors */
+.sidebar-item[data-icon-color="amber"] .sidebar-item-icon { color: #f59e0b; }
+.sidebar-item[data-icon-color="rose"] .sidebar-item-icon { color: #fb7185; }
+.sidebar-item[data-icon-color="violet"] .sidebar-item-icon { color: #a78bfa; }
+.sidebar-item[data-icon-color="cyan"] .sidebar-item-icon { color: #22d3ee; }
+.sidebar-item[data-icon-color="blue"] .sidebar-item-icon { color: #60a5fa; }
+.sidebar-item[data-icon-color="emerald"] .sidebar-item-icon { color: #34d399; }
+.sidebar-item[data-icon-color="orange"] .sidebar-item-icon { color: #fb923c; }
+.sidebar-item[data-icon-color="pink"] .sidebar-item-icon { color: #f472b6; }
+.sidebar-item[data-icon-color="teal"] .sidebar-item-icon { color: #2dd4bf; }
+.sidebar-item[data-icon-color="sky"] .sidebar-item-icon { color: #38bdf8; }
+.sidebar-item[data-icon-color="lime"] .sidebar-item-icon { color: #a3e635; }
+.sidebar-item[data-icon-color="red"] .sidebar-item-icon { color: #f87171; }
+.sidebar-item[data-icon-color="slate"] .sidebar-item-icon { color: #94a3b8; }
+
+.sidebar-item:hover .sidebar-item-icon {
+  filter: brightness(1.2);
+}
+
+.sidebar-item.active .sidebar-item-icon {
+  filter: brightness(1.15);
 }
 
 .sidebar-item-label {
@@ -265,10 +293,105 @@ svg.lucide {
 .install-footer {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 12px;
   margin-top: 20px;
   padding-top: 16px;
   border-top: 1px solid var(--border);
+}
+
+/* Uninstall All modal list */
+.uninstall-all-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 12px 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.uninstall-all-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+}
+
+.uninstall-all-item:last-child {
+  border-bottom: none;
+}
+
+.uninstall-all-item-icon {
+  flex-shrink: 0;
+  font-size: 16px;
+  width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.uninstall-all-item-name {
+  flex-shrink: 0;
+  font-weight: 500;
+  color: var(--text);
+  min-width: 80px;
+}
+
+.uninstall-all-item-ver {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+  flex-shrink: 1;
+  margin-left: auto;
+}
+
+.uninstall-all-item-status {
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.loader-spinner--xs {
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Uninstall card — no bottom section */
+.uninstall-card .tool-card-bottom { display: none; }
+
+/* Icon images in install/uninstall progress items */
+.install-item-icon-img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+/* Icon images in confirmation modal list */
+.uninstall-all-item-icon-img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+/* Icon images in results list */
+.result-icon-img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  vertical-align: middle;
+  margin-right: 4px;
 }
 
 /* ─── Main Content Area ──────────────────────────────────── */
@@ -740,6 +863,12 @@ svg.lucide {
 .badge-verifying { background: rgba(45, 212, 168, 0.12); color: var(--success); }
 .badge-completed { background: rgba(45, 212, 168, 0.12); color: var(--success); }
 .badge-error { background: rgba(248, 113, 113, 0.12); color: var(--error); }
+.badge-finding { background: rgba(79, 140, 255, 0.12); color: var(--primary); }
+.badge-uninstalling { background: rgba(248, 113, 113, 0.12); color: var(--error); }
+.badge-cleaning { background: rgba(251, 191, 36, 0.12); color: var(--warning); }
+.badge-rolled-back { background: rgba(248, 113, 113, 0.12); color: var(--error); }
+.badge-rolling-back { background: rgba(251, 191, 36, 0.12); color: var(--warning); }
+.badge-uninstalling-existing { background: rgba(248, 113, 113, 0.12); color: var(--error); }
 
 .retry-btn { margin-left: 8px; }
 

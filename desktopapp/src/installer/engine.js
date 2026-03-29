@@ -142,7 +142,9 @@ class InstallerEngine {
         try {
           const combined = (stdout || '') + (stderr || '');
           const match = combined.match(new RegExp(tool.verifyRegex));
-          resolve({ installed: !!match, version: match ? match[0] : null, output: combined.trim().split('\n')[0] });
+          const firstLine = combined.trim().split('\n')[0];
+          const displayOutput = match ? match[0] : firstLine;
+          resolve({ installed: !!match, version: match ? match[0] : null, output: displayOutput });
         } catch {
           resolve({ installed: false, version: null, output: '' });
         }
@@ -154,22 +156,33 @@ class InstallerEngine {
     const total = selections.length;
     const results = [];
 
-    // ── Phase 1: Download all tools in parallel ──
+    // ── Phase 1: Download tools with limited concurrency ──
+    // Limit to 3 concurrent downloads to maximize per-connection throughput.
+    // Downloading all tools at once splits bandwidth N-ways, causing each
+    // download to crawl at 0.1-0.5 MB/s. With 3 concurrent connections each
+    // download gets ~1/3 of bandwidth instead of ~1/16.
+    const MAX_CONCURRENT_DOWNLOADS = 3;
     const downloadMap = new Map(); // toolId -> installerPath | { __error }
     let completedDownloads = 0;
 
-    const downloadPromises = selections.map(({ toolId, version }, i) => {
-      const tool = this._getTool(toolId);
-      if (!tool) return Promise.resolve();
-      const selectedVersion = version || tool.defaultVersion;
-      const url = tool.downloadUrls[selectedVersion];
+    const downloadQueue = selections.map(({ toolId, version }, i) => ({ toolId, version, i }));
+    let queueIndex = 0;
 
-      // ZIP-extract and copy-based installs still go through _download;
-      // tools with no URL (shouldn't happen) are caught there.
-      return (async () => {
+    const runNextDownload = async () => {
+      while (queueIndex < downloadQueue.length) {
+        const idx = queueIndex++;
+        const { toolId, version, i } = downloadQueue[idx];
+        const tool = this._getTool(toolId);
+        if (!tool) { completedDownloads++; continue; }
+        const selectedVersion = version || tool.defaultVersion;
+
         try {
-          // Validate URL before downloading
-          if (url) await this._validateUrl(url);
+          progressCallback({
+            toolId, toolName: tool.name, step: 'downloading',
+            detail: 'Waiting to download...',
+            toolIndex: i, totalTools: total,
+            overallPercent: Math.round(((completedDownloads) / total) * 30)
+          });
 
           const installerPath = await this._download(tool, selectedVersion, (pct, speed) => {
             const dlPct = pct >= 0 ? pct : 0;
@@ -192,10 +205,15 @@ class InstallerEngine {
           });
         }
         completedDownloads++;
-      })();
-    });
+      }
+    };
 
-    await Promise.all(downloadPromises);
+    // Start up to MAX_CONCURRENT_DOWNLOADS workers pulling from the queue
+    const workers = [];
+    for (let w = 0; w < Math.min(MAX_CONCURRENT_DOWNLOADS, downloadQueue.length); w++) {
+      workers.push(runNextDownload());
+    }
+    await Promise.all(workers);
 
     // ── Phase 2: Install, configure, verify — sequentially ──
     for (let i = 0; i < selections.length; i++) {
@@ -1353,6 +1371,60 @@ class InstallerEngine {
       progressCallback({ step: 'completed', detail: `${tool.name} uninstalled successfully` });
     }
     this._log(`${tool.name} uninstall completed`);
+  }
+
+  async uninstallAll(toolIds, detectedToolsMap, progressCallback) {
+    const total = toolIds.length;
+    const results = [];
+
+    this._log(`\n${'='.repeat(50)}\nUninstall All: ${total} tools\n${'='.repeat(50)}`);
+
+    for (let i = 0; i < total; i++) {
+      const toolId = toolIds[i];
+      const tool = this._getTool(toolId);
+      if (!tool) {
+        results.push({ toolId, success: false, error: 'Tool not found' });
+        continue;
+      }
+
+      const detectedInfo = detectedToolsMap[toolId] || null;
+
+      progressCallback({
+        step: 'uninstalling', toolId, toolName: tool.name,
+        toolIndex: i, totalTools: total,
+        detail: `Uninstalling ${tool.name}...`,
+        overallPercent: Math.round((i / total) * 100)
+      });
+
+      try {
+        await this.uninstallTool(toolId, detectedInfo, (progress) => {
+          progressCallback({
+            ...progress, toolId, toolName: tool.name,
+            toolIndex: i, totalTools: total,
+            overallPercent: Math.round(((i + this._uninstallStepFraction(progress.step)) / total) * 100)
+          });
+        });
+        results.push({ toolId, success: true });
+      } catch (err) {
+        this._log(`ERROR uninstalling ${tool.name}: ${err.message}`);
+        results.push({ toolId, success: false, error: err.message });
+        progressCallback({
+          step: 'error', toolId, toolName: tool.name,
+          detail: `Failed: ${err.message}`,
+          toolIndex: i, totalTools: total,
+          overallPercent: Math.round(((i + 1) / total) * 100)
+        });
+      }
+    }
+
+    progressCallback({ step: 'all-complete', results, overallPercent: 100 });
+    this._log(`Uninstall All completed: ${results.filter(r => r.success).length}/${total} succeeded`);
+    return results;
+  }
+
+  _uninstallStepFraction(step) {
+    const map = { finding: 0.1, uninstalling: 0.4, cleaning: 0.7, verifying: 0.9, completed: 1 };
+    return map[step] || 0;
   }
 
   async _findInstalledProduct(tool, detectedInfo) {

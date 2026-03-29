@@ -22,6 +22,9 @@ contextBridge.exposeInMainWorld('api', {
   // Uninstall a tool
   uninstallTool: (toolId, detectedInfo) => ipcRenderer.invoke('uninstall-tool', toolId, detectedInfo),
 
+  // Uninstall all installed tools
+  uninstallAll: (toolIds, detectedToolsMap) => ipcRenderer.invoke('uninstall-all', toolIds, detectedToolsMap),
+
   // Listen for progress updates from main process
   onProgress: (callback) => {
     ipcRenderer.on('install-progress', (event, data) => callback(data));
@@ -30,6 +33,16 @@ contextBridge.exposeInMainWorld('api', {
   // Listen for uninstall progress
   onUninstallProgress: (callback) => {
     ipcRenderer.on('uninstall-progress', (event, data) => callback(data));
+  },
+
+  // Listen for uninstall-all progress
+  onUninstallAllProgress: (callback) => {
+    ipcRenderer.on('uninstall-all-progress', (event, data) => callback(data));
+  },
+
+  // Remove uninstall-all progress listener
+  removeUninstallAllProgressListener: () => {
+    ipcRenderer.removeAllListeners('uninstall-all-progress');
   },
 
   // Remove progress listener

@@ -47,6 +47,26 @@ const SIDEBAR_ICONS = {
   'api-testing':     ICONS.testTubes,
 };
 
+// Map sidebar IDs → distinct icon colors
+const SIDEBAR_COLORS = {
+  // Bundles
+  'java-dev':        'amber',
+  'fullstack-dev':   'rose',
+  'frontend-dev':    'violet',
+  'cloud-dev':       'cyan',
+  // Categories
+  'all':             'blue',
+  'installed':       'emerald',
+  'runtimes':        'orange',
+  'package-managers': 'pink',
+  'vcs':             'teal',
+  'cloud-devops':    'sky',
+  'ides-editors':    'lime',
+  'api-testing':     'violet',
+  // Manage
+  'bulkUninstall':   'red',
+};
+
 // ─── State ───────────────────────────────────────────────────
 let config = null;
 let selectedTools = new Map(); // toolId -> version
@@ -92,6 +112,15 @@ const doneTitle = $('#doneTitle');
 const doneSubtitle = $('#doneSubtitle');
 const resultsList = $('#resultsList');
 const btnBackToSelect = $('#btnBackToSelect');
+
+// Bulk Uninstall page refs
+const pageUninstallSelect = $('#pageUninstallSelect');
+const pageUninstallProgress = $('#pageUninstallProgress');
+const pageUninstallDone = $('#pageUninstallDone');
+const uninstallToolsGrid = $('#uninstallToolsGrid');
+const btnBulkUninstall = $('#btnBulkUninstall');
+const btnUninstallSelectAll = $('#btnUninstallSelectAll');
+let uninstallSelectedTools = new Set(); // toolIds selected for bulk uninstall
 
 // ─── Helpers ─────────────────────────────────────────────────
 function getAllTools() {
@@ -150,6 +179,7 @@ function renderSidebar() {
     item.className = 'sidebar-item' + (activeView.type === 'bundle' && activeView.id === bundle.id ? ' active' : '');
     item.dataset.viewType = 'bundle';
     item.dataset.viewId = bundle.id;
+    item.dataset.iconColor = SIDEBAR_COLORS[bundle.id] || 'blue';
     item.title = bundle.name;
     item.innerHTML = `
       <span class="sidebar-item-icon">${SIDEBAR_ICONS[bundle.id] || escapeHtml(bundle.icon)}</span>
@@ -169,6 +199,7 @@ function renderSidebar() {
   const allToolsItem = document.createElement('div');
   allToolsItem.className = 'sidebar-item' + (activeView.type === 'all' ? ' active' : '');
   allToolsItem.dataset.viewType = 'all';
+  allToolsItem.dataset.iconColor = SIDEBAR_COLORS['all'] || 'blue';
   allToolsItem.title = 'All Tools';
   allToolsItem.innerHTML = `
     <span class="sidebar-item-icon">${ICONS.layoutList}</span>
@@ -185,6 +216,7 @@ function renderSidebar() {
   const installedItem = document.createElement('div');
   installedItem.className = 'sidebar-item' + (activeView.type === 'installed' ? ' active' : '');
   installedItem.dataset.viewType = 'installed';
+  installedItem.dataset.iconColor = SIDEBAR_COLORS['installed'] || 'emerald';
   installedItem.title = 'Installed Tools';
   installedItem.innerHTML = `
     <span class="sidebar-item-icon">${ICONS.circleCheck}</span>
@@ -201,6 +233,7 @@ function renderSidebar() {
     item.className = 'sidebar-item' + (activeView.type === 'category' && activeView.id === cat.id ? ' active' : '');
     item.dataset.viewType = 'category';
     item.dataset.viewId = cat.id;
+    item.dataset.iconColor = SIDEBAR_COLORS[cat.id] || 'blue';
     item.title = cat.name;
     item.innerHTML = `
       <span class="sidebar-item-icon">${SIDEBAR_ICONS[cat.id] || escapeHtml(cat.icon)}</span>
@@ -212,6 +245,25 @@ function renderSidebar() {
     });
     sidebarCategories.appendChild(item);
   }
+
+  // Manage section — Bulk Uninstall
+  const sidebarManage = document.getElementById('sidebarManage');
+  sidebarManage.innerHTML = '';
+  const bulkItem = document.createElement('div');
+  bulkItem.className = 'sidebar-item' + (activeView.type === 'bulkUninstall' ? ' active' : '');
+  bulkItem.dataset.viewType = 'bulkUninstall';
+  bulkItem.dataset.iconColor = SIDEBAR_COLORS['bulkUninstall'] || 'red';
+  bulkItem.title = 'Bulk Uninstall';
+  const installedCountManage = getAllTools().filter(t => detectedTools[t.id] && detectedTools[t.id].installed).length;
+  bulkItem.innerHTML = `
+    <span class="sidebar-item-icon">${ICONS.trash2}</span>
+    <span class="sidebar-item-label">Bulk Uninstall</span>
+    <span class="sidebar-item-count">${installedCountManage}</span>
+  `;
+  bulkItem.addEventListener('click', () => {
+    setActiveView('bulkUninstall');
+  });
+  sidebarManage.appendChild(bulkItem);
 }
 
 function setActiveView(type, id) {
@@ -224,9 +276,19 @@ function setActiveView(type, id) {
   }
   // Reset selection when navigating between views
   selectedTools.clear();
-  renderSidebar();
-  renderToolsGrid();
-  updateInstallButton();
+  uninstallSelectedTools.clear();
+
+  if (type === 'bulkUninstall') {
+    showPage('uninstallSelect');
+    renderSidebar();
+    renderUninstallToolsGrid();
+    updateBulkUninstallButton();
+  } else {
+    showPage('select');
+    renderSidebar();
+    renderToolsGrid();
+    updateInstallButton();
+  }
 }
 
 // ─── Get Tools for Current View ─────────────────────────────
@@ -438,6 +500,10 @@ function updateInstallButton() {
 
 }
 
+function getInstalledToolIds() {
+  return Object.keys(detectedTools).filter((id) => detectedTools[id] && detectedTools[id].installed);
+}
+
 // ─── Search ──────────────────────────────────────────────────
 function handleSearch(query) {
   searchQuery = query.trim();
@@ -464,6 +530,15 @@ function showPage(pageName) {
     sidebar.style.display = 'none';
   } else if (pageName === 'done') {
     pageDone.classList.add('active');
+    sidebar.style.display = 'none';
+  } else if (pageName === 'uninstallSelect') {
+    pageUninstallSelect.classList.add('active');
+    sidebar.style.display = '';
+  } else if (pageName === 'uninstallProgress') {
+    pageUninstallProgress.classList.add('active');
+    sidebar.style.display = 'none';
+  } else if (pageName === 'uninstallDone') {
+    pageUninstallDone.classList.add('active');
     sidebar.style.display = 'none';
   }
 }
@@ -862,6 +937,257 @@ async function performUninstall() {
   }
 }
 
+// ─── Bulk Uninstall Page ─────────────────────────────────────
+function renderUninstallToolsGrid() {
+  const installedTools = getAllTools().filter(t => detectedTools[t.id] && detectedTools[t.id].installed);
+
+  const titleEl = document.getElementById('uninstallContentTitle');
+  const descEl = document.getElementById('uninstallContentDesc');
+  const emptyEl = document.getElementById('uninstallEmptyState');
+  const footerEl = document.getElementById('uninstallFooter');
+
+  titleEl.textContent = `Bulk Uninstall (${installedTools.length})`;
+  descEl.textContent = 'Select installed tools to uninstall';
+
+  if (installedTools.length === 0) {
+    uninstallToolsGrid.style.display = 'none';
+    emptyEl.style.display = 'flex';
+    footerEl.style.display = 'none';
+    return;
+  }
+  uninstallToolsGrid.style.display = '';
+  emptyEl.style.display = 'none';
+  footerEl.style.display = '';
+
+  // Select All button state
+  const allSelected = installedTools.every(t => uninstallSelectedTools.has(t.id));
+  btnUninstallSelectAll.textContent = allSelected ? '✓ All Selected' : 'Select All';
+  btnUninstallSelectAll.className = 'category-select-all' + (allSelected ? ' all-selected' : '');
+
+  uninstallToolsGrid.innerHTML = '';
+  for (const tool of installedTools) {
+    const detected = detectedTools[tool.id];
+    const card = document.createElement('div');
+    card.className = 'tool-card uninstall-card' + (uninstallSelectedTools.has(tool.id) ? ' selected' : '') + ' detected';
+    card.dataset.toolId = tool.id;
+
+    const iconHtml = tool.iconUrl
+      ? `<img class="tool-icon-img" src="${escapeHtml(tool.iconUrl)}" alt="${escapeHtml(tool.name)}">`
+      : escapeHtml(tool.icon);
+
+    card.innerHTML = `
+      <div class="tool-card-top">
+        <div class="tool-checkbox"></div>
+        <div class="tool-icon">${iconHtml}</div>
+        <div class="tool-card-info">
+          <div class="tool-name">${escapeHtml(tool.name)}</div>
+          <div class="tool-desc">${escapeHtml(tool.description)}</div>
+          <div class="tool-detected-badge">✓ Installed: ${escapeHtml(detected.version || detected.output || '')}</div>
+        </div>
+      </div>
+    `;
+
+    card.addEventListener('click', () => {
+      if (uninstallSelectedTools.has(tool.id)) {
+        uninstallSelectedTools.delete(tool.id);
+      } else {
+        uninstallSelectedTools.add(tool.id);
+      }
+      renderUninstallToolsGrid();
+      updateBulkUninstallButton();
+    });
+
+    uninstallToolsGrid.appendChild(card);
+  }
+}
+
+function updateBulkUninstallButton() {
+  btnBulkUninstall.disabled = uninstallSelectedTools.size === 0;
+  btnBulkUninstall.textContent = uninstallSelectedTools.size > 0
+    ? `Uninstall Selected (${uninstallSelectedTools.size})`
+    : 'Uninstall Selected';
+}
+
+function toggleUninstallSelectAll() {
+  const installedTools = getAllTools().filter(t => detectedTools[t.id] && detectedTools[t.id].installed);
+  const allSelected = installedTools.every(t => uninstallSelectedTools.has(t.id));
+  if (allSelected) {
+    uninstallSelectedTools.clear();
+  } else {
+    for (const t of installedTools) uninstallSelectedTools.add(t.id);
+  }
+  renderUninstallToolsGrid();
+  updateBulkUninstallButton();
+}
+
+function showBulkUninstallConfirm() {
+  const ids = Array.from(uninstallSelectedTools);
+  if (ids.length === 0) return;
+
+  const listEl = document.getElementById('bulkUninstallConfirmList');
+  const titleEl = document.getElementById('bulkUninstallConfirmTitle');
+  titleEl.textContent = `Uninstall ${ids.length} Tool${ids.length > 1 ? 's' : ''}?`;
+
+  listEl.innerHTML = ids.map((id) => {
+    const tool = getAllTools().find((t) => t.id === id);
+    const det = detectedTools[id];
+    const ver = det?.version || det?.output || '';
+    const iconHtml = tool?.iconUrl
+      ? `<img class="uninstall-all-item-icon-img" src="${escapeHtml(tool.iconUrl)}" alt="">`
+      : `<span>${tool?.icon || '📦'}</span>`;
+    return `<div class="uninstall-all-item">
+      <span class="uninstall-all-item-icon">${iconHtml}</span>
+      <span class="uninstall-all-item-name">${escapeHtml(tool?.name || id)}</span>
+      ${ver ? `<span class="uninstall-all-item-ver" title="${escapeHtml(ver)}">${escapeHtml(ver)}</span>` : ''}
+    </div>`;
+  }).join('');
+
+  document.getElementById('bulkUninstallConfirmModal').classList.add('open');
+}
+
+function hideBulkUninstallConfirm() {
+  document.getElementById('bulkUninstallConfirmModal').classList.remove('open');
+}
+
+async function startBulkUninstall() {
+  hideBulkUninstallConfirm();
+
+  const ids = Array.from(uninstallSelectedTools);
+  if (ids.length === 0) return;
+
+  showPage('uninstallProgress');
+
+  const ulLabel = $('#uninstallOverallLabel');
+  const ulPercent = $('#uninstallOverallPercent');
+  const ulFill = $('#uninstallOverallFill');
+  const ulItems = $('#uninstallItems');
+  const ulLogContent = $('#uninstallLogContent');
+
+  ulLogContent.textContent = '';
+  ulFill.style.width = '0%';
+  ulFill.style.background = '';
+  ulPercent.textContent = '0%';
+  ulLabel.textContent = 'Uninstalling...';
+
+  // Build item list
+  ulItems.innerHTML = '';
+  for (const id of ids) {
+    const tool = getAllTools().find((t) => t.id === id);
+    if (!tool) continue;
+    const iconHtml = tool.iconUrl
+      ? `<img class="install-item-icon-img" src="${escapeHtml(tool.iconUrl)}" alt="">`
+      : escapeHtml(tool.icon);
+    const item = document.createElement('div');
+    item.className = 'install-item';
+    item.id = `uninstall-item-${tool.id}`;
+    item.innerHTML = `
+      <div class="install-item-icon">${iconHtml}</div>
+      <div class="install-item-info">
+        <div class="install-item-name">${escapeHtml(tool.name)}</div>
+        <div class="install-item-status" id="unstatus-${tool.id}">Waiting...</div>
+      </div>
+      <span class="install-item-badge badge-waiting" id="unbadge-${tool.id}">Waiting</span>
+    `;
+    ulItems.appendChild(item);
+  }
+
+  const activeSteps = new Set(['finding', 'uninstalling', 'cleaning', 'verifying']);
+
+  window.api.onUninstallAllProgress((data) => {
+    if (data.step === 'all-complete') return;
+
+    const pct = data.overallPercent || 0;
+    ulFill.style.width = pct + '%';
+    ulPercent.textContent = pct + '%';
+
+    if (data.toolName) {
+      ulLabel.textContent = `Uninstalling ${data.toolName}...`;
+    }
+
+    if (activeSteps.has(data.step)) {
+      ulFill.classList.add('progress-fill--active');
+    } else {
+      ulFill.classList.remove('progress-fill--active');
+    }
+
+    // Per-tool status
+    const statusEl = document.getElementById(`unstatus-${data.toolId}`);
+    const badgeEl = document.getElementById(`unbadge-${data.toolId}`);
+    if (statusEl) statusEl.textContent = data.detail || data.step;
+    if (badgeEl) {
+      badgeEl.textContent = capitalize(data.step);
+      badgeEl.className = `install-item-badge badge-${data.step}`;
+    }
+
+    // Log
+    const ts = new Date().toLocaleTimeString();
+    ulLogContent.textContent += `[${ts}] [${data.toolName || data.toolId}] ${data.step}: ${data.detail || ''}\n`;
+    ulLogContent.parentElement.scrollTop = ulLogContent.parentElement.scrollHeight;
+  });
+
+  const detectedCopy = { ...detectedTools };
+  const result = await window.api.uninstallAll(ids, detectedCopy);
+  window.api.removeUninstallAllProgressListener();
+  ulFill.classList.remove('progress-fill--active');
+
+  // Refresh detection
+  const toolIds = getAllTools().map((t) => t.id);
+  detectedTools = await window.api.detectInstalled(toolIds);
+
+  showUninstallDone(result, ids);
+}
+
+function showUninstallDone(result, ids) {
+  showPage('uninstallDone');
+
+  const resultsList = document.getElementById('uninstallResultsList');
+  const doneIcon = document.getElementById('uninstallDoneIcon');
+  const doneTitle = document.getElementById('uninstallDoneTitle');
+  const doneSub = document.getElementById('uninstallDoneSubtitle');
+
+  resultsList.innerHTML = '';
+  let successCount = 0, failCount = 0;
+
+  if (result.success && result.results) {
+    for (const r of result.results) {
+      const tool = getAllTools().find((t) => t.id === r.toolId);
+      const isError = !r.success;
+      if (isError) failCount++; else successCount++;
+
+      const iconHtml = tool?.iconUrl
+        ? `<img class="result-icon-img" src="${escapeHtml(tool.iconUrl)}" alt="">`
+        : '';
+
+      const item = document.createElement('div');
+      item.className = 'result-item';
+      item.innerHTML = `
+        <span class="result-status">${isError ? ICONS.xCircle : ICONS.checkCircleLg}</span>
+        ${iconHtml}
+        <span class="result-name">${escapeHtml(tool ? tool.name : r.toolId)}</span>
+        <span class="result-detail">${isError ? 'Failed' : 'Uninstalled'}</span>
+        ${isError && r.error ? `<div class="result-error-detail">${escapeHtml(r.error)}</div>` : ''}
+      `;
+      resultsList.appendChild(item);
+    }
+  } else {
+    failCount = ids.length;
+  }
+
+  if (failCount > 0 && successCount > 0) {
+    doneIcon.innerHTML = ICONS.alertTriLg;
+    doneTitle.textContent = `${successCount} Uninstalled, ${failCount} Failed`;
+    doneSub.textContent = 'Some tools could not be uninstalled. Check the logs for details.';
+  } else if (failCount > 0) {
+    doneIcon.innerHTML = ICONS.xCircle;
+    doneTitle.textContent = 'Uninstall Failed';
+    doneSub.textContent = result.error || 'Could not uninstall the selected tools.';
+  } else {
+    doneIcon.innerHTML = ICONS.checkCircleXl;
+    doneTitle.textContent = 'Uninstall Complete!';
+    doneSub.textContent = 'Selected tools have been removed. You may need to restart your terminal for PATH changes to take effect.';
+  }
+}
+
 // ─── Event Listeners ─────────────────────────────────────────
 function setupListeners() {
   btnInstall.addEventListener('click', startInstallation);
@@ -884,6 +1210,47 @@ function setupListeners() {
 
   document.getElementById('btnCancelUninstall').addEventListener('click', hideUninstallModal);
   document.getElementById('btnConfirmUninstall').addEventListener('click', performUninstall);
+
+  // Bulk Uninstall page
+  btnBulkUninstall.addEventListener('click', showBulkUninstallConfirm);
+  btnUninstallSelectAll.addEventListener('click', toggleUninstallSelectAll);
+  document.getElementById('btnCancelBulkUninstall').addEventListener('click', hideBulkUninstallConfirm);
+  document.getElementById('btnConfirmBulkUninstall').addEventListener('click', startBulkUninstall);
+  document.getElementById('btnBackToUninstall').addEventListener('click', async () => {
+    uninstallSelectedTools.clear();
+    activeView = { type: 'category', id: config.categories[0].id };
+    showPage('select');
+    await refreshDetection();
+  });
+
+  // Uninstall page refresh
+  const btnUninstallRefresh = document.getElementById('btnUninstallRefresh');
+  if (btnUninstallRefresh) {
+    btnUninstallRefresh.addEventListener('click', async () => {
+      if (btnUninstallRefresh.disabled) return;
+      btnUninstallRefresh.disabled = true;
+      btnUninstallRefresh.classList.add('refreshing');
+      try {
+        const toolIds = getAllTools().map((t) => t.id);
+        detectedTools = await window.api.detectInstalled(toolIds);
+        uninstallSelectedTools.clear();
+        renderSidebar();
+        renderUninstallToolsGrid();
+        updateBulkUninstallButton();
+      } finally {
+        btnUninstallRefresh.disabled = false;
+        btnUninstallRefresh.classList.remove('refreshing');
+      }
+    });
+  }
+
+  // Uninstall log toggle
+  const uninstallLogToggle = document.getElementById('uninstallLogToggle');
+  if (uninstallLogToggle) {
+    uninstallLogToggle.addEventListener('click', () => {
+      uninstallLogToggle.closest('.log-panel').classList.toggle('open');
+    });
+  }
 
   // Select All button for current view
   btnSelectAll.addEventListener('click', () => toggleCurrentView());
