@@ -30,13 +30,19 @@ let installerEngine;
 const InstallerEngine = require('./installer/engine');
 
 function getAppIcon() {
-  // Try loading icon.png from the renderer directory
-  const iconPath = path.join(__dirname, 'renderer', 'icon.png');
-  if (fs.existsSync(iconPath)) {
-    return nativeImage.createFromPath(iconPath);
+  // Prefer .ico for Windows (native format for Electron/installer)
+  if (process.platform === 'win32') {
+    const icoPath = path.join(__dirname, '..', 'build', 'icon.ico');
+    if (fs.existsSync(icoPath)) {
+      return nativeImage.createFromPath(icoPath);
+    }
+  }
+  // Fallback: Try loading icon.png from the renderer directory
+  const pngPath = path.join(__dirname, 'renderer', 'icon.png');
+  if (fs.existsSync(pngPath)) {
+    return nativeImage.createFromPath(pngPath);
   }
   // Fallback: generate a 64x64 icon programmatically via a data URL
-  // Blue circle with a white wrench/gear shape — represents DevTools Installer
   const size = 64;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 64 64">
     <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#4f8cff"/><stop offset="100%" stop-color="#3a5fcf"/></linearGradient></defs>
