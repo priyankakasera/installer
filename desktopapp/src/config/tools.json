@@ -61,14 +61,14 @@
           "id": "python",
           "name": "Python",
           "description": "Python runtime — Required for scripting and data development",
-          "versions": ["3.14.3", "3.13.12", "3.12.13", "3.11.15", "3.10.20"],
+          "versions": ["3.14.3", "3.13.12", "3.12.10", "3.11.9", "3.10.11"],
           "defaultVersion": "3.14.3",
           "downloadUrls": {
             "3.14.3": "https://www.python.org/ftp/python/3.14.3/python-3.14.3-amd64.exe",
             "3.13.12": "https://www.python.org/ftp/python/3.13.12/python-3.13.12-amd64.exe",
-            "3.12.13": "https://www.python.org/ftp/python/3.12.13/python-3.12.13-amd64.exe",
-            "3.11.15": "https://www.python.org/ftp/python/3.11.15/python-3.11.15-amd64.exe",
-            "3.10.20": "https://www.python.org/ftp/python/3.10.20/python-3.10.20-amd64.exe"
+            "3.12.10": "https://www.python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe",
+            "3.11.9": "https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe",
+            "3.10.11": "https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe"
           },
           "installCommand": {
             "exe": "\"{installerPath}\" /quiet InstallAllUsers=1 PrependPath=1 TargetDir=\"{installDir}\""

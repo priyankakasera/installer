@@ -82,7 +82,7 @@ const toolGuides = [
     description:
       'Python is used for scripting, data science, machine learning, web development (Django/Flask), and automation.',
     category: 'Core Runtimes',
-    versions: ['3.14.3', '3.13.12', '3.12.13', '3.11.15', '3.10.20'],
+    versions: ['3.14.3', '3.13.12', '3.12.10', '3.11.9', '3.10.11'],
     defaultVersion: '3.14.3',
     downloadSource: 'https://www.python.org/ftp/python/3.14.3/python-3.14.3-amd64.exe',
     downloadLabel: 'python.org (official)',
