@@ -44,10 +44,12 @@ execFile('powershell.exe', [
         const output = (raw[tool.id] || '').toString().trim();
         try {
           const match = output.match(new RegExp(tool.verifyRegex));
+          const firstLine = output.split(/\r?\n/)[0].trim();
+          const displayOutput = match ? match[0] : firstLine;
           results[tool.id] = {
             installed: !!match,
             version: match ? match[0] : null,
-            output: output.split(/\r?\n/)[0].trim()
+            output: displayOutput
           };
         } catch {
           results[tool.id] = { installed: false, version: null, output: '' };
