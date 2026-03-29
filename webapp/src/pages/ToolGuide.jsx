@@ -1,7 +1,8 @@
 import { useParams, Navigate, Link } from 'react-router-dom'
 import { useState } from 'react'
-import { Helmet } from 'react-helmet-async'
 import { FiArrowLeft, FiDownload, FiCopy, FiCheck, FiExternalLink, FiTerminal } from 'react-icons/fi'
+import SEO from '../components/SEO'
+import { buildBreadcrumbJsonLd, buildHowToJsonLd } from '../config/seo'
 import toolGuides from '../config/toolGuides'
 
 function CodeBlock({ children }) {
@@ -52,15 +53,42 @@ export default function ToolGuide() {
 
   if (!tool) return <Navigate to="/guides" replace />
 
+  const allSteps = [
+    ...(tool.steps?.appSteps || []),
+    ...(tool.steps?.manualSteps || []),
+  ]
+
+  const howToJsonLd = buildHowToJsonLd({
+    name: tool.headline,
+    description: `Step-by-step guide: ${tool.headline}. Download source, PATH configuration, environment variables, and verify commands.`,
+    steps: allSteps,
+  })
+
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: 'Home', url: '/' },
+    { name: 'How-To Guides', url: '/guides' },
+    { name: tool.name, url: `/guides/${tool.id}` },
+  ])
+
+  const combinedJsonLd = [breadcrumbJsonLd, howToJsonLd]
+
+  const toolKeywords = `${tool.headline}, install ${tool.name} Windows, ${tool.name} PATH configuration, ${tool.name} setup guide, ${tool.name} download, ${tool.name} environment variables, DevTools Installer ${tool.name}`
+
   return (
     <>
-      <Helmet>
-        <title>{tool.headline} — DevTools Installer</title>
-        <meta
-          name="description"
-          content={`Step-by-step guide: ${tool.headline}. Download source, PATH configuration, environment variables, and verify commands.`}
-        />
-      </Helmet>
+      <SEO
+        title={`${tool.headline} — Step-by-Step Guide | DevTools Installer`}
+        description={`Step-by-step guide: ${tool.headline}. Download source, PATH configuration, environment variables, and verify commands for ${tool.versions.join(', ')}.`}
+        keywords={toolKeywords}
+        path={`/guides/${tool.id}`}
+        type="article"
+      >
+        {combinedJsonLd.map((ld, i) => (
+          <script key={i} type="application/ld+json">
+            {JSON.stringify(ld)}
+          </script>
+        ))}
+      </SEO>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
         {/* Breadcrumb */}

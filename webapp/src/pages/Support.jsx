@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
+import SEO from '../components/SEO'
+import { buildBreadcrumbJsonLd, buildFAQJsonLd } from '../config/seo'
 import { FiChevronDown, FiMail, FiSend } from 'react-icons/fi'
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../config/firebase'
@@ -95,7 +96,7 @@ export default function Support() {
       })
       setSent(true)
       e.target.reset()
-    } catch (err) {
+    } catch {
       setError('Failed to send message. Please try again later.')
     } finally {
       setSending(false)
@@ -104,10 +105,19 @@ export default function Support() {
 
   return (
     <>
-      <Helmet>
-        <title>Support — DevTools Installer</title>
-        <meta name="description" content="Frequently asked questions and contact information for DevTools Installer support." />
-      </Helmet>
+      <SEO
+        title="Support & FAQ — DevTools Installer | Common Questions & Contact"
+        description="Frequently asked questions about DevTools Installer: compatibility, administrator privileges, tool selection, uninstalling, and more. Contact support for bug reports and feature requests."
+        keywords="DevTools Installer support, DevTools Installer FAQ, developer tools help, Windows installer support, how to uninstall dev tools, DevTools Installer contact, developer setup help"
+        path="/support"
+        jsonLd={[
+          buildBreadcrumbJsonLd([
+            { name: 'Home', url: '/' },
+            { name: 'Support', url: '/support' },
+          ]),
+          buildFAQJsonLd(faqs),
+        ]}
+      />
 
       <section className="pt-20 pb-12 text-center">
         <div className="max-w-3xl mx-auto px-4">

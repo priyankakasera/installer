@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
 import { FiArrowRight } from 'react-icons/fi'
+import SEO from '../components/SEO'
+import { buildBreadcrumbJsonLd } from '../config/seo'
 import toolGuides from '../config/toolGuides'
 
 const categoryOrder = [
@@ -20,20 +21,16 @@ export default function Guides() {
 
   return (
     <>
-      <Helmet>
-        <title>
-          How-To Guides — Install Java, Node.js, Python & More | DevTools
-          Installer
-        </title>
-        <meta
-          name="description"
-          content="Step-by-step guides to install Java, Node.js, Python, Maven, Git, Docker, VS Code and 16+ developer tools on Windows. Download sources, PATH variables, and verification commands included."
-        />
-        <meta
-          name="keywords"
-          content="how to install Java Windows, setup Node.js, install Python, install Maven, install Git, setup developer tools, PATH configuration, JAVA_HOME, one-click installation"
-        />
-      </Helmet>
+      <SEO
+        title="How-To Guides — Install Java, Node.js, Python & More on Windows | DevTools Installer"
+        description="Step-by-step guides to install Java, Node.js, Python, Maven, Git, Docker, VS Code and 16+ developer tools on Windows. Download sources, PATH variables, environment variables, and verification commands included."
+        keywords="how to install Java Windows, setup Node.js, install Python, install Maven, install Git, setup developer tools, PATH configuration, JAVA_HOME, one-click installation, install developer tools Windows, development environment guide"
+        path="/guides"
+        jsonLd={buildBreadcrumbJsonLd([
+          { name: 'Home', url: '/' },
+          { name: 'How-To Guides', url: '/guides' },
+        ])}
+      />
 
       {/* Header */}
       <section className="pt-20 pb-10 text-center">

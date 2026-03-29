@@ -42,7 +42,7 @@ function FooterLink({ to, children }) {
 
 export default function Footer() {
   return (
-    <footer className="bg-dark-lighter border-t border-dark-border">
+    <footer className="bg-dark-lighter border-t border-dark-border" role="contentinfo">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Brand */}

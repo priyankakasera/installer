@@ -1,5 +1,6 @@
-import { Helmet } from 'react-helmet-async'
 import { FaGithub, FaTwitter, FaLinkedin } from 'react-icons/fa'
+import SEO from '../components/SEO'
+import { buildBreadcrumbJsonLd } from '../config/seo'
 
 const authors = [
   {
@@ -21,10 +22,16 @@ const contributors = [
 export default function Authors() {
   return (
     <>
-      <Helmet>
-        <title>Authors — DevTools Installer</title>
-        <meta name="description" content="Meet the team behind DevTools Installer." />
-      </Helmet>
+      <SEO
+        title="About the Team — DevTools Installer | Meet the Authors & Contributors"
+        description="Meet the team behind DevTools Installer — the free one-click developer tool setup for Windows. Learn about our mission and how to contribute."
+        keywords="DevTools Installer team, DevTools Installer authors, developer tools contributors, open source developer tools"
+        path="/authors"
+        jsonLd={buildBreadcrumbJsonLd([
+          { name: 'Home', url: '/' },
+          { name: 'Authors', url: '/authors' },
+        ])}
+      />
 
       <section className="pt-20 pb-12 text-center">
         <div className="max-w-3xl mx-auto px-4">

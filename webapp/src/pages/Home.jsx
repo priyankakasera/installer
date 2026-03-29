@@ -1,6 +1,7 @@
-import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
 import { FiArrowRight } from 'react-icons/fi'
+import SEO from '../components/SEO'
+import { buildBreadcrumbJsonLd } from '../config/seo'
 import Hero from '../components/Hero'
 import IncludedTools from '../components/IncludedTools'
 import HowItWorks from '../components/HowItWorks'
@@ -10,23 +11,19 @@ function Divider() {
 }
 
 export default function Home() {
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: 'Home', url: '/' },
+  ])
+
   return (
     <>
-      <Helmet>
-        <title>
-          DevTools Installer — Install Java, Node.js, Python &amp; More in One
-          Click | Free Windows Setup Tool
-        </title>
-        <meta
-          name="description"
-          content="Free one-click installer for Java, Node.js, Python, Maven, Git, Docker, VS Code and 16+ developer tools on Windows. Automatic PATH configuration, setup bundles, and clean uninstall. No manual setup required."
-        />
-        <meta
-          name="keywords"
-          content="how to install Java, setup Node.js, install Python Windows, one-click developer setup, setup bundle, cleanup Java, uninstall developer tools, install Maven, install Git Windows, configure PATH automatically, developer environment setup, install Docker Windows, free dev tools installer"
-        />
-        <link rel="canonical" href="https://devtools-installer.web.app/" />
-      </Helmet>
+      <SEO
+        title="DevTools Installer — Install Java, Node.js, Python & More in One Click | Free Windows Setup Tool"
+        description="Free one-click installer for Java, Node.js, Python, Maven, Git, Docker, VS Code and 16+ developer tools on Windows. Automatic PATH configuration, setup bundles, and clean uninstall. No manual setup required."
+        keywords="how to install Java, setup Node.js, install Python Windows, one-click developer setup, setup bundle, cleanup Java, uninstall developer tools, install Maven, install Git Windows, configure PATH automatically, developer environment setup, install Docker Windows, free dev tools installer, Windows development tools, JDK installer, developer environment Windows, auto configure PATH, dev tools bundle"
+        path="/"
+        jsonLd={breadcrumbJsonLd}
+      />
       <Hero />
       <Divider />
       <IncludedTools />

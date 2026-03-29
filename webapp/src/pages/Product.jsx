@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
+import SEO from '../components/SEO'
+import { buildBreadcrumbJsonLd } from '../config/seo'
 import {
   FiMousePointer, FiSettings, FiCheckCircle, FiShield, FiZap,
   FiDownload, FiList, FiMonitor, FiTrash2, FiLayers
@@ -55,10 +56,16 @@ export default function Product() {
 
   return (
     <>
-      <Helmet>
-        <title>Product — DevTools Installer</title>
-        <meta name="description" content="Explore all features, supported tools, and how the DevTools Installer works." />
-      </Helmet>
+      <SEO
+        title="Features & Supported Tools — DevTools Installer | Java, Node.js, Python & 16+ Tools"
+        description="Explore all features of DevTools Installer: one-click setup, automatic PATH configuration, setup bundles, clean uninstall, and 16+ supported developer tools including Java, Node.js, Python, Maven, Git, VS Code."
+        keywords="DevTools Installer features, supported developer tools, one-click install Windows, automatic PATH configuration, Java installer, Node.js setup, Python installer, Maven setup, Git installer, VS Code installer, developer tool bundles, clean uninstall developer tools"
+        path="/product"
+        jsonLd={buildBreadcrumbJsonLd([
+          { name: 'Home', url: '/' },
+          { name: 'Product', url: '/product' },
+        ])}
+      />
 
       {/* Header */}
       <section className="pt-20 pb-12 text-center">

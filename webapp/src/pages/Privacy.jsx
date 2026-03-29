@@ -1,12 +1,19 @@
-import { Helmet } from 'react-helmet-async'
+import SEO from '../components/SEO'
+import { buildBreadcrumbJsonLd } from '../config/seo'
 
 export default function Privacy() {
   return (
     <>
-      <Helmet>
-        <title>Privacy Policy — DevTools Installer</title>
-        <meta name="description" content="Privacy policy for DevTools Installer website and desktop application." />
-      </Helmet>
+      <SEO
+        title="Privacy Policy — DevTools Installer | No Data Collection, No Telemetry"
+        description="Privacy policy for DevTools Installer. No personal data collected, no analytics, no telemetry. The desktop application runs entirely offline on your local Windows machine."
+        keywords="DevTools Installer privacy, developer tools privacy policy, no telemetry installer, offline developer tools, data privacy developer tools"
+        path="/privacy"
+        jsonLd={buildBreadcrumbJsonLd([
+          { name: 'Home', url: '/' },
+          { name: 'Privacy Policy', url: '/privacy' },
+        ])}
+      />
 
       <section className="pt-20 pb-12 text-center">
         <div className="max-w-3xl mx-auto px-4">

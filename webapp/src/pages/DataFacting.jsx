@@ -1,4 +1,5 @@
-import { Helmet } from 'react-helmet-async'
+import SEO from '../components/SEO'
+import { buildBreadcrumbJsonLd } from '../config/seo'
 import { FiShield, FiDatabase, FiLock, FiEye, FiServer, FiTrash2 } from 'react-icons/fi'
 
 const cards = [
@@ -37,10 +38,16 @@ const cards = [
 export default function DataFacting() {
   return (
     <>
-      <Helmet>
-        <title>Data Facting — DevTools Installer</title>
-        <meta name="description" content="Learn how DevTools Installer handles your data: no collection, no telemetry, fully offline." />
-      </Helmet>
+      <SEO
+        title="Data Practices — DevTools Installer | No Collection, No Telemetry, Fully Offline"
+        description="Learn how DevTools Installer handles your data: no collection, no telemetry, fully offline. Every tool is downloaded from official sources with zero tracking."
+        keywords="DevTools Installer data practices, no data collection, no telemetry, offline installer, secure developer tools, open source installer"
+        path="/data-facting"
+        jsonLd={buildBreadcrumbJsonLd([
+          { name: 'Home', url: '/' },
+          { name: 'Data Practices', url: '/data-facting' },
+        ])}
+      />
 
       <section className="pt-20 pb-12 text-center">
         <div className="max-w-3xl mx-auto px-4">
