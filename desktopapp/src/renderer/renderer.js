@@ -331,7 +331,7 @@ function renderToolsGrid() {
       .join('');
 
     const detectedBadge = isDetected
-      ? `<div class="tool-detected-badge">${ICONS.check} Installed: ${escapeHtml(detected.output || detected.version || '')}</div>`
+      ? `<div class="tool-detected-badge">${ICONS.check} Installed: ${escapeHtml(detected.version || detected.output || '')}</div>`
       : '';
 
     const selectedVersion = selectedTools.get(tool.id) || tool.defaultVersion;
