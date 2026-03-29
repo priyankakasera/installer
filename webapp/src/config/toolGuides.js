@@ -277,6 +277,7 @@ const toolGuides = [
   {
     id: 'docker-desktop',
     name: 'Docker Desktop',
+    hidden: true,
     headline: 'How to Install Docker Desktop on Windows',
     description:
       'Docker Desktop includes Docker Engine, CLI, Compose, and a GUI for container management.',

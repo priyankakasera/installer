@@ -28,7 +28,6 @@ const tools = [
   { name: 'Yarn', logo: '/icons/yarn.svg', desc: 'Fast dependency management for Node.js' },
   { name: 'Chocolatey', logo: '/icons/chocolatey.png', desc: 'The package manager for Windows' },
   { name: 'Git', logo: '/icons/github.svg', desc: 'Distributed version control system' },
-  { name: 'Docker Desktop', logo: '/icons/docker.svg', desc: 'Container platform with Engine, CLI, and Compose' },
   { name: 'Kubernetes CLI', logo: '/icons/kubernetes.png', desc: 'kubectl for controlling K8s clusters' },
   { name: 'AWS CLI', logo: '/icons/aws.jpeg', desc: 'Command-line interface for Amazon Web Services' },
   { name: 'Azure CLI', logo: '/icons/azure.png', desc: 'Command-line interface for Microsoft Azure' },

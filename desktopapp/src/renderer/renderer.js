@@ -1,3 +1,52 @@
+// ─── Lucide SVG Icons (UI only) ──────────────────────────────
+const ICONS = {
+  lock:        '<svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+  alertTri:    '<svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>',
+  layoutList:  '<svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><path d="M14 4h7"/><path d="M14 9h7"/><path d="M14 15h7"/><path d="M14 20h7"/></svg>',
+  circleCheck: '<svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>',
+  check:       '<svg class="lucide" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  search:      '<svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
+  x:           '<svg class="lucide" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
+  refreshCw:   '<svg class="lucide" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>',
+  trash2:      '<svg class="lucide" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>',
+  arrowUp:     '<svg class="lucide" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>',
+  arrowDown:   '<svg class="lucide" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 12-7 7-7-7"/><path d="M12 5v14"/></svg>',
+  arrowRight:  '<svg class="lucide" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>',
+  fileClock:   '<svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 22h2c.5 0 1-.2 1.4-.6.4-.4.6-.9.6-1.4V7l-5-5H6c-.5 0-1 .2-1.4.6C4.2 2.2 4 2.7 4 3.2v9.8"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><circle cx="9" cy="17" r="5"/><path d="M9 15v2l1.5 1"/></svg>',
+  xCircle:     '<svg class="lucide" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>',
+  checkCircleLg:'<svg class="lucide" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>',
+  alertTriLg:  '<svg class="lucide" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>',
+  checkCircleXl:'<svg class="lucide" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>',
+  wrench:      '<svg class="lucide" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg>',
+  scrollText:  '<svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2"/></svg>',
+  searchLg:    '<svg class="lucide" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
+  // Sidebar icons
+  coffee:      '<svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a2 2 0 1 1 0 4h-1"/><path d="M6 2v2"/></svg>',
+  rocket:      '<svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09Z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2Z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>',
+  palette:     '<svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2Z"/></svg>',
+  cloud:       '<svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>',
+  package:     '<svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>',
+  gitBranch:   '<svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>',
+  monitor:     '<svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>',
+  testTubes:   '<svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v17.5A2.5 2.5 0 0 1 6.5 22A2.5 2.5 0 0 1 4 19.5V2"/><path d="M20 2v17.5a2.5 2.5 0 0 1-2.5 2.5A2.5 2.5 0 0 1 15 19.5V2"/><path d="M3 2h7"/><path d="M14 2h7"/><path d="M9 16H4"/><path d="M20 16h-5"/></svg>',
+};
+
+// Map sidebar category / bundle IDs → Lucide icons
+const SIDEBAR_ICONS = {
+  // Bundles
+  'java-dev':      ICONS.coffee,
+  'fullstack-dev': ICONS.rocket,
+  'frontend-dev':  ICONS.palette,
+  'cloud-dev':     ICONS.cloud,
+  // Categories
+  'runtimes':        ICONS.rocket,
+  'package-managers': ICONS.package,
+  'vcs':             ICONS.gitBranch,
+  'cloud-devops':    ICONS.cloud,
+  'ides-editors':    ICONS.monitor,
+  'api-testing':     ICONS.testTubes,
+};
+
 // ─── State ───────────────────────────────────────────────────
 let config = null;
 let selectedTools = new Map(); // toolId -> version
@@ -46,7 +95,7 @@ const btnBackToSelect = $('#btnBackToSelect');
 
 // ─── Helpers ─────────────────────────────────────────────────
 function getAllTools() {
-  return config.categories.flatMap((cat) => cat.tools);
+  return config.categories.flatMap((cat) => cat.tools).filter((t) => !t.hidden);
 }
 
 // ─── Loader Helpers ──────────────────────────────────────────
@@ -75,7 +124,7 @@ async function init() {
     ]);
 
     detectedTools = detected;
-    adminBadge.textContent = isAdmin ? '🔒 Admin' : '⚠ No Admin';
+    adminBadge.innerHTML = isAdmin ? `${ICONS.lock} Admin` : `${ICONS.alertTri} No Admin`;
     adminBadge.className = 'admin-badge ' + (isAdmin ? 'admin' : 'no-admin');
 
     // Default view: first category
@@ -103,7 +152,7 @@ function renderSidebar() {
     item.dataset.viewId = bundle.id;
     item.title = bundle.name;
     item.innerHTML = `
-      <span class="sidebar-item-icon">${escapeHtml(bundle.icon)}</span>
+      <span class="sidebar-item-icon">${SIDEBAR_ICONS[bundle.id] || escapeHtml(bundle.icon)}</span>
       <span class="sidebar-item-label">${escapeHtml(bundle.name)}</span>
     `;
     item.addEventListener('click', () => {
@@ -115,6 +164,22 @@ function renderSidebar() {
   // Categories
   sidebarCategories.innerHTML = '';
 
+  // All Tools nav item
+  const allToolsCount = getAllTools().length;
+  const allToolsItem = document.createElement('div');
+  allToolsItem.className = 'sidebar-item' + (activeView.type === 'all' ? ' active' : '');
+  allToolsItem.dataset.viewType = 'all';
+  allToolsItem.title = 'All Tools';
+  allToolsItem.innerHTML = `
+    <span class="sidebar-item-icon">${ICONS.layoutList}</span>
+    <span class="sidebar-item-label">All Tools</span>
+    <span class="sidebar-item-count">${allToolsCount}</span>
+  `;
+  allToolsItem.addEventListener('click', () => {
+    setActiveView('all');
+  });
+  sidebarCategories.appendChild(allToolsItem);
+
   // Installed filter — dynamic count
   const installedCount = getAllTools().filter(t => detectedTools[t.id] && detectedTools[t.id].installed).length;
   const installedItem = document.createElement('div');
@@ -122,8 +187,8 @@ function renderSidebar() {
   installedItem.dataset.viewType = 'installed';
   installedItem.title = 'Installed Tools';
   installedItem.innerHTML = `
-    <span class="sidebar-item-icon">✅</span>
-    <span class="sidebar-item-label">Installed</span>
+    <span class="sidebar-item-icon">${ICONS.circleCheck}</span>
+    <span class="sidebar-item-label">Installed Tools</span>
     <span class="sidebar-item-count">${installedCount}</span>
   `;
   installedItem.addEventListener('click', () => {
@@ -138,9 +203,9 @@ function renderSidebar() {
     item.dataset.viewId = cat.id;
     item.title = cat.name;
     item.innerHTML = `
-      <span class="sidebar-item-icon">${escapeHtml(cat.icon)}</span>
+      <span class="sidebar-item-icon">${SIDEBAR_ICONS[cat.id] || escapeHtml(cat.icon)}</span>
       <span class="sidebar-item-label">${escapeHtml(cat.name)}</span>
-      <span class="sidebar-item-count">${cat.tools.length}</span>
+      <span class="sidebar-item-count">${cat.tools.filter(t => !t.hidden).length}</span>
     `;
     item.addEventListener('click', () => {
       setActiveView('category', cat.id);
@@ -174,7 +239,7 @@ function getToolsForView() {
   if (activeView.type === 'category') {
     const cat = config.categories.find((c) => c.id === activeView.id);
     if (cat) {
-      tools = cat.tools;
+      tools = cat.tools.filter((t) => !t.hidden);
       title = cat.name;
       desc = cat.description;
       categoryId = cat.id;
@@ -212,11 +277,12 @@ function renderToolsGrid() {
   contentTitle.textContent = title;
   contentDesc.textContent = desc;
 
-  // Select All button — show for categories, bundles, and installed view
-  if ((activeView.type === 'category' || activeView.type === 'bundle' || activeView.type === 'installed') && tools.length > 0 && !searchQuery) {
+  // Select All button — show for categories, bundles, installed, and all view
+  if ((activeView.type === 'category' || activeView.type === 'bundle' || activeView.type === 'installed' || activeView.type === 'all') && tools.length > 0 && !searchQuery) {
     btnSelectAll.style.display = '';
     const allSelected = tools.every((t) => selectedTools.has(t.id));
-    btnSelectAll.textContent = allSelected ? '✓ All Selected' : 'Select All';
+
+    btnSelectAll.innerHTML = allSelected ? `${ICONS.check} All Selected` : 'Select All';
     btnSelectAll.className = 'category-select-all' + (allSelected ? ' all-selected' : '');
   } else {
     btnSelectAll.style.display = 'none';
@@ -265,17 +331,17 @@ function renderToolsGrid() {
       .join('');
 
     const detectedBadge = isDetected
-      ? `<div class="tool-detected-badge">✓ Installed: ${escapeHtml(detected.output || detected.version || '')}</div>`
+      ? `<div class="tool-detected-badge">${ICONS.check} Installed: ${escapeHtml(detected.output || detected.version || '')}</div>`
       : '';
 
     const selectedVersion = selectedTools.get(tool.id) || tool.defaultVersion;
 
     const depsBadge = hasUnmetDeps
-      ? `<div class="tool-deps-badge">⚠ Requires: ${escapeHtml(depNames.join(', '))}</div>`
+      ? `<div class="tool-deps-badge">${ICONS.alertTri} Requires: ${escapeHtml(depNames.join(', '))}</div>`
       : '';
 
     const uninstallBtn = isDetected
-      ? `<button class="btn btn-sm btn-uninstall" data-uninstall-id="${escapeHtml(tool.id)}" title="Uninstall ${escapeHtml(tool.name)}">🗑️ Uninstall</button>`
+      ? `<button class="btn btn-sm btn-uninstall" data-uninstall-id="${escapeHtml(tool.id)}" title="Uninstall ${escapeHtml(tool.name)}">${ICONS.trash2} Uninstall</button>`
       : '';
 
     card.innerHTML = `
@@ -369,6 +435,7 @@ function updateInstallButton() {
   btnInstall.textContent = selectedTools.size > 0
     ? `Install Selected (${selectedTools.size})`
     : 'Install Selected';
+
 }
 
 // ─── Search ──────────────────────────────────────────────────
@@ -466,7 +533,7 @@ async function startInstallation() {
     if (!confirmed) return;
   } else if (unmetMessages.length > 0) {
     // No version conflicts but there are dependency warnings
-    const proceed = confirm(`⚠ Dependency warnings:\n\n${unmetMessages.join('\n')}\n\nThese tools may not work correctly without their dependencies. Proceed anyway?`);
+    const proceed = confirm(`Dependency warnings:\n\n${unmetMessages.join('\n')}\n\nThese tools may not work correctly without their dependencies. Proceed anyway?`);
     if (!proceed) return;
   }
 
@@ -482,14 +549,17 @@ async function startInstallation() {
     if (!tool) continue;
 
     const actionBadge = sel.action
-      ? ` (${sel.action === 'upgrade' ? '⬆ Upgrade' : sel.action === 'downgrade' ? '⬇ Downgrade' : '🔄 Reinstall'})`
+      ? ` (${sel.action === 'upgrade' ? `${ICONS.arrowUp} Upgrade` : sel.action === 'downgrade' ? `${ICONS.arrowDown} Downgrade` : `${ICONS.refreshCw} Reinstall`})`
       : '';
 
     const item = document.createElement('div');
     item.className = 'install-item';
     item.id = `install-item-${tool.id}`;
+    const iconHtml = tool.iconUrl
+      ? `<img class="tool-icon-img" src="${escapeHtml(tool.iconUrl)}" alt="${escapeHtml(tool.name)}">`
+      : escapeHtml(tool.icon);
     item.innerHTML = `
-      <div class="install-item-icon">${escapeHtml(tool.icon)}</div>
+      <div class="install-item-icon">${iconHtml}</div>
       <div class="install-item-info">
         <div class="install-item-name">${escapeHtml(tool.name)} v${escapeHtml(sel.version)}${actionBadge}</div>
         <div class="install-item-status" id="status-${tool.id}">Waiting...</div>
@@ -598,7 +668,7 @@ function showDone(result) {
     const errorDetail = isError && statusDetail ? statusDetail.textContent : '';
     const resultLabel = isRolledBack ? 'Rolled Back' : (isError ? 'Failed' : 'Installed');
     resultItem.innerHTML = `
-      <span class="result-status">${isError ? '\u274C' : '\u2705'}</span>
+      <span class="result-status ${isError ? 'result-error' : 'result-success'}">${isError ? ICONS.xCircle : ICONS.checkCircleLg}</span>
       <span class="result-name">${escapeHtml(tool ? tool.name : toolId)}</span>
       <span class="result-detail">${resultLabel}</span>
       ${isError && errorDetail ? `<div class="result-error-detail">${escapeHtml(errorDetail)}</div>` : ''}
@@ -607,11 +677,13 @@ function showDone(result) {
   });
 
   if (failCount > 0) {
-    doneIcon.textContent = '⚠️';
+    doneIcon.innerHTML = ICONS.alertTriLg;
+    doneIcon.classList.add('done-warning');
     doneTitle.textContent = `${successCount} Installed, ${failCount} Failed`;
     doneSubtitle.textContent = 'Some tools could not be installed. You can retry from the progress page.';
   } else {
-    doneIcon.textContent = '✅';
+    doneIcon.innerHTML = ICONS.checkCircleXl;
+    doneIcon.classList.remove('done-warning');
     doneTitle.textContent = 'Installation Complete!';
     doneSubtitle.textContent = 'Your development environment is ready. You may need to restart your terminal for PATH changes to take effect.';
   }
@@ -675,10 +747,10 @@ function showVersionConflictModal(conflicts, depWarnings) {
     for (const c of conflicts) {
       const item = document.createElement('div');
       item.className = 'conflict-item';
-      const actionLabel = c.action === 'upgrade' ? '⬆ Upgrade' : c.action === 'downgrade' ? '⬇ Downgrade' : '🔄 Reinstall';
+      const actionLabel = c.action === 'upgrade' ? `${ICONS.arrowUp} Upgrade` : c.action === 'downgrade' ? `${ICONS.arrowDown} Downgrade` : `${ICONS.refreshCw} Reinstall`;
       const versionDetail = c.action === 'reinstall'
         ? escapeHtml(c.existingVersion)
-        : `${escapeHtml(c.existingVersion)} → ${escapeHtml(c.selectedVersion)}`;
+        : `${escapeHtml(c.existingVersion)} ${ICONS.arrowRight} ${escapeHtml(c.selectedVersion)}`;
       item.innerHTML = `
         <span class="conflict-tool">${escapeHtml(c.toolName)}</span>
         <span class="conflict-action">${actionLabel}</span>
@@ -690,7 +762,7 @@ function showVersionConflictModal(conflicts, depWarnings) {
     // Show dependency warnings if any
     if (depWarnings && depWarnings.length > 0) {
       depEl.style.display = '';
-      depEl.innerHTML = `<div class="conflict-dep-title">⚠ Dependency warnings:</div>` +
+      depEl.innerHTML = `<div class="conflict-dep-title">${ICONS.alertTri} Dependency warnings:</div>` +
         depWarnings.map(m => `<div class="conflict-dep-item">${escapeHtml(m)}</div>`).join('');
     } else {
       depEl.style.display = 'none';

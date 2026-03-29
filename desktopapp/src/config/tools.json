@@ -155,7 +155,7 @@
             "GRADLE_HOME": "{installDir}"
           },
           "pathEntries": ["{installDir}\\bin"],
-          "verifyCommand": "powershell -NoProfile -NonInteractive -Command \"& {if ($env:GRADLE_HOME) { Write-Output ('Gradle ' + (Split-Path -Leaf $env:GRADLE_HOME).Replace('gradle-','')) }}\"",
+          "verifyCommand": "gradle -v",
           "verifyRegex": "Gradle [\\d.]+",
           "icon": "🐘",
           "iconUrl": "icons/gradle.svg",
@@ -222,6 +222,7 @@
         {
           "id": "docker-desktop",
           "name": "Docker Desktop",
+          "hidden": true,
           "description": "Bundled container platform — includes Docker Engine, CLI, and Compose",
           "versions": ["4.66.0", "4.51.0"],
           "defaultVersion": "4.66.0",

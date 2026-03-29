@@ -15,7 +15,7 @@ const categoryOrder = [
 export default function Guides() {
   const grouped = categoryOrder.map((cat) => ({
     name: cat,
-    tools: toolGuides.filter((t) => t.category === cat),
+    tools: toolGuides.filter((t) => t.category === cat && !t.hidden),
   }))
 
   return (

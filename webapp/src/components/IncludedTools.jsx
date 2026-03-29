@@ -35,7 +35,6 @@ const categories = [
     name: 'Cloud & DevOps',
     icon: FiCloud,
     tools: [
-      { name: 'Docker', logo: '/icons/docker.svg' },
       { name: 'kubectl', logo: '/icons/kubernetes.png' },
       { name: 'AWS CLI', logo: '/icons/aws.jpeg' },
       { name: 'Azure CLI', logo: '/icons/azure.png' },
@@ -78,7 +77,7 @@ const bundles = [
   },
   {
     name: 'Cloud & DevOps',
-    tools: 'Docker Desktop, kubectl, AWS CLI, Azure CLI',
+    tools: 'kubectl, AWS CLI, Azure CLI',
     color: 'from-cyan-500/20 to-blue-500/20',
     border: 'border-cyan-500/20',
   },
@@ -92,7 +91,7 @@ export default function IncludedTools() {
           <span className="section-label">Tools</span>
         </div>
         <h2 className="text-3xl sm:text-4xl font-bold text-white text-center mt-4 mb-4">
-          16+ Developer Tools, One Installer
+          15+ Developer Tools, One Installer
         </h2>
         <p className="text-gray-400 text-center max-w-2xl mx-auto mb-14">
           Install Java, setup Node.js, configure Python, and more — all

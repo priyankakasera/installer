@@ -489,7 +489,7 @@ class InstallerEngine {
           await this._unconfigure(tool);
           rollbackResults.push({ action: 'unconfigure', success: true });
           this._log('Rollback: environment configuration removed');
-          onStep('rolling-back', 'Reverting: Environment configuration removed ✓');
+          onStep('rolling-back', 'Reverting: Environment configuration removed successfully');
         } catch (e) {
           rollbackResults.push({ action: 'unconfigure', success: false, error: e.message });
           this._log(`Rollback: failed to remove environment configuration: ${e.message}`);
@@ -525,7 +525,7 @@ class InstallerEngine {
           }
 
           rollbackResults.push({ action: 'uninstall', success: true });
-          onStep('rolling-back', 'Reverting: Installed files removed ✓');
+          onStep('rolling-back', 'Reverting: Installed files removed successfully');
         } catch (e) {
           rollbackResults.push({ action: 'uninstall', success: false, error: e.message });
           this._log(`Rollback: failed to remove installed files: ${e.message}`);

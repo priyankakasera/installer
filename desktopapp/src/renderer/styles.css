@@ -35,6 +35,13 @@ body {
   user-select: none;
 }
 
+/* Lucide inline SVG icons */
+svg.lucide {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
 .app {
   display: flex;
   flex-direction: column;
@@ -62,6 +69,9 @@ body {
   font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .subtitle {
@@ -134,6 +144,9 @@ body {
   border-radius: 20px;
   font-weight: 600;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .admin-badge.admin {
@@ -252,6 +265,7 @@ body {
 .install-footer {
   display: flex;
   justify-content: flex-end;
+  gap: 12px;
   margin-top: 20px;
   padding-top: 16px;
   border-top: 1px solid var(--border);
@@ -456,10 +470,11 @@ body {
 }
 
 .tool-card.selected .tool-checkbox::after {
-  content: '✓';
-  color: white;
-  font-size: 11px;
-  font-weight: 700;
+  content: '';
+  width: 12px;
+  height: 12px;
+  display: block;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") no-repeat center;
 }
 
 .tool-icon { font-size: 28px; flex-shrink: 0; }
@@ -499,12 +514,18 @@ body {
   color: var(--success);
   margin-top: 4px;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .tool-deps-badge {
   font-size: 11px;
   color: var(--warning);
   margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .tool-upgrade-badge {
@@ -581,6 +602,9 @@ body {
   cursor: pointer;
   transition: all 0.2s;
   outline: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .btn:disabled {
@@ -628,6 +652,9 @@ body {
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .btn-uninstall:hover {
@@ -692,7 +719,8 @@ body {
   padding: 12px 16px;
 }
 
-.install-item-icon { font-size: 22px; flex-shrink: 0; }
+.install-item-icon { font-size: 22px; flex-shrink: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
+.install-item-icon .tool-icon-img { width: 24px; height: 24px; object-fit: contain; }
 .install-item-info { flex: 1; }
 .install-item-name { font-size: 14px; font-weight: 600; }
 .install-item-status { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
@@ -764,6 +792,14 @@ body {
   font-size: 48px;
   text-align: center;
   margin-bottom: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--success);
+}
+
+.done-icon.done-warning {
+  color: var(--warning);
 }
 
 .done-title {
@@ -798,7 +834,9 @@ body {
   padding: 12px 16px;
 }
 
-.result-status { font-size: 18px; }
+.result-status { font-size: 18px; display: flex; align-items: center; }
+.result-status.result-success { color: var(--success); }
+.result-status.result-error { color: var(--error); }
 .result-name { flex: 1; font-size: 14px; font-weight: 500; }
 .result-detail { font-size: 12px; color: var(--text-muted); }
 
@@ -886,6 +924,9 @@ body {
   border-radius: 4px;
   font-weight: 600;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .conflict-item:has(.conflict-action:first-of-type) .conflict-action { background: rgba(96,165,250,0.15); color: #60a5fa; }
@@ -895,6 +936,9 @@ body {
   font-size: 12px;
   margin-left: auto;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .conflict-dep-warnings {
