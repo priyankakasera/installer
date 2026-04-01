@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import SEO from '../components/SEO'
-import { buildBreadcrumbJsonLd } from '../config/seo'
+import { buildBreadcrumbJsonLd, buildSoftwareApplicationJsonLd } from '../config/seo'
 import {
   FiMousePointer, FiSettings, FiCheckCircle, FiShield, FiZap,
   FiDownload, FiList, FiMonitor, FiTrash2, FiLayers
@@ -21,20 +21,20 @@ const features = [
 ]
 
 const tools = [
-  { name: 'Java (JDK)', logo: '/icons/java.png', desc: 'Oracle JDK & Adoptium Temurin — multiple versions' },
+  { name: 'Java (JDK)', logo: '/icons/java.webp', desc: 'Oracle JDK & Adoptium Temurin — multiple versions' },
   { name: 'Node.js', logo: '/icons/nodejs.svg', desc: 'JavaScript runtime — LTS and Current releases' },
   { name: 'Python', logo: '/icons/python.svg', desc: 'Python 3.x with pip and Scripts in PATH' },
   { name: 'Maven', logo: '/icons/maven.svg', desc: 'Build automation for Java projects' },
   { name: 'Gradle', logo: '/icons/gradle.svg', desc: 'Multi-language build automation tool' },
   { name: 'Yarn', logo: '/icons/yarn.svg', desc: 'Fast dependency management for Node.js' },
-  { name: 'Chocolatey', logo: '/icons/chocolatey.png', desc: 'The package manager for Windows' },
+  { name: 'Chocolatey', logo: '/icons/chocolatey.webp', desc: 'The package manager for Windows' },
   { name: 'Git', logo: '/icons/github.svg', desc: 'Distributed version control system' },
-  { name: 'Kubernetes CLI', logo: '/icons/kubernetes.png', desc: 'kubectl for controlling K8s clusters' },
-  { name: 'AWS CLI', logo: '/icons/aws.jpeg', desc: 'Command-line interface for Amazon Web Services' },
-  { name: 'Azure CLI', logo: '/icons/azure.png', desc: 'Command-line interface for Microsoft Azure' },
-  { name: 'VS Code', logo: '/icons/vscode.png', desc: 'Lightweight but powerful code editor' },
-  { name: 'IntelliJ IDEA', logo: '/icons/intellij.png', desc: 'Professional IDE for Java and Kotlin development' },
-  { name: 'Notepad++', logo: '/icons/notepadpp.png', desc: 'Free source code editor and Notepad replacement' },
+  { name: 'Kubernetes CLI', logo: '/icons/kubernetes.webp', desc: 'kubectl for controlling K8s clusters' },
+  { name: 'AWS CLI', logo: '/icons/aws.webp', desc: 'Command-line interface for Amazon Web Services' },
+  { name: 'Azure CLI', logo: '/icons/azure.webp', desc: 'Command-line interface for Microsoft Azure' },
+  { name: 'VS Code', logo: '/icons/vscode.webp', desc: 'Lightweight but powerful code editor' },
+  { name: 'IntelliJ IDEA', logo: '/icons/intellij.webp', desc: 'Professional IDE for Java and Kotlin development' },
+  { name: 'Notepad++', logo: '/icons/notepadpp.webp', desc: 'Free source code editor and Notepad replacement' },
   { name: 'Postman', logo: '/icons/postman.svg', desc: 'API platform for building, testing, and documenting APIs' },
 ]
 
@@ -61,16 +61,22 @@ export default function Product() {
         description="Explore all features of DevTools Installer: one-click setup, automatic PATH configuration, setup bundles, clean uninstall, and 16+ supported developer tools including Java, Node.js, Python, Maven, Git, VS Code."
         keywords="DevTools Installer features, supported developer tools, one-click install Windows, automatic PATH configuration, Java installer, Node.js setup, Python installer, Maven setup, Git installer, VS Code installer, developer tool bundles, clean uninstall developer tools"
         path="/product"
-        jsonLd={buildBreadcrumbJsonLd([
-          { name: 'Home', url: '/' },
-          { name: 'Product', url: '/product' },
-        ])}
+        jsonLd={[
+          buildBreadcrumbJsonLd([
+            { name: 'Home', url: '/' },
+            { name: 'Product', url: '/product' },
+          ]),
+          buildSoftwareApplicationJsonLd({
+            description:
+              'Free one-click installer for Java, Node.js, Python, Maven, Git, VS Code and 16+ developer tools on Windows. Automatic PATH configuration, setup bundles, and clean uninstall.',
+          }),
+        ]}
       />
 
       {/* Header */}
       <section className="pt-20 pb-12 text-center">
         <div className="max-w-3xl mx-auto px-4">
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">Product</h1>
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">Features &amp; Supported Developer Tools</h1>
           <p className="text-lg text-gray-400">
             Everything you need to set up a professional development environment on Windows.
           </p>
@@ -100,7 +106,7 @@ export default function Product() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {tools.map((t) => (
               <div key={t.name} className="flex items-start gap-4 bg-dark-card border border-dark-border rounded-2xl p-6 hover:border-primary/40 transition-all duration-300">
-                <img src={t.logo} alt={t.name} className="w-8 h-8 shrink-0 mt-0.5 object-contain" />
+                <img src={t.logo} alt={t.name} width={32} height={32} className="w-8 h-8 shrink-0 mt-0.5 object-contain" loading="lazy" />
                 <div>
                   <h3 className="font-semibold text-white">{t.name}</h3>
                   <p className="text-sm text-gray-400 mt-1">{t.desc}</p>

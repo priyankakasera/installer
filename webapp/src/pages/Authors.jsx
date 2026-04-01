@@ -35,7 +35,7 @@ export default function Authors() {
 
       <section className="pt-20 pb-12 text-center">
         <div className="max-w-3xl mx-auto px-4">
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">Authors</h1>
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">About the Team</h1>
           <p className="text-lg text-gray-400">
             Meet the people behind DevTools Installer.
           </p>

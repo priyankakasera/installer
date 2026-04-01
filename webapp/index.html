@@ -56,6 +56,21 @@
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "DevTools Installer",
+        "url": "https://devtoolsinstaller.com/",
+        "logo": "https://devtoolsinstaller.com/icons/og-image.png",
+        "description": "Free one-click installer for 16+ developer tools on Windows. Install Java, Node.js, Python, Git and more with automatic PATH configuration.",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "email": "support@devtools-installer.web.app",
+          "contactType": "customer support"
+        }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "DevTools Installer",
         "url": "https://devtoolsinstaller.com/",
@@ -84,8 +99,16 @@
     <link rel="preconnect" href="https://www.googletagmanager.com" />
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
     <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" /></noscript>
     <title>DevTools Installer — Install Java, Node.js, Python & 16+ Tools in One Click | Free for Windows</title>
+    <style>
+      /* Critical inline CSS to prevent render-blocking */
+      *,*::before,*::after{box-sizing:border-box}
+      html{scroll-behavior:smooth}
+      body{font-family:'Inter',ui-sans-serif,system-ui,sans-serif;background-color:#0a0f0d;color:#c2d4cc;-webkit-font-smoothing:antialiased;line-height:1.7}
+      #root{min-height:100vh;display:flex;flex-direction:column;background-color:#0a0f0d}
+    </style>
   </head>
   <body>
     <noscript>

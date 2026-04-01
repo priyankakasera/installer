@@ -33,7 +33,7 @@ function FooterLink({ to, children }) {
     <Link
       to={to}
       onClick={handleClick}
-      className="text-sm text-gray-500 hover:text-white transition-colors"
+      className="text-sm text-gray-400 hover:text-white transition-colors"
     >
       {children}
     </Link>
@@ -55,7 +55,7 @@ export default function Footer() {
                 DevTools Installer
               </span>
             </Link>
-            <p className="text-sm text-gray-500 leading-relaxed max-w-xs">
+            <p className="text-sm text-gray-400 leading-relaxed max-w-xs">
               Free one-click development environment setup for Windows.
               Install, configure, and cleanly remove 16+ developer tools.
             </p>
@@ -64,9 +64,9 @@ export default function Footer() {
 
           {/* Product */}
           <div>
-            <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
               Product
-            </h4>
+            </p>
             <ul className="space-y-2.5">
               <li>
                 <FooterLink to="/product#features">
@@ -93,9 +93,9 @@ export default function Footer() {
 
           {/* How-To Guides */}
           <div className="col-span-2 sm:col-span-1">
-            <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
               How-To Guides
-            </h4>
+            </p>
             <ul className="space-y-2.5">
               {toolGuideLinks.map((link) => (
                 <li key={link.to}>
@@ -111,20 +111,20 @@ export default function Footer() {
         <div className="section-divider mt-10 mb-6" />
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-gray-600">
+          <p className="text-xs text-gray-400">
             &copy; {new Date().getFullYear()} DevTools Installer. All rights
             reserved.
           </p>
           <div className="flex gap-6">
             <Link
               to="/privacy"
-              className="text-xs text-gray-600 hover:text-gray-400 transition-colors"
+              className="text-xs text-gray-400 hover:text-gray-300 transition-colors"
             >
               Privacy
             </Link>
             <Link
               to="/support"
-              className="text-xs text-gray-600 hover:text-gray-400 transition-colors"
+              className="text-xs text-gray-400 hover:text-gray-300 transition-colors"
             >
               Support
             </Link>

@@ -77,7 +77,7 @@ export default function Hero() {
                   Windows shows an &ldquo;Unknown Publisher&rdquo; warning because the app isn&apos;t signed with a code-signing certificate (<strong className="text-gray-300">$200–$400/yr</strong> — steep for a free project). This <strong className="text-gray-300">doesn&apos;t mean it&apos;s unsafe</strong> — every tool is fetched directly from its official source with no adware or telemetry.
                 </p>
               </div>
-              <p className="text-xs text-gray-500 pl-6.5">
+              <p className="text-xs text-gray-400 pl-6.5">
                 To proceed: click <strong className="text-gray-300">&ldquo;More info&rdquo;</strong> → <strong className="text-gray-300">&ldquo;Run anyway&rdquo;</strong>
               </p>
             </div>
@@ -110,7 +110,7 @@ export default function Hero() {
                 <div className="flex">
                   {/* Sidebar */}
                   <div className="w-40 shrink-0 border-r border-dark-border bg-dark-lighter/50 py-3 px-2.5 hidden sm:block">
-                    <p className="text-[10px] font-semibold text-gray-600 uppercase tracking-wider px-2 mb-1.5">Quick Setup</p>
+                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-2 mb-1.5">Quick Setup</p>
                     <div className="space-y-0.5 mb-3">
                       <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-primary/10 border border-primary/20">
                         <span className="w-1.5 h-1.5 rounded-full bg-primary-light" />
@@ -118,23 +118,23 @@ export default function Hero() {
                       </div>
                       <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-white/3 transition-colors">
                         <span className="w-1.5 h-1.5 rounded-full bg-pink-400" />
-                        <span className="text-[11px] text-gray-500 truncate">Full-Stack Dev</span>
+                        <span className="text-[11px] text-gray-400 truncate">Full-Stack Dev</span>
                       </div>
                       <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-white/3 transition-colors">
                         <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
-                        <span className="text-[11px] text-gray-500 truncate">Frontend Dev</span>
+                        <span className="text-[11px] text-gray-400 truncate">Frontend Dev</span>
                       </div>
                       <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-white/3 transition-colors">
                         <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                        <span className="text-[11px] text-gray-500 truncate">Cloud & DevOps</span>
+                        <span className="text-[11px] text-gray-400 truncate">Cloud & DevOps</span>
                       </div>
                     </div>
-                    <p className="text-[10px] font-semibold text-gray-600 uppercase tracking-wider px-2 mb-1.5">Categories</p>
+                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-2 mb-1.5">Categories</p>
                     <div className="space-y-0.5">
                       {['Installed', 'Core Runtimes', 'Package Mgrs', 'Version Control', 'Cloud & DevOps', 'IDEs & Editors'].map((cat, i) => (
                         <div key={cat} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-white/3 transition-colors">
-                          <span className="text-[11px] text-gray-500 truncate">{cat}</span>
-                          <span className="text-[9px] text-gray-600 bg-dark-border rounded-full px-1.5">{[8, 3, 4, 1, 4, 3][i]}</span>
+                          <span className="text-[11px] text-gray-400 truncate">{cat}</span>
+                          <span className="text-[9px] text-gray-400 bg-dark-border rounded-full px-1.5">{[8, 3, 4, 1, 4, 3][i]}</span>
                         </div>
                       ))}
                     </div>
@@ -145,11 +145,11 @@ export default function Hero() {
                     {/* Header */}
                     <div className="flex items-center justify-between mb-4">
                       <div>
-                        <h3 className="text-sm font-semibold text-white">Java Developer Setup</h3>
-                        <p className="text-[10px] text-gray-500">Complete Java development environment</p>
+                        <p className="text-sm font-semibold text-white">Java Developer Setup</p>
+                        <p className="text-[10px] text-gray-400">Complete Java development environment</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="flex items-center gap-1 text-[10px] text-gray-500"><FiRefreshCw className="w-3 h-3" /> Refresh</span>
+                        <span className="flex items-center gap-1 text-[10px] text-gray-400"><FiRefreshCw className="w-3 h-3" /> Refresh</span>
                         <span className="text-[10px] text-accent">Select All</span>
                       </div>
                     </div>
@@ -162,7 +162,7 @@ export default function Hero() {
                           <FaJava className="w-4 h-4 text-orange-400" />
                           <div>
                             <p className="text-xs font-medium text-white">Java (JDK)</p>
-                            <p className="text-[9px] text-gray-500">Required for Java development</p>
+                            <p className="text-[9px] text-gray-400">Required for Java development</p>
                           </div>
                         </div>
                         <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-dark-card border border-dark-border rounded text-[10px] text-gray-400">
@@ -176,7 +176,7 @@ export default function Hero() {
                           <SiApachemaven className="w-4 h-4 text-red-400" />
                           <div>
                             <p className="text-xs font-medium text-white">Apache Maven</p>
-                            <p className="text-[9px] text-gray-500">Build automation tool</p>
+                            <p className="text-[9px] text-gray-400">Build automation tool</p>
                           </div>
                         </div>
                         <p className="text-[9px] text-amber-400 mb-1.5">⚠ Requires Java (JDK)</p>
@@ -191,7 +191,7 @@ export default function Hero() {
                           <SiGradle className="w-4 h-4 text-teal-400" />
                           <div>
                             <p className="text-xs font-medium text-white">Gradle</p>
-                            <p className="text-[9px] text-gray-500">Multi-language build tool</p>
+                            <p className="text-[9px] text-gray-400">Multi-language build tool</p>
                           </div>
                         </div>
                         <p className="text-[9px] text-amber-400 mb-1.5">⚠ Requires Java (JDK)</p>
@@ -206,7 +206,7 @@ export default function Hero() {
                           <FaGitAlt className="w-4 h-4 text-orange-500" />
                           <div>
                             <p className="text-xs font-medium text-white">Git</p>
-                            <p className="text-[9px] text-gray-500">Version control system</p>
+                            <p className="text-[9px] text-gray-400">Version control system</p>
                           </div>
                         </div>
                         <p className="text-[9px] text-primary-light mb-1.5">✓ Installed: git 2.53.0</p>

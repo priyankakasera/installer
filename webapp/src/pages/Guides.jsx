@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { FiArrowRight } from 'react-icons/fi'
 import SEO from '../components/SEO'
-import { buildBreadcrumbJsonLd } from '../config/seo'
+import { buildBreadcrumbJsonLd, buildItemListJsonLd } from '../config/seo'
 import toolGuides from '../config/toolGuides'
 
 const categoryOrder = [
@@ -19,6 +19,20 @@ export default function Guides() {
     tools: toolGuides.filter((t) => t.category === cat && !t.hidden),
   }))
 
+  const visibleGuides = toolGuides.filter((t) => !t.hidden)
+  const guidesJsonLd = [
+    buildBreadcrumbJsonLd([
+      { name: 'Home', url: '/' },
+      { name: 'How-To Guides', url: '/guides' },
+    ]),
+    buildItemListJsonLd(
+      visibleGuides.map((t) => ({
+        name: t.headline,
+        url: `/guides/${t.id}`,
+      })),
+    ),
+  ]
+
   return (
     <>
       <SEO
@@ -26,10 +40,7 @@ export default function Guides() {
         description="Step-by-step guides to install Java, Node.js, Python, Maven, Git, Docker, VS Code and 16+ developer tools on Windows. Download sources, PATH variables, environment variables, and verification commands included."
         keywords="how to install Java Windows, setup Node.js, install Python, install Maven, install Git, setup developer tools, PATH configuration, JAVA_HOME, one-click installation, install developer tools Windows, development environment guide"
         path="/guides"
-        jsonLd={buildBreadcrumbJsonLd([
-          { name: 'Home', url: '/' },
-          { name: 'How-To Guides', url: '/guides' },
-        ])}
+        jsonLd={guidesJsonLd}
       />
 
       {/* Header */}
@@ -37,7 +48,7 @@ export default function Guides() {
         <div className="max-w-3xl mx-auto px-4">
           <span className="section-label mb-4 inline-flex">Guides</span>
           <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-4 tracking-tight">
-            How-To Guides
+            Developer Tool Installation Guides
           </h1>
           <p className="text-lg text-gray-400 max-w-2xl mx-auto">
             Step-by-step instructions to install each developer tool using

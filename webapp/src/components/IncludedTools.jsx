@@ -11,7 +11,7 @@ const categories = [
     name: 'Core Runtimes',
     icon: FiCode,
     tools: [
-      { name: 'Java', logo: '/icons/java.png' },
+      { name: 'Java', logo: '/icons/java.webp' },
       { name: 'Node.js', logo: '/icons/nodejs.svg' },
       { name: 'Python', logo: '/icons/python.svg' },
     ],
@@ -23,7 +23,7 @@ const categories = [
       { name: 'Maven', logo: '/icons/maven.svg' },
       { name: 'Gradle', logo: '/icons/gradle.svg' },
       { name: 'Yarn', logo: '/icons/yarn.svg' },
-      { name: 'Chocolatey', logo: '/icons/chocolatey.png' },
+      { name: 'Chocolatey', logo: '/icons/chocolatey.webp' },
     ],
   },
   {
@@ -35,18 +35,18 @@ const categories = [
     name: 'Cloud & DevOps',
     icon: FiCloud,
     tools: [
-      { name: 'kubectl', logo: '/icons/kubernetes.png' },
-      { name: 'AWS CLI', logo: '/icons/aws.jpeg' },
-      { name: 'Azure CLI', logo: '/icons/azure.png' },
+      { name: 'kubectl', logo: '/icons/kubernetes.webp' },
+      { name: 'AWS CLI', logo: '/icons/aws.webp' },
+      { name: 'Azure CLI', logo: '/icons/azure.webp' },
     ],
   },
   {
     name: 'IDEs & Editors',
     icon: FiTool,
     tools: [
-      { name: 'VS Code', logo: '/icons/vscode.png' },
-      { name: 'IntelliJ IDEA', logo: '/icons/intellij.png' },
-      { name: 'Notepad++', logo: '/icons/notepadpp.png' },
+      { name: 'VS Code', logo: '/icons/vscode.webp' },
+      { name: 'IntelliJ IDEA', logo: '/icons/intellij.webp' },
+      { name: 'Notepad++', logo: '/icons/notepadpp.webp' },
     ],
   },
   {
@@ -85,7 +85,7 @@ const bundles = [
 
 export default function IncludedTools() {
   return (
-    <section className="py-20 lg:py-28 bg-dark-lighter/50" id="tools">
+    <section className="content-auto py-20 lg:py-28 bg-dark-lighter/50" id="tools">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <span className="section-label">Tools</span>
@@ -118,7 +118,10 @@ export default function IncludedTools() {
                     <img
                       src={tool.logo}
                       alt={tool.name}
+                      width={16}
+                      height={16}
                       className="w-4 h-4 shrink-0 object-contain"
+                      loading="lazy"
                     />
                     <span className="text-sm text-gray-300">{tool.name}</span>
                   </div>

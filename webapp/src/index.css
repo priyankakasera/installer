@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+/* Font-display fallback to prevent CLS from web font loading */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  src: local('Inter');
+  size-adjust: 100%;
+  ascent-override: 90%;
+  descent-override: 25%;
+  line-gap-override: 0%;
+}
+
 @theme {
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --color-primary: #10b981;
@@ -89,4 +101,10 @@ h1, h2, h3, h4 {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Reduce layout work for below-fold content */
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
 }

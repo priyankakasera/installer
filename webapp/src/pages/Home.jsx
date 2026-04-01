@@ -1,10 +1,12 @@
+import { lazy, Suspense } from 'react'
 import { Link } from 'react-router-dom'
 import { FiArrowRight } from 'react-icons/fi'
 import SEO from '../components/SEO'
 import { buildBreadcrumbJsonLd } from '../config/seo'
 import Hero from '../components/Hero'
-import IncludedTools from '../components/IncludedTools'
-import HowItWorks from '../components/HowItWorks'
+
+const IncludedTools = lazy(() => import('../components/IncludedTools'))
+const HowItWorks = lazy(() => import('../components/HowItWorks'))
 
 function Divider() {
   return <hr className="section-divider" />
@@ -26,13 +28,15 @@ export default function Home() {
       />
       <Hero />
       <Divider />
-      <IncludedTools />
-      <Divider />
-      <HowItWorks />
+      <Suspense fallback={<div className="min-h-[600px]" />}>
+        <IncludedTools />
+        <Divider />
+        <HowItWorks />
+      </Suspense>
 
       {/* Guides teaser */}
       <Divider />
-      <section className="py-16 lg:py-20">
+      <section className="content-auto py-16 lg:py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="section-label">Documentation</span>
           <h2 className="text-2xl sm:text-3xl font-bold text-white mt-4 mb-4">

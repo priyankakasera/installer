@@ -88,6 +88,10 @@ export default function ToolGuide() {
             {JSON.stringify(ld)}
           </script>
         ))}
+        <meta property="article:section" content={tool.category} />
+        <meta property="article:tag" content={tool.name} />
+        <meta property="article:tag" content="Windows" />
+        <meta property="article:tag" content="installation guide" />
       </SEO>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
@@ -112,7 +116,7 @@ export default function ToolGuide() {
         {/* Quick facts */}
         <div className="grid sm:grid-cols-3 gap-4 mb-12">
           <div className="bg-dark-card border border-dark-border rounded-xl p-4">
-            <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
               Supported Versions
             </p>
             <div className="flex flex-wrap gap-1.5">
@@ -124,7 +128,7 @@ export default function ToolGuide() {
             </div>
           </div>
           <div className="bg-dark-card border border-dark-border rounded-xl p-4">
-            <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
               Source
             </p>
             <p className="text-white font-medium truncate">
@@ -132,7 +136,7 @@ export default function ToolGuide() {
             </p>
           </div>
           <div className="bg-dark-card border border-dark-border rounded-xl p-4">
-            <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
               Verify
             </p>
             <p className="text-white font-mono text-sm truncate">
