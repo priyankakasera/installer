@@ -1,6 +1,6 @@
 {
   "name": "dev-tools-installer",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "description": "One-click developer tools installer for Windows",
   "main": "src/main.js",
   "homepage": "https://github.com/YOUR_USERNAME/dev-tools-installer",
