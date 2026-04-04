@@ -25,6 +25,7 @@ if (process.platform === 'win32' && !isAdmin()) {
 
 let mainWindow;
 let installerEngine;
+let operationInProgress = false;
 
 // Lazy-require after elevation check
 const InstallerEngine = require('./installer/engine');
@@ -84,6 +85,25 @@ function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
   mainWindow.setMenuBarVisibility(false);
+
+  mainWindow.on('close', (e) => {
+    if (operationInProgress) {
+      e.preventDefault();
+      const choice = dialog.showMessageBoxSync(mainWindow, {
+        type: 'warning',
+        buttons: ['Cancel', 'Close Anyway'],
+        defaultId: 0,
+        cancelId: 0,
+        title: 'Operation in Progress',
+        message: 'An install or uninstall operation is currently running.',
+        detail: 'Closing now may result in a corrupt or incomplete installation. Are you sure you want to close?'
+      });
+      if (choice === 1) {
+        operationInProgress = false;
+        mainWindow.destroy();
+      }
+    }
+  });
 }
 
 app.whenReady().then(() => {
@@ -100,6 +120,10 @@ app.on('window-all-closed', () => {
 });
 
 // ─── IPC Handlers ────────────────────────────────────────────────
+
+ipcMain.on('set-operation-in-progress', (event, inProgress) => {
+  operationInProgress = !!inProgress;
+});
 
 ipcMain.handle('get-tools-config', async () => {
   return installerEngine.getToolsConfig();

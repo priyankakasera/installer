@@ -49,10 +49,9 @@ export default function Footer() {
           <div className="col-span-2 sm:col-span-2 lg:col-span-2">
             <Link to="/" className="flex items-center gap-2.5 mb-4">
               <img
-                src="/favicon.ico"
+                src="/logo.png"
                 alt="DevTools Installer Logo"
                 className="w-8 h-8 rounded-lg shadow-lg shadow-primary/20"
-                style={{ imageRendering: 'auto' }}
               />
               <span className="text-white font-semibold tracking-tight">
                 DevTools Installer

@@ -613,6 +613,7 @@ async function startInstallation() {
   }
 
   installing = true;
+  window.api.setOperationInProgress(true);
   showPage('install');
   logContent.textContent = '';
 
@@ -652,6 +653,7 @@ async function startInstallation() {
   const result = await window.api.startInstallation(selections);
   window.api.removeProgressListener();
   installing = false;
+  window.api.setOperationInProgress(false);
 
   showDone(result);
 }
@@ -881,6 +883,7 @@ function hideUninstallModal() {
 async function performUninstall() {
   if (!uninstallToolId) return;
   const toolId = uninstallToolId;
+  window.api.setOperationInProgress(true);
 
   document.getElementById('uninstallActions').style.display = 'none';
   document.getElementById('uninstallProgress').style.display = 'block';
@@ -907,6 +910,7 @@ async function performUninstall() {
   const detected = detectedTools[toolId] || null;
   const result = await window.api.uninstallTool(toolId, detected);
   window.api.removeUninstallProgressListener();
+  window.api.setOperationInProgress(false);
 
   fillEl.classList.remove('progress-fill--active');
 
@@ -1055,6 +1059,7 @@ async function startBulkUninstall() {
   const ids = Array.from(uninstallSelectedTools);
   if (ids.length === 0) return;
 
+  window.api.setOperationInProgress(true);
   showPage('uninstallProgress');
 
   const ulLabel = $('#uninstallOverallLabel');
@@ -1128,6 +1133,7 @@ async function startBulkUninstall() {
   const detectedCopy = { ...detectedTools };
   const result = await window.api.uninstallAll(ids, detectedCopy);
   window.api.removeUninstallAllProgressListener();
+  window.api.setOperationInProgress(false);
   ulFill.classList.remove('progress-fill--active');
 
   // Refresh detection

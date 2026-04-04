@@ -109,6 +109,30 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://devtoolsinstaller.com/guides/github-desktop</loc>
+    <lastmod>2026-03-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://devtoolsinstaller.com/guides/miniconda</loc>
+    <lastmod>2026-03-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://devtoolsinstaller.com/guides/helm</loc>
+    <lastmod>2026-03-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://devtoolsinstaller.com/guides/istio</loc>
+    <lastmod>2026-03-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://devtoolsinstaller.com/support</loc>
     <lastmod>2026-03-29</lastmod>
     <changefreq>monthly</changefreq>

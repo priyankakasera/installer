@@ -1,6 +1,9 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('api', {
+  // Signal that an install/uninstall operation is in progress
+  setOperationInProgress: (inProgress) => ipcRenderer.send('set-operation-in-progress', inProgress),
+
   // Fetch tools config
   getToolsConfig: () => ipcRenderer.invoke('get-tools-config'),
 

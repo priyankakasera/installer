@@ -22,10 +22,9 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 shrink-0">
             <img
-              src="/favicon.ico"
+              src="/logo.png"
               alt="DevTools Installer Logo"
               className="w-8 h-8 rounded-lg shadow-lg shadow-primary/20"
-              style={{ imageRendering: 'auto' }}
             />
             <span className="text-white font-semibold text-lg hidden sm:block tracking-tight">
               DevTools Installer
