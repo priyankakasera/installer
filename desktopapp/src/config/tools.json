@@ -181,6 +181,29 @@
           "verifyRegex": "[\\d]+\\.[\\d]+\\.[\\d]+",
           "icon": "🍫",
           "iconUrl": "icons/chocolatey.png"
+        },
+        {
+          "id": "miniconda",
+          "name": "Miniconda",
+          "description": "Minimal conda installer — lightweight Python environment and package manager",
+          "versions": ["latest"],
+          "defaultVersion": "latest",
+          "downloadUrls": {
+            "latest": "https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe"
+          },
+          "installCommand": {
+            "exe": "powershell -NoProfile -NonInteractive -Command \"if ((Test-Path '{installDir}') -and -not (Test-Path '{installDir}\\condabin\\conda.bat')) { Remove-Item '{installDir}' -Recurse -Force -ErrorAction SilentlyContinue; Start-Sleep 2 }\" & \"{installerPath}\" /InstallationType=AllUsers /AddToPath=0 /RegisterPython=0 /S /D={installDir} & powershell -NoProfile -NonInteractive -Command \"$cb = '{installDir}\\condabin\\conda.bat'; $t = 0; while ($t -lt 120 -and -not (Test-Path $cb)) { Start-Sleep 2; $t += 2 }; if (-not (Test-Path $cb)) { exit 2 }\""
+          },
+          "uninstallSearch": ["Miniconda3", "Miniconda"],
+          "startMenuFolders": ["Anaconda (miniconda3)", "Miniconda3 (64-bit)", "Miniconda3", "Anaconda3 (64-bit)", "Anaconda3"],
+          "startMenuKeywords": ["Anaconda Prompt", "Anaconda PowerShell Prompt", "Miniconda", "conda"],
+          "defaultInstallDir": "C:\\ProgramData\\miniconda3",
+          "envVars": {},
+          "pathEntries": ["{installDir}", "{installDir}\\Scripts", "{installDir}\\condabin"],
+          "verifyCommand": "powershell -NoProfile -NonInteractive -Command \"& { $dirs = @('C:\\ProgramData\\miniconda3','C:\\Users\\*\\miniconda3','C:\\ProgramData\\Miniconda3'); $bat = $dirs | ForEach-Object { Join-Path $_ 'condabin\\conda.bat' } | Where-Object { Test-Path $_ } | Select-Object -First 1; if ($bat) { & cmd /c call $bat --version 2>$null } }\"",
+          "verifyRegex": "conda [\\d.]+",
+          "icon": "🐍",
+          "iconUrl": "icons/miniconda.svg"
         }
       ]
     },
@@ -210,6 +233,28 @@
           "verifyRegex": "git version [\\d.]+",
           "icon": "🔀",
           "iconUrl": "icons/github.svg"
+        },
+        {
+          "id": "github-desktop",
+          "name": "GitHub Desktop",
+          "description": "Visual Git client — simplifies Git workflows with an intuitive GUI",
+          "versions": ["latest"],
+          "defaultVersion": "latest",
+          "downloadUrls": {
+            "latest": "https://central.github.com/deployments/desktop/desktop/latest/GitHubDesktopSetup-x64.exe"
+          },
+          "installCommand": {
+            "exe": "\"{installerPath}\" & powershell -NoProfile -NonInteractive -Command \"$t=0; while($t -lt 180) { $appDir = Join-Path $env:LOCALAPPDATA 'GitHubDesktop'; $app = Get-ChildItem $appDir -Directory -Filter 'app-*' -EA 0 | Sort-Object Name -Descending | Select-Object -First 1; if ($app -and (Test-Path (Join-Path $app.FullName 'GitHubDesktop.exe'))) { Start-Sleep 5; break }; Start-Sleep 3; $t+=3 }; Start-Sleep 2; Get-Process -Name 'GitHubDesktop' -EA 0 | Stop-Process -Force -EA 0\""
+          },
+          "uninstallSearch": ["GitHub Desktop"],
+          "startMenuKeywords": ["GitHub Desktop"],
+          "defaultInstallDir": "%LOCALAPPDATA%\\GitHubDesktop",
+          "envVars": {},
+          "pathEntries": [],
+          "verifyCommand": "powershell -NoProfile -NonInteractive -Command \"& { $appDir = Join-Path $env:LOCALAPPDATA 'GitHubDesktop'; $app = Get-ChildItem $appDir -Directory -Filter 'app-*' -EA 0 | Sort-Object Name -Descending | Select-Object -First 1; if ($app -and (Test-Path (Join-Path $app.FullName 'GitHubDesktop.exe'))) { $ver = $app.Name -replace '^app-',''; Write-Output ('GitHub Desktop ' + $ver) } }\"",
+          "verifyRegex": "GitHub Desktop \\d+\\.\\d+",
+          "icon": "🐙",
+          "iconUrl": "icons/github-desktop.svg"
         }
       ]
     },
@@ -309,6 +354,50 @@
           "verifyRegex": "azure-cli\\s+[\\d.]+",
           "icon": "🔷",
           "iconUrl": "icons/azure.png"
+        },
+        {
+          "id": "helm",
+          "name": "Helm",
+          "description": "The package manager for Kubernetes — manage charts and releases",
+          "versions": ["4.1.3"],
+          "defaultVersion": "4.1.3",
+          "downloadUrls": {
+            "4.1.3": "https://get.helm.sh/helm-v4.1.3-windows-amd64.zip"
+          },
+          "installCommand": {
+            "zip": "extract"
+          },
+          "uninstallSearch": [],
+          "defaultInstallDir": "C:\\Program Files\\Helm\\windows-amd64",
+          "envVars": {},
+          "pathEntries": ["C:\\Program Files\\Helm\\windows-amd64"],
+          "verifyCommand": "helm version",
+          "verifyRegex": "v[\\d.]+",
+          "icon": "⎈",
+          "iconUrl": "icons/helm.svg",
+          "dependsOn": ["kubectl"]
+        },
+        {
+          "id": "istio",
+          "name": "Istio (istioctl)",
+          "description": "Service mesh CLI — manage Istio configurations and traffic policies",
+          "versions": ["1.29.1"],
+          "defaultVersion": "1.29.1",
+          "downloadUrls": {
+            "1.29.1": "https://github.com/istio/istio/releases/download/1.29.1/istio-1.29.1-win.zip"
+          },
+          "installCommand": {
+            "zip": "extract"
+          },
+          "uninstallSearch": [],
+          "defaultInstallDir": "C:\\Program Files\\Istio\\istio-1.29.1",
+          "envVars": {},
+          "pathEntries": ["{installDir}\\bin"],
+          "verifyCommand": "istioctl version --remote=false 2>nul",
+          "verifyRegex": "\\d+\\.\\d+\\.\\d+",
+          "icon": "🔺",
+          "iconUrl": "icons/istio.svg",
+          "dependsOn": ["kubectl"]
         }
       ]
     },
@@ -443,8 +532,8 @@
     {
       "id": "cloud-dev",
       "name": "Cloud & DevOps Setup",
-      "description": "Docker Desktop + Kubernetes + Cloud CLIs",
-      "tools": ["docker-desktop", "kubectl", "awscli", "azurecli"],
+      "description": "Docker Desktop + Kubernetes + Helm + Cloud CLIs",
+      "tools": ["docker-desktop", "kubectl", "helm", "awscli", "azurecli"],
       "icon": "☁️"
     }
   ],

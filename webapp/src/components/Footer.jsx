@@ -48,16 +48,19 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-2 sm:col-span-2 lg:col-span-2">
             <Link to="/" className="flex items-center gap-2.5 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center shadow-lg shadow-primary/20">
-                <span className="text-white font-bold text-sm">DT</span>
-              </div>
+              <img
+                src="/favicon.ico"
+                alt="DevTools Installer Logo"
+                className="w-8 h-8 rounded-lg shadow-lg shadow-primary/20"
+                style={{ imageRendering: 'auto' }}
+              />
               <span className="text-white font-semibold tracking-tight">
                 DevTools Installer
               </span>
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed max-w-xs">
               Free one-click development environment setup for Windows.
-              Install, configure, and cleanly remove 16+ developer tools.
+              Install, configure, and cleanly remove 20+ developer tools.
             </p>
 
           </div>

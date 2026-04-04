@@ -1509,6 +1509,17 @@ class InstallerEngine {
         }
       }
 
+      // Broader search for Uninstall-*.exe (e.g. Miniconda's Uninstall-Miniconda3.exe)
+      try {
+        const uninstallerGlob = fs.readdirSync(installDir).find(f =>
+          /^Uninstall.*\.exe$/i.test(f) && f.toLowerCase() !== 'uninstall.exe'
+        );
+        if (uninstallerGlob) {
+          const candidate = path.join(installDir, uninstallerGlob);
+          return { type: 'exe-uninstaller', uninstallerPath: candidate, location: installDir };
+        }
+      } catch { /* not readable */ }
+
       // Scan parent directory for matching subdirectories (handles JetBrains
       // installs where the folder name includes version/edition info, e.g.
       // "IntelliJ IDEA Community Edition 2025.1.3")

@@ -21,7 +21,7 @@ export default function Home() {
     <>
       <SEO
         title="DevTools Installer — Install Java, Node.js, Python & More in One Click | Free Windows Setup Tool"
-        description="Free one-click installer for Java, Node.js, Python, Maven, Git, Docker, VS Code and 16+ developer tools on Windows. Automatic PATH configuration, setup bundles, and clean uninstall. No manual setup required."
+        description="Free one-click installer for Java, Node.js, Python, Maven, Git, Docker, VS Code and 20+ developer tools on Windows. Automatic PATH configuration, setup bundles, and clean uninstall. No manual setup required."
         keywords="how to install Java, setup Node.js, install Python Windows, one-click developer setup, setup bundle, cleanup Java, uninstall developer tools, install Maven, install Git Windows, configure PATH automatically, developer environment setup, install Docker Windows, free dev tools installer, Windows development tools, JDK installer, developer environment Windows, auto configure PATH, dev tools bundle"
         path="/"
         jsonLd={breadcrumbJsonLd}

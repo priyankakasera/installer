@@ -28,8 +28,12 @@ const tools = [
   { name: 'Gradle', logo: '/icons/gradle.svg', desc: 'Multi-language build automation tool' },
   { name: 'Yarn', logo: '/icons/yarn.svg', desc: 'Fast dependency management for Node.js' },
   { name: 'Chocolatey', logo: '/icons/chocolatey.webp', desc: 'The package manager for Windows' },
+  { name: 'Miniconda', logo: '/icons/miniconda.svg', desc: 'Minimal conda installer for Python environments' },
   { name: 'Git', logo: '/icons/github.svg', desc: 'Distributed version control system' },
+  { name: 'GitHub Desktop', logo: '/icons/github-desktop.svg', desc: 'Visual Git client with intuitive GUI' },
   { name: 'Kubernetes CLI', logo: '/icons/kubernetes.webp', desc: 'kubectl for controlling K8s clusters' },
+  { name: 'Helm', logo: '/icons/helm.svg', desc: 'The package manager for Kubernetes' },
+  { name: 'Istio', logo: '/icons/istio.svg', desc: 'Service mesh CLI for traffic management' },
   { name: 'AWS CLI', logo: '/icons/aws.webp', desc: 'Command-line interface for Amazon Web Services' },
   { name: 'Azure CLI', logo: '/icons/azure.webp', desc: 'Command-line interface for Microsoft Azure' },
   { name: 'VS Code', logo: '/icons/vscode.webp', desc: 'Lightweight but powerful code editor' },
@@ -57,8 +61,8 @@ export default function Product() {
   return (
     <>
       <SEO
-        title="Features & Supported Tools — DevTools Installer | Java, Node.js, Python & 16+ Tools"
-        description="Explore all features of DevTools Installer: one-click setup, automatic PATH configuration, setup bundles, clean uninstall, and 16+ supported developer tools including Java, Node.js, Python, Maven, Git, VS Code."
+        title="Features & Supported Tools — DevTools Installer | Java, Node.js, Python & 20+ Tools"
+        description="Explore all features of DevTools Installer: one-click setup, automatic PATH configuration, setup bundles, clean uninstall, and 20+ supported developer tools including Java, Node.js, Python, Maven, Git, VS Code."
         keywords="DevTools Installer features, supported developer tools, one-click install Windows, automatic PATH configuration, Java installer, Node.js setup, Python installer, Maven setup, Git installer, VS Code installer, developer tool bundles, clean uninstall developer tools"
         path="/product"
         jsonLd={[
@@ -68,7 +72,7 @@ export default function Product() {
           ]),
           buildSoftwareApplicationJsonLd({
             description:
-              'Free one-click installer for Java, Node.js, Python, Maven, Git, VS Code and 16+ developer tools on Windows. Automatic PATH configuration, setup bundles, and clean uninstall.',
+              'Free one-click installer for Java, Node.js, Python, Maven, Git, VS Code and 20+ developer tools on Windows. Automatic PATH configuration, setup bundles, and clean uninstall.',
           }),
         ]}
       />

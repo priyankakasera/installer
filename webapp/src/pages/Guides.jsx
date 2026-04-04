@@ -37,7 +37,7 @@ export default function Guides() {
     <>
       <SEO
         title="How-To Guides — Install Java, Node.js, Python & More on Windows | DevTools Installer"
-        description="Step-by-step guides to install Java, Node.js, Python, Maven, Git, Docker, VS Code and 16+ developer tools on Windows. Download sources, PATH variables, environment variables, and verification commands included."
+        description="Step-by-step guides to install Java, Node.js, Python, Maven, Git, Docker, VS Code and 20+ developer tools on Windows. Download sources, PATH variables, environment variables, and verification commands included."
         keywords="how to install Java Windows, setup Node.js, install Python, install Maven, install Git, setup developer tools, PATH configuration, JAVA_HOME, one-click installation, install developer tools Windows, development environment guide"
         path="/guides"
         jsonLd={guidesJsonLd}
