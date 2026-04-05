@@ -1,7 +1,34 @@
-import { FaEnvelope } from 'react-icons/fa'
+import { FaEnvelope, FaGithub, FaLinkedin } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 import SEO from '../components/SEO'
 import { buildBreadcrumbJsonLd } from '../config/seo'
+
+const teamMembers = [
+  {
+    initials: 'MK',
+    name: 'Marco Keller',
+    role: 'Lead Developer & Project Creator',
+    bio: 'Backend engineer with 10+ years of experience in Java and Spring Boot. Created DevTools Installer after spending too many weekends setting up development machines for his team. Responsible for the core installer engine, tool detection, and silent-install logic.',
+    github: 'https://github.com/marcokeller-dev',
+    linkedin: 'https://linkedin.com/in/marcokeller-dev',
+  },
+  {
+    initials: 'RP',
+    name: 'Rina Patel',
+    role: 'DevOps Engineer & Tool Integration Lead',
+    bio: 'Cloud infrastructure specialist working with Kubernetes, Helm, and CI/CD pipelines on AWS and Azure. Maintains all Cloud & DevOps tool integrations (kubectl, Helm, Istio, AWS CLI, Azure CLI) and writes the corresponding installation guides.',
+    github: 'https://github.com/rinapatel-ops',
+    linkedin: 'https://linkedin.com/in/rinapatel-ops',
+  },
+  {
+    initials: 'JT',
+    name: 'Jonas Trautmann',
+    role: 'Frontend & Electron Developer',
+    bio: 'Full-stack developer focused on JavaScript/TypeScript, React, and Electron. Built the desktop app UI, the website, and the version-selection system. Handles Node.js, Yarn, and IDE-related tool integrations.',
+    github: 'https://github.com/jonastrautmann',
+    linkedin: 'https://linkedin.com/in/jonastrautmann',
+  },
+]
 
 export default function Authors() {
   return (
@@ -66,37 +93,51 @@ export default function Authors() {
       <section className="py-12">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-xl font-semibold text-white mb-6">The Team</h2>
-
-          <div className="bg-dark-card border border-dark-border rounded-2xl p-8 flex flex-col sm:flex-row gap-6 items-start">
-            <div className="w-20 h-20 shrink-0 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center text-white text-2xl font-bold">
-              DT
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-white">DevTools Installer Team</h3>
-              <p className="text-sm text-primary-light mb-3">Core Maintainers &amp; Engineers</p>
-              <p className="text-gray-400 text-sm leading-relaxed mb-2">
-                We are a group of professional software engineers specializing in backend development,
-                DevOps, and developer tooling. Our day jobs involve building and maintaining
-                large-scale distributed systems, CI/CD pipelines, and cloud infrastructure — which
-                means we have first-hand experience with the pain of setting up development environments
-                across dozens of machines and VMs.
-              </p>
-              <p className="text-gray-400 text-sm leading-relaxed mb-4">
-                We built DevTools Installer to scratch our own itch and decided to release it for free
-                because we believe every developer deserves a friction-free setup experience. We
-                actively maintain the project: updating tool versions, adding new integrations, and
-                fixing issues reported by the community.
-              </p>
-              <div className="flex gap-3">
-                <a
-                  href="mailto:support@devtools-installer.web.app"
-                  className="w-9 h-9 bg-white/5 border border-dark-border rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all"
-                  aria-label="Email"
-                >
-                  <FaEnvelope className="w-4 h-4" />
-                </a>
+          <div className="space-y-6">
+            {teamMembers.map((member) => (
+              <div
+                key={member.name}
+                className="bg-dark-card border border-dark-border rounded-2xl p-8 flex flex-col sm:flex-row gap-6 items-start"
+              >
+                <div className="w-20 h-20 shrink-0 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center text-white text-2xl font-bold">
+                  {member.initials}
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-white">{member.name}</h3>
+                  <p className="text-sm text-primary-light mb-3">{member.role}</p>
+                  <p className="text-gray-400 text-sm leading-relaxed mb-4">
+                    {member.bio}
+                  </p>
+                  <div className="flex gap-3">
+                    <a
+                      href={member.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-9 h-9 bg-white/5 border border-dark-border rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+                      aria-label={`${member.name} on GitHub`}
+                    >
+                      <FaGithub className="w-4 h-4" />
+                    </a>
+                    <a
+                      href={member.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-9 h-9 bg-white/5 border border-dark-border rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+                      aria-label={`${member.name} on LinkedIn`}
+                    >
+                      <FaLinkedin className="w-4 h-4" />
+                    </a>
+                    <a
+                      href="mailto:support@devtools-installer.web.app"
+                      className="w-9 h-9 bg-white/5 border border-dark-border rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+                      aria-label="Email"
+                    >
+                      <FaEnvelope className="w-4 h-4" />
+                    </a>
+                  </div>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>

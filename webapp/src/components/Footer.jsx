@@ -100,6 +100,11 @@ export default function Footer() {
                   Terms &amp; Conditions
                 </FooterLink>
               </li>
+              <li>
+                <FooterLink to="/cookie-policy">
+                  Cookie Policy
+                </FooterLink>
+              </li>
             </ul>
           </div>
 

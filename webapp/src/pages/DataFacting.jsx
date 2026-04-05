@@ -42,10 +42,10 @@ export default function DataFacting() {
         title="Data Practices — DevTools Installer | No Collection, No Telemetry, Fully Offline"
         description="Learn how DevTools Installer handles your data: no collection, no telemetry, fully offline. Every tool is downloaded from official sources with zero tracking."
         keywords="DevTools Installer data practices, no data collection, no telemetry, offline installer, secure developer tools, open source installer"
-        path="/data-facting"
+        path="/data-practices"
         jsonLd={buildBreadcrumbJsonLd([
           { name: 'Home', url: '/' },
-          { name: 'Data Practices', url: '/data-facting' },
+          { name: 'Data Practices', url: '/data-practices' },
         ])}
       />
 

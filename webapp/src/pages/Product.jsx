@@ -4,7 +4,7 @@ import SEO from '../components/SEO'
 import { buildBreadcrumbJsonLd, buildSoftwareApplicationJsonLd } from '../config/seo'
 import {
   FiMousePointer, FiSettings, FiCheckCircle, FiShield, FiZap,
-  FiDownload, FiTrash2, FiLayers
+  FiDownload, FiTrash2, FiLayers, FiList, FiMonitor
 } from 'react-icons/fi'
 import { HiOutlineDesktopComputer } from 'react-icons/hi'
 

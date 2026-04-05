@@ -54,6 +54,10 @@ export default function CookieConsent() {
           <Link to="/privacy" className="text-primary-light hover:underline">
             Privacy Policy
           </Link>{' '}
+          and{' '}
+          <Link to="/cookie-policy" className="text-primary-light hover:underline">
+            Cookie Policy
+          </Link>{' '}
           for full details.
         </p>
         <div className="flex flex-wrap gap-3">

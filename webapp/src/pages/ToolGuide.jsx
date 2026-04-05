@@ -113,6 +113,15 @@ export default function ToolGuide() {
           <p className="text-gray-400 max-w-2xl">{tool.description}</p>
         </div>
 
+        {/* Editorial intro */}
+        {tool.editorial && (
+          <div className="mb-12 space-y-4 text-gray-300 leading-relaxed max-w-3xl">
+            {tool.editorial.split('\n\n').map((para, i) => (
+              <p key={i}>{para}</p>
+            ))}
+          </div>
+        )}
+
         {/* Quick facts */}
         <div className="grid sm:grid-cols-3 gap-4 mb-12">
           <div className="bg-dark-card border border-dark-border rounded-xl p-4">
