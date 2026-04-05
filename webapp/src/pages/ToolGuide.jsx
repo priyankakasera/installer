@@ -258,6 +258,65 @@ export default function ToolGuide() {
           </section>
         )}
 
+        {/* Use Cases */}
+        {tool.useCases?.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-xl font-bold text-white mb-5">
+              What Is {tool.name} Used For?
+            </h2>
+            <ul className="space-y-3">
+              {tool.useCases.map((uc, i) => (
+                <li
+                  key={i}
+                  className="flex items-start gap-3 bg-dark-card border border-dark-border rounded-xl px-5 py-4"
+                >
+                  <span className="w-2 h-2 rounded-full bg-primary-light shrink-0 mt-2" />
+                  <span className="text-gray-300 leading-relaxed">{uc}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Common Issues */}
+        {tool.commonIssues?.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-xl font-bold text-white mb-5">
+              Common Issues &amp; Fixes
+            </h2>
+            <div className="space-y-4">
+              {tool.commonIssues.map((issue, i) => (
+                <div
+                  key={i}
+                  className="bg-dark-card border border-dark-border rounded-xl p-5"
+                >
+                  <p className="text-white font-medium mb-2">{issue.problem}</p>
+                  <p className="text-gray-400 text-sm leading-relaxed">{issue.fix}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Tips */}
+        {tool.tips?.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-xl font-bold text-white mb-5">
+              Tips for {tool.name}
+            </h2>
+            <div className="bg-dark-card border border-dark-border rounded-xl p-5">
+              <ul className="space-y-3">
+                {tool.tips.map((tip, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="text-primary-light font-bold shrink-0">&#x2713;</span>
+                    <span className="text-gray-300 leading-relaxed">{tip}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        )}
+
         {/* Back link */}
         <Link
           to="/guides"

@@ -51,7 +51,7 @@ export default function DataFacting() {
 
       <section className="pt-20 pb-12 text-center">
         <div className="max-w-3xl mx-auto px-4">
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">Data Facting</h1>
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">Data Practices</h1>
           <p className="text-lg text-gray-400">
             Transparency about how DevTools Installer handles your data and privacy.
           </p>

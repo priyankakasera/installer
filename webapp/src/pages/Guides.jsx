@@ -58,6 +58,47 @@ export default function Guides() {
         </div>
       </section>
 
+      {/* Editorial intro */}
+      <section className="pb-10">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-dark-card border border-dark-border rounded-xl p-6 sm:p-8 text-gray-400 space-y-4 leading-relaxed">
+            <p>
+              Setting up a Windows development environment from scratch is one of
+              the most common — and most frustrating — tasks a developer faces.
+              Every tool has its own installer, its own PATH requirements, and its
+              own set of environment variables. Miss one step and you are left
+              debugging cryptic &quot;command not found&quot; errors instead of
+              writing code.
+            </p>
+            <p>
+              These guides cover every tool that DevTools Installer supports.
+              Each guide walks you through two installation methods: the one-click
+              automated path via our desktop app, and a fully manual process if you
+              prefer to do it yourself. We document the exact download URL, the
+              PATH entries the tool needs, any environment variables you should set,
+              and the terminal command to verify everything works.
+            </p>
+            <p>
+              Whether you are a student setting up Java and Maven for the first
+              time, a full-stack developer configuring Node.js alongside Python, or
+              a DevOps engineer deploying kubectl, Helm, and Istio — you will find
+              a dedicated guide below. We also cover common installation issues and
+              practical tips drawn from real-world troubleshooting, so you can solve
+              problems quickly without searching through forums.
+            </p>
+            <p>
+              All guides are written for Windows 10 and Windows 11. The
+              automated installation method requires DevTools Installer, which is
+              free to download from our{' '}
+              <Link to="/product" className="text-primary-light hover:underline">
+                Product page
+              </Link>
+              .
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Tool listing by category */}
       <section className="pb-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">

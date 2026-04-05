@@ -86,8 +86,18 @@ export default function Footer() {
                 </FooterLink>
               </li>
               <li>
+                <FooterLink to="/authors">
+                  About Us
+                </FooterLink>
+              </li>
+              <li>
                 <FooterLink to="/privacy">
                   Privacy Policy
+                </FooterLink>
+              </li>
+              <li>
+                <FooterLink to="/terms">
+                  Terms &amp; Conditions
                 </FooterLink>
               </li>
             </ul>
@@ -123,6 +133,12 @@ export default function Footer() {
               className="text-xs text-gray-400 hover:text-gray-300 transition-colors"
             >
               Privacy
+            </Link>
+            <Link
+              to="/terms"
+              className="text-xs text-gray-400 hover:text-gray-300 transition-colors"
+            >
+              Terms
             </Link>
             <Link
               to="/support"

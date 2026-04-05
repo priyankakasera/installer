@@ -45,7 +45,7 @@ export default function Home() {
           <p className="text-gray-400 mb-8 max-w-xl mx-auto">
             Need to install a specific tool manually? Browse our detailed guides
             covering download sources, PATH configuration, environment
-            variables, and verification steps for all 16 tools.
+            variables, and verification steps for all 20+ supported tools.
           </p>
           <Link
             to="/guides"

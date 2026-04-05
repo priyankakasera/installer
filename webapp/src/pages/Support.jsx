@@ -29,7 +29,7 @@ const faqs = [
   },
   {
     q: 'Where are the tools downloaded from?',
-    a: 'Every tool is downloaded directly from its official publisher: Oracle/Adoptium for Java, nodejs.org for Node.js, python.org for Python, etc.',
+    a: 'Every tool is downloaded directly from its official publisher: Oracle/Adoptium for Java, nodejs.org for Node.js, python.org for Python, etc. We never repackage or host binaries ourselves.',
   },
   {
     q: 'How do I uninstall tools?',
@@ -38,6 +38,30 @@ const faqs = [
   {
     q: 'Can I use this on macOS or Linux?',
     a: 'Currently, DevTools Installer supports Windows only. macOS and Linux versions are planned for a future release.',
+  },
+  {
+    q: 'Why does Windows show an "Unknown Publisher" warning?',
+    a: 'DevTools Installer is not code-signed with an EV certificate yet, so Windows SmartScreen may display a warning. Click "More info" → "Run anyway" to proceed. The application is open source and you can review the full source code on our GitHub repository.',
+  },
+  {
+    q: 'My PATH changes are not taking effect — what should I do?',
+    a: 'PATH changes only apply to new terminal windows. Close all open Command Prompt, PowerShell, and VS Code terminal instances, then open a fresh one. If the issue persists, restart your computer to ensure Windows reloads environment variables.',
+  },
+  {
+    q: 'A tool installation failed — how can I troubleshoot?',
+    a: 'First, check your internet connection since tools are downloaded during installation. Try running DevTools Installer as Administrator (right-click → Run as administrator). If a specific tool fails, check our guide page for that tool — the "Common Issues & Fixes" section covers the most frequent problems.',
+  },
+  {
+    q: 'Can I install multiple versions of the same tool?',
+    a: 'Some tools support side-by-side versions (e.g., Java JDK 21 and JDK 23). DevTools Installer lets you choose a version from the dropdown. However, tools like Node.js and Python typically use a single active version at a time. For managing multiple versions of Node.js, consider using nvm-windows alongside DevTools Installer.',
+  },
+  {
+    q: 'Does DevTools Installer modify my Windows registry?',
+    a: 'DevTools Installer modifies environment variables (PATH, JAVA_HOME, etc.) through the Windows API, which writes to the registry under HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment. It does not make any other registry modifications.',
+  },
+  {
+    q: 'How do I report a bug or request a feature?',
+    a: 'Use the contact form below to report bugs or suggest features. Include your Windows version, the tool you were installing, and any error messages you saw. We typically respond within 48 hours.',
   },
 ]
 
