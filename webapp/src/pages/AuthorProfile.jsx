@@ -9,6 +9,7 @@ export const teamMembers = [
   {
     slug: 'vishalhulawale',
     initials: 'VH',
+    avatar: '/avatars/vh.svg',
     name: 'Vishal Hulawale',
     role: 'Lead Developer & Project Creator',
     bio: 'Backend engineer with 10+ years of experience in Java and Spring Boot. Created DevTools Installer after spending too many weekends setting up development machines for his team. Responsible for the core installer engine, tool detection, and silent-install logic.',
@@ -25,6 +26,7 @@ Outside of DevTools Installer, Vishal contributes to several open-source Java li
   {
     slug: 'priyankakasera',
     initials: 'PK',
+    avatar: '/avatars/pk.svg',
     name: 'Priyanka Kasera',
     role: 'Frontend & Electron Developer',
     bio: 'Full-stack developer focused on JavaScript/TypeScript, React, and Electron. Built the desktop app UI, the website, and the version-selection system. Handles Node.js, Yarn, and IDE-related tool integrations.',
@@ -94,9 +96,11 @@ export default function AuthorProfile() {
 
         {/* Profile header */}
         <div className="bg-dark-card border border-dark-border rounded-2xl p-8 flex flex-col sm:flex-row gap-6 items-start mb-8">
-          <div className="w-24 h-24 shrink-0 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center text-white text-3xl font-bold">
-            {member.initials}
-          </div>
+          <img
+            src={member.avatar}
+            alt={member.name}
+            className="w-24 h-24 shrink-0 rounded-2xl bg-gradient-to-br from-primary to-accent object-cover"
+          />
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-white mb-1">{member.name}</h1>
             <p className="text-primary-light text-sm mb-4">{member.role}</p>

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { FiCalendar } from 'react-icons/fi'
 import SEO from '../components/SEO'
 import { buildBreadcrumbJsonLd, buildFAQJsonLd } from '../config/seo'
 import AdUnit, { SLOTS } from '../components/AdUnit'
@@ -84,6 +85,18 @@ export default function JavaHomeExplained() {
               single most common reason Maven and Gradle builds fail on a freshly set up Windows
               machine.
             </p>
+            <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-gray-500">
+              <span>
+                Written by{' '}
+                <Link to="/authors/vishalhulawale" className="text-primary-light hover:underline font-medium">
+                  Vishal Hulawale
+                </Link>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <FiCalendar className="w-3.5 h-3.5" />
+                Last reviewed: April 2026
+              </span>
+            </div>
           </header>
 
           <div className="space-y-10">

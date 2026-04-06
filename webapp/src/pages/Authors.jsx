@@ -8,6 +8,7 @@ const teamMembers = [
   {
     slug: 'vishalhulawale',
     initials: 'VH',
+    avatar: '/avatars/vh.svg',
     name: 'Vishal Hulawale',
     role: 'Lead Developer & Project Creator',
     bio: 'Backend engineer with 10+ years of experience in Java and Spring Boot. Created DevTools Installer after spending too many weekends setting up development machines for his team. Responsible for the core installer engine, tool detection, and silent-install logic.',
@@ -16,6 +17,7 @@ const teamMembers = [
   {
     slug: 'priyankakasera',
     initials: 'PK',
+    avatar: '/avatars/pk.svg',
     name: 'Priyanka Kasera',
     role: 'Frontend & Electron Developer',
     bio: 'Full-stack developer focused on JavaScript/TypeScript, React, and Electron. Built the desktop app UI, the website, and the version-selection system. Handles Node.js, Yarn, and IDE-related tool integrations.',
@@ -108,9 +110,11 @@ export default function Authors() {
                 key={member.name}
                 className="bg-dark-card border border-dark-border rounded-2xl p-8 flex flex-col sm:flex-row gap-6 items-start"
               >
-                <div className="w-20 h-20 shrink-0 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center text-white text-2xl font-bold">
-                  {member.initials}
-                </div>
+                <img
+                  src={member.avatar}
+                  alt={member.name}
+                  className="w-20 h-20 shrink-0 rounded-2xl bg-gradient-to-br from-primary to-accent object-cover"
+                />
                 <div>
                   <h3 className="text-xl font-semibold text-white">{member.name}</h3>
                   <p className="text-sm text-primary-light mb-3">{member.role}</p>

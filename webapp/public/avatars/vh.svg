@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="skin" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#d4a574"/>
+      <stop offset="100%" stop-color="#c2925e"/>
+    </linearGradient>
+    <clipPath id="circle">
+      <circle cx="100" cy="100" r="96"/>
+    </clipPath>
+  </defs>
+  <!-- Background -->
+  <circle cx="100" cy="100" r="100" fill="url(#bg)"/>
+  <!-- Inner subtle ring -->
+  <circle cx="100" cy="100" r="96" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+  <g clip-path="url(#circle)">
+    <!-- Shoulders -->
+    <ellipse cx="100" cy="225" rx="80" ry="60" fill="#1a2e2a"/>
+    <!-- Collar detail -->
+    <path d="M60,195 Q100,180 140,195" fill="none" stroke="rgba(16,185,129,0.4)" stroke-width="2"/>
+    <!-- Neck -->
+    <rect x="85" y="140" width="30" height="30" rx="6" fill="url(#skin)"/>
+    <!-- Head -->
+    <ellipse cx="100" cy="105" rx="42" ry="48" fill="url(#skin)"/>
+    <!-- Hair -->
+    <path d="M58,95 Q58,58 100,55 Q142,58 142,95 Q140,80 130,72 Q115,62 100,62 Q85,62 70,72 Q60,80 58,95Z" fill="#1a1a2e"/>
+    <!-- Short side hair -->
+    <path d="M58,95 Q55,105 58,115" fill="none" stroke="#1a1a2e" stroke-width="6" stroke-linecap="round"/>
+    <path d="M142,95 Q145,105 142,115" fill="none" stroke="#1a1a2e" stroke-width="6" stroke-linecap="round"/>
+    <!-- Eyes -->
+    <ellipse cx="82" cy="102" rx="6" ry="5" fill="#1a1a2e"/>
+    <ellipse cx="118" cy="102" rx="6" ry="5" fill="#1a1a2e"/>
+    <!-- Eye highlights -->
+    <circle cx="84" cy="100" r="2" fill="rgba(255,255,255,0.6)"/>
+    <circle cx="120" cy="100" r="2" fill="rgba(255,255,255,0.6)"/>
+    <!-- Eyebrows -->
+    <path d="M72,92 Q82,88 92,92" fill="none" stroke="#1a1a2e" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M108,92 Q118,88 128,92" fill="none" stroke="#1a1a2e" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Nose -->
+    <path d="M100,106 Q96,118 100,120 Q104,118 100,120" fill="none" stroke="rgba(0,0,0,0.15)" stroke-width="1.5" stroke-linecap="round"/>
+    <!-- Smile -->
+    <path d="M85,128 Q100,138 115,128" fill="none" stroke="#1a1a2e" stroke-width="2" stroke-linecap="round"/>
+    <!-- Glasses -->
+    <rect x="66" y="94" width="28" height="20" rx="4" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+    <rect x="106" y="94" width="28" height="20" rx="4" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+    <line x1="94" y1="102" x2="106" y2="102" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+  </g>
+</svg>

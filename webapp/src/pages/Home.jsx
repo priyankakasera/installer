@@ -137,15 +137,15 @@ export default function Home() {
           <div className="flex justify-center mb-5">
             <div className="flex -space-x-2">
               {[
-                { initials: 'VH', bg: 'bg-primary/30' },
-                { initials: 'PK', bg: 'bg-accent/30' },
+                { name: 'Vishal Hulawale', avatar: '/avatars/vh.svg' },
+                { name: 'Priyanka Kasera', avatar: '/avatars/pk.svg' },
               ].map((m) => (
-                <span
-                  key={m.initials}
-                  className={`w-10 h-10 rounded-full ${m.bg} border-2 border-dark flex items-center justify-center text-white text-xs font-bold`}
-                >
-                  {m.initials}
-                </span>
+                <img
+                  key={m.name}
+                  src={m.avatar}
+                  alt={m.name}
+                  className="w-10 h-10 rounded-full border-2 border-dark object-cover bg-gradient-to-br from-primary to-accent"
+                />
               ))}
             </div>
           </div>
