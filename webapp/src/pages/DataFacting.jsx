@@ -20,8 +20,8 @@ const cards = [
   },
   {
     icon: FiEye,
-    title: 'Open Source',
-    desc: 'The installer source code is publicly available. You can audit every line of code that runs on your machine.',
+    title: 'Verifiable Downloads',
+    desc: 'The exact download URL for every tool is documented in our installation guides. You can verify each source before running the installer.',
   },
   {
     icon: FiServer,
@@ -90,6 +90,109 @@ export default function DataFacting() {
               send usage analytics, install third-party advertisements, or modify any files
               outside of the official tool installation directories.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Detailed technical explanation */}
+      <section className="py-16">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-6">What the Desktop App Does on Your Machine</h2>
+            <div className="bg-dark-card border border-dark-border rounded-2xl p-8 space-y-5 text-gray-400 text-sm leading-relaxed">
+              <p>
+                When you install a tool through DevTools Installer, the application performs a
+                specific, predictable sequence of operations. Understanding exactly what happens
+                helps you trust the process and troubleshoot if anything goes wrong.
+              </p>
+              <div>
+                <h3 className="text-white font-semibold mb-2">1. Tool Detection</h3>
+                <p>
+                  Before installing, the app scans your system to detect tools that are already
+                  present. It checks the Windows registry (HKLM and HKCU uninstall keys), known
+                  installation directories (e.g., C:\Program Files\Java), and the system PATH
+                  variable. This avoids overwriting existing installations unless you explicitly
+                  choose to reinstall.
+                </p>
+              </div>
+              <div>
+                <h3 className="text-white font-semibold mb-2">2. Download from Official Sources</h3>
+                <p>
+                  Each tool binary is fetched directly from its publisher&apos;s official distribution
+                  channel — Oracle for Java, nodejs.org for Node.js, python.org for Python,
+                  GitHub Releases for Git, and so on. DevTools Installer never mirrors, repackages,
+                  or modifies these downloads. The download URLs are hardcoded in the application
+                  and updated with each release.
+                </p>
+              </div>
+              <div>
+                <h3 className="text-white font-semibold mb-2">3. Silent Installation</h3>
+                <p>
+                  Tools are installed using the publisher&apos;s own installer with silent/quiet flags.
+                  For MSI packages, this means <code className="text-xs bg-white/5 px-1.5 py-0.5 rounded">msiexec /i package.msi /quiet</code>.
+                  For EXE installers, the corresponding silent switch is used. DevTools Installer
+                  does not modify the installer binaries or inject additional payloads.
+                </p>
+              </div>
+              <div>
+                <h3 className="text-white font-semibold mb-2">4. Environment Configuration</h3>
+                <p>
+                  After installation, the app updates your system environment variables through the
+                  Windows API. This includes adding directories to the system PATH (e.g., adding
+                  <code className="text-xs bg-white/5 px-1.5 py-0.5 rounded">C:\Program Files\Java\jdk-21\bin</code> to PATH)
+                  and creating tool-specific variables like JAVA_HOME, MAVEN_HOME, and GRADLE_HOME.
+                  These changes are written to the registry under
+                  <code className="text-xs bg-white/5 px-1.5 py-0.5 rounded">HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment</code>
+                  and broadcast to running processes via a WM_SETTINGCHANGE message.
+                </p>
+              </div>
+              <div>
+                <h3 className="text-white font-semibold mb-2">5. Verification</h3>
+                <p>
+                  After configuring the environment, the app runs each tool&apos;s verification command
+                  (e.g., <code className="text-xs bg-white/5 px-1.5 py-0.5 rounded">java -version</code>,{' '}
+                  <code className="text-xs bg-white/5 px-1.5 py-0.5 rounded">node -v</code>) to confirm
+                  the installation was successful and the tool is accessible from the command line.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-6">What the Desktop App Never Does</h2>
+            <div className="bg-dark-card border border-dark-border rounded-2xl p-8 text-gray-400 text-sm leading-relaxed">
+              <ul className="space-y-3 list-disc list-inside">
+                <li>Never sends HTTP requests to any server other than official tool download URLs.</li>
+                <li>Never collects or transmits system information, hardware identifiers, or IP addresses.</li>
+                <li>Never reads, copies, or accesses your personal files, documents, or browser data.</li>
+                <li>Never installs background services, scheduled tasks, or startup entries.</li>
+                <li>Never modifies the Windows Firewall, security policies, or system boot configuration.</li>
+                <li>Never bundles adware, toolbars, browser extensions, or promotional software.</li>
+                <li>Never phones home for license checks — there is no licensing, and the app works fully offline after downloading tools.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-6">Website Data Practices</h2>
+            <div className="bg-dark-card border border-dark-border rounded-2xl p-8 space-y-4 text-gray-400 text-sm leading-relaxed">
+              <p>
+                This website (devtoolsinstaller.com) is a static site hosted on Firebase. It does
+                not use server-side processing or databases for visitor data. The website uses
+                Google AdSense for advertising, which sets cookies for ad personalization. You can
+                manage cookie preferences through our cookie consent banner, or opt out of
+                personalized ads via{' '}
+                <a href="https://www.google.com/settings/ads" target="_blank" rel="nofollow noopener noreferrer" className="text-primary-light hover:underline">
+                  Google Ads Settings
+                </a>.
+              </p>
+              <p>
+                The only interactive feature on this website is the contact form on the Support
+                page, which stores your email, subject, and message in a Firebase Firestore
+                database so we can respond to your inquiry. This data is not shared with third
+                parties and is used solely for replying to your support request.
+              </p>
+            </div>
           </div>
         </div>
       </section>

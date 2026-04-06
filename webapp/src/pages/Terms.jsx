@@ -174,10 +174,10 @@ export default function Terms() {
               <p>
                 If you have questions about these terms, please contact us at{' '}
                 <a
-                  href="mailto:support@devtools-installer.web.app"
+                  href="mailto:support@devtoolsinstaller.com"
                   className="text-primary-light hover:underline"
                 >
-                  support@devtools-installer.web.app
+                  support@devtoolsinstaller.com
                 </a>{' '}
                 or visit our{' '}
                 <Link to="/support" className="text-primary-light hover:underline">

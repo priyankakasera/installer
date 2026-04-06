@@ -172,10 +172,10 @@ export default function Support() {
             Have a question or found a bug? Fill out the form below or email us
             directly at{' '}
             <a
-              href="mailto:support@devtools-installer.web.app"
+              href="mailto:support@devtoolsinstaller.com"
               className="text-primary-light hover:underline"
             >
-              support@devtools-installer.web.app
+              support@devtoolsinstaller.com
             </a>
           </p>
           <form

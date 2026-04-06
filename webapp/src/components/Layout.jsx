@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import Navbar from './Navbar'
 import Footer from './Footer'
 import CookieConsent from './CookieConsent'
+import AdSenseLoader from './AdSenseLoader'
 
 function ScrollToTop() {
   const { pathname, hash } = useLocation()
@@ -35,6 +36,7 @@ export default function Layout() {
       </main>
       <Footer />
       <CookieConsent />
+      <AdSenseLoader />
     </div>
   )
 }

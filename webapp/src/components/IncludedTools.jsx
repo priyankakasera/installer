@@ -123,7 +123,7 @@ export default function IncludedTools() {
                   >
                     <img
                       src={tool.logo}
-                      alt={tool.name}
+                      alt={`${tool.name} logo`}
                       width={16}
                       height={16}
                       className="w-4 h-4 shrink-0 object-contain"

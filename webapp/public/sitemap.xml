@@ -2,176 +2,206 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://devtoolsinstaller.com/</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-04-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/product</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-03-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/guides</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-04-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/guides/java</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/guides/nodejs</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/guides/python</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/guides/maven</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/guides/git</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/guides/gradle</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/guides/yarn</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/guides/chocolatey</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/guides/kubectl</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/guides/awscli</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/guides/azurecli</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/guides/vscode</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/guides/intellij-idea</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/guides/notepadpp</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/guides/postman</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/guides/github-desktop</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/guides/miniconda</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/guides/helm</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/guides/istio</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/support</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-03-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/authors</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-02-10</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/privacy</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-03-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/terms</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-03-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/data-practices</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-03-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/guides/windows-path-explained</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-03-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/cookie-policy</loc>
-    <lastmod>2025-07-14</lastmod>
+    <lastmod>2026-03-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://devtoolsinstaller.com/disclaimer</loc>
+    <lastmod>2026-04-07</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://devtoolsinstaller.com/guides/java-home-explained</loc>
+    <lastmod>2026-04-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtoolsinstaller.com/guides/windows-silent-install</loc>
+    <lastmod>2026-04-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://devtoolsinstaller.com/authors/vishalhulawale</loc>
+    <lastmod>2026-04-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://devtoolsinstaller.com/authors/priyankakasera</loc>
+    <lastmod>2026-04-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
 </urlset>

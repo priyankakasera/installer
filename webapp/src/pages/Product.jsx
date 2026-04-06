@@ -110,7 +110,7 @@ export default function Product() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {tools.map((t) => (
               <div key={t.name} className="flex items-start gap-4 bg-dark-card border border-dark-border rounded-2xl p-6 hover:border-primary/40 transition-all duration-300">
-                <img src={t.logo} alt={t.name} width={32} height={32} className="w-8 h-8 shrink-0 mt-0.5 object-contain" loading="lazy" />
+                <img src={t.logo} alt={`${t.name} logo`} width={32} height={32} className="w-8 h-8 shrink-0 mt-0.5 object-contain" loading="lazy" />
                 <div>
                   <h3 className="font-semibold text-white">{t.name}</h3>
                   <p className="text-sm text-gray-400 mt-1">{t.desc}</p>

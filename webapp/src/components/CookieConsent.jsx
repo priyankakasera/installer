@@ -1,31 +1,21 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-
-const CONSENT_KEY = 'cookie_consent'
+import { getConsent, setConsent } from '../utils/consent'
 
 export default function CookieConsent() {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    try {
-      const consent = localStorage.getItem(CONSENT_KEY)
-      if (!consent) setVisible(true)
-    } catch {
-      setVisible(true)
-    }
+    if (!getConsent()) setVisible(true)
   }, [])
 
   function accept() {
-    try {
-      localStorage.setItem(CONSENT_KEY, 'accepted')
-    } catch { /* localStorage unavailable */ }
+    setConsent('accepted')
     setVisible(false)
   }
 
   function decline() {
-    try {
-      localStorage.setItem(CONSENT_KEY, 'declined')
-    } catch { /* localStorage unavailable */ }
+    setConsent('declined')
     setVisible(false)
   }
 

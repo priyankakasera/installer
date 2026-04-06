@@ -59,9 +59,17 @@ export default function Footer() {
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed max-w-xs">
               Free one-click development environment setup for Windows.
-              Install, configure, and cleanly remove 20+ developer tools.
+              Install, configure, and cleanly remove 20+ developer tools — all
+              downloaded directly from official sources with no bundled adware.
             </p>
-
+            <div className="mt-4 flex items-center gap-4">
+              <a
+                href="mailto:support@devtoolsinstaller.com"
+                className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition-colors"
+              >
+                support@devtoolsinstaller.com
+              </a>
+            </div>
           </div>
 
           {/* Product */}
@@ -105,6 +113,11 @@ export default function Footer() {
                   Cookie Policy
                 </FooterLink>
               </li>
+              <li>
+                <FooterLink to="/disclaimer">
+                  Disclaimer
+                </FooterLink>
+              </li>
             </ul>
           </div>
 
@@ -132,7 +145,7 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} DevTools Installer. All rights
             reserved.
           </p>
-          <div className="flex gap-6">
+          <div className="flex items-center gap-6">
             <Link
               to="/privacy"
               className="text-xs text-gray-400 hover:text-gray-300 transition-colors"

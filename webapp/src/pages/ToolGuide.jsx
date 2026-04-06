@@ -1,9 +1,10 @@
 import { useParams, Navigate, Link } from 'react-router-dom'
 import { useState } from 'react'
-import { FiArrowLeft, FiDownload, FiCopy, FiCheck, FiExternalLink, FiTerminal } from 'react-icons/fi'
+import { FiArrowLeft, FiArrowRight, FiDownload, FiCopy, FiCheck, FiExternalLink, FiTerminal, FiCalendar } from 'react-icons/fi'
 import SEO from '../components/SEO'
 import { buildBreadcrumbJsonLd, buildHowToJsonLd } from '../config/seo'
 import toolGuides from '../config/toolGuides'
+import AdUnit, { SLOTS } from '../components/AdUnit'
 
 function CodeBlock({ children }) {
   const [copied, setCopied] = useState(false)
@@ -38,7 +39,7 @@ function Linkify({ children }) {
   const parts = children.split(urlRegex)
   return parts.map((part, i) =>
     urlRegex.test(part) ? (
-      <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-primary-light hover:underline break-all">
+      <a key={i} href={part} target="_blank" rel="nofollow noopener noreferrer" className="text-primary-light hover:underline break-all">
         {part}
       </a>
     ) : (
@@ -51,7 +52,7 @@ export default function ToolGuide() {
   const { toolId } = useParams()
   const tool = toolGuides.find((t) => t.id === toolId)
 
-  if (!tool) return <Navigate to="/guides" replace />
+  if (!tool) return <Navigate to="/404" replace />
 
   const allSteps = [
     ...(tool.steps?.appSteps || []),
@@ -111,6 +112,22 @@ export default function ToolGuide() {
             {tool.headline}
           </h1>
           <p className="text-gray-400 max-w-2xl">{tool.description}</p>
+          <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-gray-500">
+            {tool.author && (
+              <span className="flex items-center gap-1.5">
+                Written by{' '}
+                <Link to={`/authors/${tool.author.slug}`} className="text-primary-light hover:underline font-medium">
+                  {tool.author.name}
+                </Link>
+              </span>
+            )}
+            {tool.lastReviewed && (
+              <span className="flex items-center gap-1.5">
+                <FiCalendar className="w-3.5 h-3.5" />
+                Last reviewed: {new Date(tool.lastReviewed).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Editorial intro */}
@@ -123,7 +140,7 @@ export default function ToolGuide() {
         )}
 
         {/* Quick facts */}
-        <div className="grid sm:grid-cols-3 gap-4 mb-12">
+        <div className="grid sm:grid-cols-3 gap-4 mb-6">
           <div className="bg-dark-card border border-dark-border rounded-xl p-4">
             <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
               Supported Versions
@@ -153,6 +170,14 @@ export default function ToolGuide() {
             </p>
           </div>
         </div>
+
+        {/* Affiliation disclaimer */}
+        <p className="text-xs text-gray-500 mb-10 leading-relaxed">
+          DevTools Installer is not affiliated with, endorsed by, or sponsored by the publisher of {tool.name}. All product names and logos are trademarks of their respective owners. Downloads are sourced directly from the official publisher.
+        </p>
+
+        {/* Ad slot — top of content, below disclaimer */}
+        <AdUnit slot={SLOTS.GUIDE_HEADER} format="auto" className="mb-10" />
 
         {/* Install via DevTools Installer */}
         {tool.steps?.appSteps?.length > 0 && (
@@ -245,6 +270,9 @@ export default function ToolGuide() {
           )}
         </section>
 
+        {/* Ad slot — mid-content, after verify */}
+        <AdUnit slot={SLOTS.GUIDE_MID} format="fluid" layout="in-article" className="mb-12" />
+
         {/* Manual Installation Steps */}
         {tool.steps?.manualSteps?.length > 0 && (
           <section className="mb-12">
@@ -267,6 +295,30 @@ export default function ToolGuide() {
           </section>
         )}
 
+        {/* Prerequisite Tools */}
+        {tool.prerequisiteTools?.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-xl font-bold text-white mb-5">Prerequisites</h2>
+            <div className="bg-amber-950/30 border border-amber-800/40 rounded-xl p-5">
+              <p className="text-amber-200/80 text-sm mb-4">
+                Install the following tools before proceeding — {tool.name} depends on them.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {tool.prerequisiteTools.map((prereq) => (
+                  <Link
+                    key={prereq.id}
+                    to={`/guides/${prereq.id}`}
+                    className="inline-flex flex-col px-4 py-3 bg-dark-card border border-amber-800/30 rounded-lg hover:border-primary/40 transition-colors"
+                  >
+                    <span className="text-white font-medium text-sm">{prereq.name}</span>
+                    <span className="text-xs text-gray-500 mt-0.5">{prereq.reason}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Use Cases */}
         {tool.useCases?.length > 0 && (
           <section className="mb-12">
@@ -284,6 +336,96 @@ export default function ToolGuide() {
                 </li>
               ))}
             </ul>
+          </section>
+        )}
+
+        {/* Post-install config */}
+        {tool.postInstallConfig?.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-xl font-bold text-white mb-5">First-Time Setup</h2>
+            <p className="text-gray-400 text-sm mb-4">
+              After installing, run these commands in a new terminal to configure{' '}
+              {tool.name} for your identity and preferences:
+            </p>
+            <div className="space-y-3">
+              {tool.postInstallConfig.map((item, i) => (
+                <div key={i}>
+                  <p className="text-xs text-gray-500 mb-1">{item.label}</p>
+                  <CodeBlock>{item.cmd}</CodeBlock>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Recommended Extensions (VS Code) */}
+        {tool.recommendedExtensions?.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-xl font-bold text-white mb-2">Recommended Extensions</h2>
+            <p className="text-gray-400 text-sm mb-5">
+              Install these VS Code extensions to get the most out of{' '}
+              {tool.name} for your workflow:
+            </p>
+            <div className="space-y-3">
+              {tool.recommendedExtensions.map((ext) => (
+                <div
+                  key={ext.name}
+                  className="flex items-start gap-3 bg-dark-card border border-dark-border rounded-xl px-5 py-4"
+                >
+                  <span className="w-2 h-2 rounded-full bg-primary-light shrink-0 mt-2" />
+                  <div>
+                    <p className="text-white font-medium text-sm">{ext.name}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{ext.publisher}</p>
+                    <p className="text-sm text-gray-400 mt-1">{ext.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Recommended Plugins (IntelliJ) */}
+        {tool.recommendedPlugins?.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-xl font-bold text-white mb-2">Recommended Plugins</h2>
+            <p className="text-gray-400 text-sm mb-5">
+              These plugins are widely used in professional Java development with{' '}
+              {tool.name}:
+            </p>
+            <div className="space-y-3">
+              {tool.recommendedPlugins.map((plugin) => (
+                <div
+                  key={plugin.name}
+                  className="flex items-start gap-3 bg-dark-card border border-dark-border rounded-xl px-5 py-4"
+                >
+                  <span className="w-2 h-2 rounded-full bg-primary-light shrink-0 mt-2" />
+                  <div>
+                    <p className="text-white font-medium text-sm">{plugin.name}</p>
+                    <p className="text-sm text-gray-400 mt-1">{plugin.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Workflow Tips (Postman) */}
+        {tool.workflowTips?.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-xl font-bold text-white mb-2">Workflow Tips</h2>
+            <p className="text-gray-400 text-sm mb-5">
+              Get more out of {tool.name} with these practical workflow patterns:
+            </p>
+            <div className="bg-dark-card border border-dark-border rounded-xl p-5">
+              <ul className="space-y-3">
+                {tool.workflowTips.map((tip, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="text-primary-light font-bold shrink-0">&#x2192;</span>
+                    <span className="text-gray-300 leading-relaxed text-sm">{tip}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </section>
         )}
 
@@ -325,6 +467,40 @@ export default function ToolGuide() {
             </div>
           </section>
         )}
+
+        {/* Ad slot — bottom of content, before Related Guides */}
+        <AdUnit slot={SLOTS.GUIDE_BOTTOM} format="auto" className="mb-12" />
+
+        {/* Related Guides */}
+        {tool.relatedGuides?.length > 0 && (() => {
+          const related = tool.relatedGuides
+            .map((id) => toolGuides.find((t) => t.id === id))
+            .filter(Boolean)
+          return related.length > 0 ? (
+            <section className="mb-12">
+              <h2 className="text-xl font-bold text-white mb-5">
+                Related Guides
+              </h2>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {related.map((rel) => (
+                  <Link
+                    key={rel.id}
+                    to={`/guides/${rel.id}`}
+                    className="group bg-dark-card border border-dark-border rounded-xl p-5 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-200"
+                  >
+                    <h3 className="text-white font-medium mb-1 flex items-center justify-between">
+                      {rel.name}
+                      <FiArrowRight className="w-4 h-4 text-gray-600 group-hover:text-primary-light group-hover:translate-x-0.5 transition-all" />
+                    </h3>
+                    <p className="text-sm text-gray-500 leading-relaxed line-clamp-2">
+                      {rel.description}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          ) : null
+        })()}
 
         {/* Back link */}
         <Link

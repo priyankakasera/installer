@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
+import { FiCalendar } from 'react-icons/fi'
 import SEO from '../components/SEO'
 import { buildBreadcrumbJsonLd } from '../config/seo'
+import AdUnit, { SLOTS } from '../components/AdUnit'
 
 export default function WindowsPathGuide() {
   return (
@@ -28,13 +30,26 @@ export default function WindowsPathGuide() {
               <span className="mx-2">/</span>
               <span className="text-gray-400">Windows PATH Variable</span>
             </nav>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-4">
+            <span className="section-label mb-4 inline-flex">Windows Internals</span>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-4 mt-4">
               Windows PATH Variable Explained
             </h1>
             <p className="text-lg text-gray-400">
               Everything you need to know about the PATH environment variable on Windows — what it
               does, how to edit it, and why developer tools like Java, Node.js, and Python depend on it.
             </p>
+            <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-gray-500">
+              <span>
+                Written by{' '}
+                <Link to="/authors/vishalhulawale" className="text-primary-light hover:underline font-medium">
+                  Vishal Hulawale
+                </Link>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <FiCalendar className="w-3.5 h-3.5" />
+                Last reviewed: April 2026
+              </span>
+            </div>
           </header>
 
           <div className="prose prose-invert prose-sm max-w-none space-y-10">
@@ -105,9 +120,9 @@ export default function WindowsPathGuide() {
 
             {/* How to Edit PATH */}
             <section className="bg-dark-card border border-dark-border rounded-2xl p-8 space-y-4 text-gray-400 text-sm leading-relaxed">
-              <h2 className="text-xl font-semibold text-white">How to Edit PATH on Windows 10 & 11</h2>
+              <h2 className="text-xl font-semibold text-white">How to Edit PATH on Windows 10 &amp; 11</h2>
               <ol className="list-decimal list-inside space-y-3">
-                <li>Press <kbd className="text-xs bg-white/5 px-1.5 py-0.5 rounded border border-dark-border">Win + S</kbd> and search for <strong className="text-gray-300">"Environment Variables"</strong>.</li>
+                <li>Press <kbd className="text-xs bg-white/5 px-1.5 py-0.5 rounded border border-dark-border">Win + S</kbd> and search for <strong className="text-gray-300">&quot;Environment Variables&quot;</strong>.</li>
                 <li>Click <strong className="text-gray-300">"Edit the system environment variables"</strong>.</li>
                 <li>In the System Properties dialog, click <strong className="text-gray-300">"Environment Variables…"</strong>.</li>
                 <li>Under "System variables" (or "User variables"), select <strong className="text-gray-300">Path</strong> and click <strong className="text-gray-300">"Edit…"</strong>.</li>
@@ -216,6 +231,9 @@ export default function WindowsPathGuide() {
               </div>
             </section>
 
+            {/* Ad slot — mid-article */}
+            <AdUnit slot={SLOTS.ARTICLE_MID} format="fluid" layout="in-article" />
+
             {/* How DevTools Installer Helps */}
             <section className="bg-dark-card border border-dark-border rounded-2xl p-8 space-y-4 text-gray-400 text-sm leading-relaxed">
               <h2 className="text-xl font-semibold text-white">How DevTools Installer Manages PATH Automatically</h2>
@@ -248,6 +266,9 @@ export default function WindowsPathGuide() {
                 </Link>
               </div>
             </section>
+
+            {/* Ad slot — bottom of article, before closing */}
+            <AdUnit slot={SLOTS.ARTICLE_BOTTOM} format="auto" className="mt-6" />
           </div>
         </div>
       </article>

@@ -1,32 +1,25 @@
-import { FaEnvelope, FaGithub, FaLinkedin } from 'react-icons/fa'
+import { FaLinkedin } from 'react-icons/fa'
+import { FiArrowRight } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
 import SEO from '../components/SEO'
-import { buildBreadcrumbJsonLd } from '../config/seo'
+import { buildBreadcrumbJsonLd, BASE_URL } from '../config/seo'
 
 const teamMembers = [
   {
-    initials: 'MK',
-    name: 'Marco Keller',
+    slug: 'vishalhulawale',
+    initials: 'VH',
+    name: 'Vishal Hulawale',
     role: 'Lead Developer & Project Creator',
     bio: 'Backend engineer with 10+ years of experience in Java and Spring Boot. Created DevTools Installer after spending too many weekends setting up development machines for his team. Responsible for the core installer engine, tool detection, and silent-install logic.',
-    github: 'https://github.com/marcokeller-dev',
-    linkedin: 'https://linkedin.com/in/marcokeller-dev',
+    linkedin: 'https://www.linkedin.com/in/vishalhulawale',
   },
   {
-    initials: 'RP',
-    name: 'Rina Patel',
-    role: 'DevOps Engineer & Tool Integration Lead',
-    bio: 'Cloud infrastructure specialist working with Kubernetes, Helm, and CI/CD pipelines on AWS and Azure. Maintains all Cloud & DevOps tool integrations (kubectl, Helm, Istio, AWS CLI, Azure CLI) and writes the corresponding installation guides.',
-    github: 'https://github.com/rinapatel-ops',
-    linkedin: 'https://linkedin.com/in/rinapatel-ops',
-  },
-  {
-    initials: 'JT',
-    name: 'Jonas Trautmann',
+    slug: 'priyankakasera',
+    initials: 'PK',
+    name: 'Priyanka Kasera',
     role: 'Frontend & Electron Developer',
     bio: 'Full-stack developer focused on JavaScript/TypeScript, React, and Electron. Built the desktop app UI, the website, and the version-selection system. Handles Node.js, Yarn, and IDE-related tool integrations.',
-    github: 'https://github.com/jonastrautmann',
-    linkedin: 'https://linkedin.com/in/jonastrautmann',
+    linkedin: 'https://www.linkedin.com/in/priyanka-kasera',
   },
 ]
 
@@ -38,10 +31,26 @@ export default function Authors() {
         description="Learn about DevTools Installer — who we are, why we built a free one-click developer tool setup for Windows, and how our team maintains 20+ tool integrations."
         keywords="DevTools Installer team, DevTools Installer about, developer tools contributors, open source developer tools, who made DevTools Installer"
         path="/authors"
-        jsonLd={buildBreadcrumbJsonLd([
-          { name: 'Home', url: '/' },
-          { name: 'About Us', url: '/authors' },
-        ])}
+        jsonLd={[
+          buildBreadcrumbJsonLd([
+            { name: 'Home', url: '/' },
+            { name: 'About Us', url: '/authors' },
+          ]),
+          ...teamMembers.map((member) => ({
+            '@context': 'https://schema.org',
+            '@type': 'Person',
+            name: member.name,
+            jobTitle: member.role,
+            description: member.bio,
+            url: `${BASE_URL}/authors/${member.slug}`,
+            sameAs: [member.linkedin].filter(Boolean),
+            worksFor: {
+              '@type': 'Organization',
+              name: 'DevTools Installer',
+              url: BASE_URL,
+            },
+          })),
+        ]}
       />
 
       <section className="pt-20 pb-12 text-center">
@@ -108,16 +117,7 @@ export default function Authors() {
                   <p className="text-gray-400 text-sm leading-relaxed mb-4">
                     {member.bio}
                   </p>
-                  <div className="flex gap-3">
-                    <a
-                      href={member.github}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-9 h-9 bg-white/5 border border-dark-border rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all"
-                      aria-label={`${member.name} on GitHub`}
-                    >
-                      <FaGithub className="w-4 h-4" />
-                    </a>
+                  <div className="flex flex-wrap items-center gap-3">
                     <a
                       href={member.linkedin}
                       target="_blank"
@@ -127,13 +127,12 @@ export default function Authors() {
                     >
                       <FaLinkedin className="w-4 h-4" />
                     </a>
-                    <a
-                      href="mailto:support@devtools-installer.web.app"
-                      className="w-9 h-9 bg-white/5 border border-dark-border rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all"
-                      aria-label="Email"
+                    <Link
+                      to={`/authors/${member.slug}`}
+                      className="inline-flex items-center gap-1.5 text-xs text-primary-light hover:underline ml-1"
                     >
-                      <FaEnvelope className="w-4 h-4" />
-                    </a>
+                      View full profile <FiArrowRight className="w-3 h-3" />
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -216,8 +215,8 @@ export default function Authors() {
             <h2 className="text-lg font-semibold text-white mb-4">Contact Us</h2>
             <p className="text-gray-400 text-sm leading-relaxed mb-3">
               Have a question, found a bug, or want to suggest a feature? You can reach us at{' '}
-              <a href="mailto:support@devtools-installer.web.app" className="text-primary-light hover:underline">
-                support@devtools-installer.web.app
+              <a href="mailto:support@devtoolsinstaller.com" className="text-primary-light hover:underline">
+                support@devtoolsinstaller.com
               </a>{' '}
               or use the contact form on our{' '}
               <Link to="/support" className="text-primary-light hover:underline">
@@ -237,8 +236,8 @@ export default function Authors() {
               For bug reports and feature requests, use our{' '}
               <Link to="/support" className="text-primary-light hover:underline">support page</Link> or email
               us at{' '}
-              <a href="mailto:support@devtools-installer.web.app" className="text-primary-light hover:underline">
-                support@devtools-installer.web.app
+              <a href="mailto:support@devtoolsinstaller.com" className="text-primary-light hover:underline">
+                support@devtoolsinstaller.com
               </a>.
             </p>
           </div>

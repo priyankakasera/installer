@@ -8,7 +8,7 @@ const navLinks = [
   { label: 'Home', to: '/' },
   { label: 'Product', to: '/product' },
   { label: 'How-To Guides', to: '/guides' },
-  { label: 'Privacy Policy', to: '/privacy' },
+  { label: 'About Us', to: '/authors' },
   { label: 'Support', to: '/support' },
 ]
 
@@ -51,16 +51,18 @@ export default function Navbar() {
           </div>
 
           {/* Download CTA */}
-          <div className="hidden md:flex items-center">
-            <a
-              href={release.downloadUrl}
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-primary to-accent rounded-lg shadow-md shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.02] transition-all duration-200"
-            >
-              <FiDownload className="w-4 h-4" />
-              Download
-            </a>
-          </div>
+          {release.downloadUrl && (
+            <div className="hidden md:flex items-center">
+              <a
+                href={release.downloadUrl}
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-primary to-accent rounded-lg shadow-md shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.02] transition-all duration-200"
+              >
+                <FiDownload className="w-4 h-4" />
+                Download
+              </a>
+            </div>
+          )}
 
           {/* Mobile toggle */}
           <button
@@ -96,15 +98,17 @@ export default function Navbar() {
                   {link.label}
                 </NavLink>
               ))}
-              <a
-                href={release.downloadUrl}
-                rel="noopener noreferrer"
-                className="mt-3 mx-3 inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white text-center bg-gradient-to-r from-primary to-accent rounded-lg"
-                onClick={() => setMobileOpen(false)}
-              >
-                <FiDownload className="w-4 h-4" />
-                Download
-              </a>
+              {release.downloadUrl && (
+                <a
+                  href={release.downloadUrl}
+                  rel="noopener noreferrer"
+                  className="mt-3 mx-3 inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white text-center bg-gradient-to-r from-primary to-accent rounded-lg"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <FiDownload className="w-4 h-4" />
+                  Download
+                </a>
+              )}
             </div>
           </div>
         )}

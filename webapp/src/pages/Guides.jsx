@@ -3,6 +3,7 @@ import { FiArrowRight } from 'react-icons/fi'
 import SEO from '../components/SEO'
 import { buildBreadcrumbJsonLd, buildItemListJsonLd } from '../config/seo'
 import toolGuides from '../config/toolGuides'
+import AdUnit, { SLOTS } from '../components/AdUnit'
 
 const categoryOrder = [
   'Core Runtimes',
@@ -137,6 +138,66 @@ export default function Guides() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Ad slot — between tool grid and Reference articles */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <AdUnit slot={SLOTS.GUIDES_INDEX} format="auto" />
+      </div>
+
+      {/* Reference & Concepts articles */}
+      <section className="py-16 border-t border-dark-border">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-8">
+            <span className="section-label">Reference &amp; Concepts</span>
+            <h2 className="text-xl sm:text-2xl font-bold text-white mt-3 mb-2">
+              Windows Environment Deep Dives
+            </h2>
+            <p className="text-gray-400 text-sm max-w-2xl">
+              Standalone articles explaining the Windows environment fundamentals that every
+              developer needs to understand — PATH, JAVA_HOME, and silent installation.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-6">
+            {[
+              {
+                to: '/guides/windows-path-explained',
+                label: 'Windows PATH Variable Explained',
+                desc: 'What the PATH environment variable is, why it matters, how to view and edit it safely, and how DevTools Installer manages it automatically.',
+                tag: 'Windows Internals',
+              },
+              {
+                to: '/guides/java-home-explained',
+                label: 'What Is JAVA_HOME?',
+                desc: 'Why Maven and Gradle need JAVA_HOME separate from PATH, how to set it correctly, and how to manage multiple JDK versions on the same machine.',
+                tag: 'Java',
+              },
+              {
+                to: '/guides/windows-silent-install',
+                label: 'Silent Install on Windows',
+                desc: 'How MSI /quiet, NSIS /S, Inno Setup /VERYSILENT, and Squirrel --silent flags work, and how DevTools Installer uses them to automate installs without any click-through wizards.',
+                tag: 'Automation',
+              },
+            ].map((article) => (
+              <Link
+                key={article.to}
+                to={article.to}
+                className="group flex flex-col bg-dark-card border border-dark-border rounded-2xl p-6 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-200"
+              >
+                <span className="text-xs text-primary-light font-medium mb-3 uppercase tracking-wide">
+                  {article.tag}
+                </span>
+                <h3 className="text-white font-semibold mb-2 group-hover:text-primary-light transition-colors">
+                  {article.label}
+                </h3>
+                <p className="text-sm text-gray-500 leading-relaxed flex-1">{article.desc}</p>
+                <span className="mt-4 inline-flex items-center gap-1 text-xs text-gray-600 group-hover:text-primary-light transition-colors">
+                  Read article <FiArrowRight className="w-3 h-3" />
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
     </>

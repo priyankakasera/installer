@@ -1,4 +1,5 @@
-import { FiDownload, FiCheck, FiInfo, FiSearch, FiRefreshCw } from 'react-icons/fi'
+import { FiDownload, FiCheck, FiSearch, FiRefreshCw } from 'react-icons/fi'
+import { Link } from 'react-router-dom'
 import { FaJava } from 'react-icons/fa'
 import { SiApachemaven, SiGradle } from 'react-icons/si'
 import { FaGitAlt } from 'react-icons/fa'
@@ -34,21 +35,23 @@ export default function Hero() {
             </p>
 
             {/* Download button */}
-            <div className="mt-8 flex flex-col sm:flex-row items-center lg:items-start gap-4">
-              <a
-                href={release.downloadUrl}
-                rel="noopener noreferrer"
-                className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] transition-all duration-200"
-              >
-                <FiDownload className="w-5 h-5 group-hover:animate-bounce" />
-                <div className="text-left">
-                  <div className="text-base">Download Free Installer (.exe)</div>
-                  <div className="text-xs font-normal opacity-80">
-                    v{release.version} &middot; Windows 10/11 64-bit
+            {release.downloadUrl && (
+              <div className="mt-8 flex flex-col sm:flex-row items-center lg:items-start gap-4">
+                <a
+                  href={release.downloadUrl}
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] transition-all duration-200"
+                >
+                  <FiDownload className="w-5 h-5 group-hover:animate-bounce" />
+                  <div className="text-left">
+                    <div className="text-base">Download Free Installer (.exe)</div>
+                    <div className="text-xs font-normal opacity-80">
+                      v{release.version} &middot; Windows 10/11 64-bit
+                    </div>
                   </div>
-                </div>
-              </a>
-            </div>
+                </a>
+              </div>
+            )}
 
             {/* Trust badges */}
             <div className="mt-6 flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-sm text-gray-400">
@@ -70,17 +73,12 @@ export default function Hero() {
             </div>
 
             {/* Unknown Publisher notice */}
-            <div className="mt-5 max-w-xl mx-auto lg:mx-0 bg-dark-card/60 border border-dark-border rounded-lg px-4 py-3">
-              <div className="flex gap-2.5 mb-2">
-                <FiInfo className="w-4 h-4 text-blue-400 shrink-0 mt-px" />
-                <p className="text-xs text-gray-400 leading-relaxed">
-                  Windows shows an &ldquo;Unknown Publisher&rdquo; warning because the app isn&apos;t signed with a code-signing certificate (<strong className="text-gray-300">$200–$400/yr</strong> — steep for a free project). This <strong className="text-gray-300">doesn&apos;t mean it&apos;s unsafe</strong> — every tool is fetched directly from its official source with no adware or telemetry.
-                </p>
-              </div>
-              <p className="text-xs text-gray-400 pl-6.5">
-                To proceed: click <strong className="text-gray-300">&ldquo;More info&rdquo;</strong> → <strong className="text-gray-300">&ldquo;Run anyway&rdquo;</strong>
-              </p>
-            </div>
+            <p className="mt-4 text-xs text-gray-600 max-w-xl mx-auto lg:mx-0">
+              Windows SmartScreen may flag the download. Click &ldquo;More info&rdquo; → &ldquo;Run anyway&rdquo; to proceed.{' '}
+              <Link to="/support" className="text-gray-500 hover:text-gray-400 underline underline-offset-2">
+                Why does this happen?
+              </Link>
+            </p>
           </div>
 
           {/* Right — App UI mockup matching actual desktop app */}

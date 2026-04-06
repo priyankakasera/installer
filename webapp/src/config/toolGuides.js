@@ -6,8 +6,11 @@
 const toolGuides = [
   {
     id: 'java',
+    author: { name: 'Vishal Hulawale', slug: 'vishalhulawale' },
     name: 'Java (JDK)',
     headline: 'How to Install Java on Windows',
+    lastReviewed: '2026-04-01',
+    relatedGuides: ['maven', 'gradle', 'intellij-idea'],
     description:
       'Java Development Kit (JDK) is required for Java and Kotlin development, Android Studio, and many enterprise applications.',
     editorial: `Java remains one of the most widely used programming languages in the world, powering everything from enterprise backend systems and Android mobile apps to big-data platforms like Apache Spark and Kafka. If you are learning to code, contributing to an open-source project, or setting up a production build server, you will almost certainly need a JDK installed on your machine.
@@ -69,8 +72,11 @@ This guide covers both the one-click automated method using DevTools Installer a
   },
   {
     id: 'nodejs',
+    author: { name: 'Priyanka Kasera', slug: 'priyankakasera' },
     name: 'Node.js',
     headline: 'How to Install Node.js on Windows',
+    lastReviewed: '2026-04-01',
+    relatedGuides: ['yarn', 'vscode', 'git'],
     description:
       'Node.js is a JavaScript runtime required for frontend development, React, Angular, Vue, and server-side JS applications.',
     editorial: `Node.js transformed JavaScript from a browser-only language into a full-stack development platform. Today it powers the build systems behind virtually every modern frontend framework — React, Angular, Vue, Next.js, and Vite all require Node.js to compile, bundle, and serve your code during development.
@@ -126,8 +132,11 @@ Installing Node.js on Windows is straightforward, but choosing the right version
   },
   {
     id: 'python',
+    author: { name: 'Priyanka Kasera', slug: 'priyankakasera' },
     name: 'Python',
     headline: 'How to Install Python on Windows',
+    lastReviewed: '2026-04-01',
+    relatedGuides: ['miniconda', 'vscode', 'git'],
     description:
       'Python is used for scripting, data science, machine learning, web development (Django/Flask), and automation.',
     editorial: `Python is the go-to language for data science, machine learning, automation scripting, and backend web development. Its clean syntax and massive library ecosystem make it one of the most beginner-friendly languages, yet it powers production systems at companies like Instagram, Spotify, and Dropbox.
@@ -186,8 +195,11 @@ This guide covers Python 3.14 through 3.10 — from the latest release with perf
   },
   {
     id: 'maven',
+    author: { name: 'Vishal Hulawale', slug: 'vishalhulawale' },
     name: 'Apache Maven',
     headline: 'How to Install Maven on Windows',
+    lastReviewed: '2026-04-01',
+    relatedGuides: ['java', 'gradle', 'intellij-idea'],
     description:
       'Maven is a build automation and dependency management tool for Java projects.',
     editorial: `Apache Maven is the standard build tool for Java projects in enterprise environments. If you are working on a Spring Boot application, a Jakarta EE service, or any Java project that declares its dependencies in a pom.xml file, you need Maven installed on your machine to compile, test, and package your code.
@@ -246,8 +258,11 @@ This guide walks you through the complete Maven setup on Windows, from downloadi
   },
   {
     id: 'git',
+    author: { name: 'Priyanka Kasera', slug: 'priyankakasera' },
     name: 'Git',
     headline: 'How to Install Git on Windows',
+    lastReviewed: '2026-04-01',
+    relatedGuides: ['github-desktop', 'vscode', 'nodejs'],
     description:
       'Git is the most widely used distributed version control system — essential for every developer.',
     editorial: `Git is the foundation of modern software development. Whether you are pushing code to GitHub, collaborating on a team project, or managing infrastructure-as-code, Git is the version control system you will use daily. It is a prerequisite for virtually every development workflow and CI/CD pipeline.
@@ -284,6 +299,12 @@ This guide covers Git 2.53, the latest stable release. We walk you through the a
       'If you prefer a visual interface, install GitHub Desktop alongside Git for a GUI-based workflow.',
       'Use "git config --global init.defaultBranch main" to set "main" as the default branch name for new repositories.',
     ],
+    postInstallConfig: [
+      { cmd: 'git config --global user.name "Your Name"', label: 'Set your display name — appears on every commit and is visible on GitHub' },
+      { cmd: 'git config --global user.email "you@example.com"', label: 'Set the email that identifies your commits (use the same email as your GitHub account)' },
+      { cmd: 'git config --global init.defaultBranch main', label: 'Set "main" as the default branch name for all new repositories' },
+      { cmd: 'git config --global core.autocrlf true', label: 'Automatically convert Unix line endings (LF) to Windows (CRLF) on checkout, and back on commit' },
+    ],
     steps: {
       appSteps: [
         'Open DevTools Installer.',
@@ -301,10 +322,18 @@ This guide covers Git 2.53, the latest stable release. We walk you through the a
   },
   {
     id: 'github-desktop',
+    author: { name: 'Priyanka Kasera', slug: 'priyankakasera' },
     name: 'GitHub Desktop',
     headline: 'How to Install GitHub Desktop on Windows',
+    lastReviewed: '2026-04-01',
+    relatedGuides: ['git', 'vscode', 'nodejs'],
     description:
       'GitHub Desktop is a visual Git client that simplifies Git workflows with an intuitive graphical interface.',
+    editorial: `GitHub Desktop takes the complexity out of Git by wrapping common operations — commit, branch, push, pull, merge — in a clean visual interface. If you find yourself frequently checking "git status", reading diff output in the terminal, or resolving merge conflicts by editing conflict markers manually, GitHub Desktop offers a more visual alternative that many developers find faster for everyday work.
+
+Built and maintained by GitHub, the app integrates natively with GitHub.com and GitHub Enterprise. You can clone repositories in one click, create branches, review changes line by line, and open pull requests without leaving the application. It also works with any Git repository, including those hosted on GitLab, Bitbucket, or a self-hosted server.
+
+Unlike most tools in this guide, GitHub Desktop does not require administrator privileges and installs to your user profile directory. It includes its own bundled Git binary, so you can use it even without a standalone Git installation — though we recommend installing Git for Windows alongside it for full command-line coverage.`,
     category: 'Version Control',
     versions: ['latest'],
     defaultVersion: 'latest',
@@ -354,8 +383,11 @@ This guide covers Git 2.53, the latest stable release. We walk you through the a
   },
   {
     id: 'gradle',
+    author: { name: 'Vishal Hulawale', slug: 'vishalhulawale' },
     name: 'Gradle',
     headline: 'How to Install Gradle on Windows',
+    lastReviewed: '2026-04-01',
+    relatedGuides: ['java', 'maven', 'intellij-idea'],
     description:
       'Gradle is a powerful build automation tool supporting Java, Kotlin, Groovy, and multi-language projects.',
     editorial: `Gradle is the build system of choice for Android development and an increasingly popular alternative to Maven for JVM-based projects. Android Studio uses Gradle exclusively, and frameworks like Spring Boot support Gradle as a first-class build tool alongside Maven.
@@ -412,13 +444,18 @@ Like Maven, Gradle is distributed as a zip archive. You extract it, set the GRAD
   },
   {
     id: 'yarn',
+    author: { name: 'Priyanka Kasera', slug: 'priyankakasera' },
     name: 'Yarn',
     headline: 'How to Install Yarn on Windows',
+    lastReviewed: '2026-04-01',
+    relatedGuides: ['nodejs', 'git', 'vscode'],
     description:
       'Yarn is a fast, reliable dependency manager for Node.js projects.',
     editorial: `Yarn was created by Facebook (now Meta) in 2016 to address reliability and performance issues with npm at the time. It introduced deterministic lockfiles, parallel package downloads, and offline caching — features that npm has since adopted but that Yarn continues to refine.
 
-Today, Yarn Classic (1.x) remains the most widely deployed version and is what many open-source projects specify in their contributing guidelines. If you clone a repository and see a yarn.lock file, you should install dependencies with Yarn rather than npm to ensure you get exactly the same dependency tree the maintainers tested against.
+Today, Yarn Classic (1.x) remains the most widely deployed version and is what many open-source projects specify in their contributing guidelines. If you clone a repository and see a yarn.lock file, you should install dependencies with Yarn rather than npm to ensure you get exactly the same dependency tree the maintainers tested against. This is especially important in CI/CD pipelines and team environments where reproducible builds prevent the "works on my machine" problem.
+
+On Windows, Yarn is distributed as an MSI installer that places the binary in Program Files and adds it to your system PATH. Because Yarn is a Node.js tool, you must have Node.js installed first — Yarn uses Node's runtime under the hood to execute JavaScript-based build scripts and resolve packages from the npm registry.
 
 This guide installs Yarn 1.22 via the official Windows MSI installer. Note that Yarn 2+ (Berry) is a separate architecture that is enabled on a per-project basis — it does not replace a global Yarn Classic installation. Yarn requires Node.js, so make sure Node is installed before proceeding.`,
     category: 'Package Managers',
@@ -467,15 +504,18 @@ This guide installs Yarn 1.22 via the official Windows MSI installer. Note that 
   },
   {
     id: 'chocolatey',
+    author: { name: 'Priyanka Kasera', slug: 'priyankakasera' },
     name: 'Chocolatey',
     headline: 'How to Install Chocolatey on Windows',
+    lastReviewed: '2026-04-01',
+    relatedGuides: ['git', 'nodejs', 'vscode'],
     description:
       'Chocolatey is the package manager for Windows, automating software installation and management.',
-    editorial: `Linux developers have had apt and yum for decades, and macOS has Homebrew. Chocolatey brings the same package-management experience to Windows: install, upgrade, and uninstall software from the command line with a single command like "choco install git".
+    editorial: `Linux developers have had apt and yum for decades, and macOS has Homebrew. Chocolatey brings the same package-management experience to Windows: install, upgrade, and uninstall software from the command line with a single command like "choco install git". For developers who work primarily on Windows, Chocolatey fills a critical gap in the toolchain by providing scriptable, repeatable software installation.
 
-Chocolatey draws from a community-maintained repository of over 9,000 packages covering everything from developer tools and runtimes to system utilities and fonts. It handles downloading the correct installer, running it silently, and configuring PATH entries. For enterprise environments, Chocolatey offers a commercial edition with features like package internalization, license management, and integration with SCCM and Intune.
+Chocolatey draws from a community-maintained repository of over 9,000 packages covering everything from developer tools and runtimes to system utilities and fonts. It handles downloading the correct installer, running it silently, and configuring PATH entries. For enterprise environments, Chocolatey offers a commercial edition with features like package internalization, license management, and integration with SCCM and Intune. Many teams use Chocolatey alongside DevTools Installer — our tool handles the core developer runtimes and IDEs, while Chocolatey covers everything else.
 
-This guide installs Chocolatey 2.7 on your Windows machine. The official installation method uses a PowerShell one-liner, but DevTools Installer simplifies it further with an MSI-based silent install. Once Chocolatey is installed, it becomes a powerful complement to DevTools Installer for any software that falls outside our built-in tool list.`,
+This guide installs Chocolatey 2.7 on your Windows machine. The official installation method uses a PowerShell one-liner that downloads and executes a remote script, but DevTools Installer simplifies it further with an MSI-based silent install. Once Chocolatey is installed, it becomes a powerful complement to DevTools Installer for any software that falls outside our built-in tool list.`,
     category: 'Package Managers',
     versions: ['2.7.0'],
     defaultVersion: '2.7.0',
@@ -522,13 +562,16 @@ This guide installs Chocolatey 2.7 on your Windows machine. The official install
   },
   {
     id: 'miniconda',
+    author: { name: 'Priyanka Kasera', slug: 'priyankakasera' },
     name: 'Miniconda',
     headline: 'How to Install Miniconda on Windows',
+    lastReviewed: '2026-04-01',
+    relatedGuides: ['python', 'vscode', 'git'],
     description:
       'Miniconda is a minimal conda installer that provides a lightweight Python environment and package manager for data science and development.',
-    editorial: `If you work in data science, machine learning, or scientific computing on Windows, Miniconda is the recommended way to manage your Python environments. Unlike pip, conda can install and resolve native binary dependencies (C libraries, CUDA toolkits, Fortran routines) that packages like NumPy, SciPy, and TensorFlow rely on.
+    editorial: `If you work in data science, machine learning, or scientific computing on Windows, Miniconda is the recommended way to manage your Python environments. Unlike pip, conda can install and resolve native binary dependencies (C libraries, CUDA toolkits, Fortran routines) that packages like NumPy, SciPy, and TensorFlow rely on. This makes conda essential for workflows where compiled extensions and GPU acceleration are involved.
 
-Miniconda is the slim variant of the full Anaconda distribution. Where Anaconda ships with over 250 pre-installed packages (many of which you may never use), Miniconda includes only conda itself, Python, and a handful of essential packages. You then install exactly what you need into isolated environments, keeping your system lean and avoiding version conflicts between projects.
+Miniconda is the slim variant of the full Anaconda distribution. Where Anaconda ships with over 250 pre-installed packages (many of which you may never use), Miniconda includes only conda itself, Python, and a handful of essential packages. You then install exactly what you need into isolated environments, keeping your system lean and avoiding version conflicts between projects. Each conda environment is fully self-contained — with its own Python interpreter and installed packages — so you can have a TensorFlow 2.x environment alongside a PyTorch environment without any interference.
 
 This guide walks you through installing Miniconda on Windows for all users. We cover the automated method via DevTools Installer (which also handles corrupt previous installations) and the full manual process, including adding all three required directories to your system PATH.`,
     category: 'Package Managers',
@@ -585,6 +628,7 @@ This guide walks you through installing Miniconda on Windows for all users. We c
   },
   {
     id: 'docker-desktop',
+    author: { name: 'Vishal Hulawale', slug: 'vishalhulawale' },
     name: 'Docker Desktop',
     hidden: true,
     headline: 'How to Install Docker Desktop on Windows',
@@ -618,13 +662,16 @@ This guide walks you through installing Miniconda on Windows for all users. We c
   },
   {
     id: 'kubectl',
+    author: { name: 'Vishal Hulawale', slug: 'vishalhulawale' },
     name: 'kubectl',
     headline: 'How to Install kubectl on Windows',
+    lastReviewed: '2026-04-01',
+    relatedGuides: ['helm', 'istio', 'awscli'],
     description:
       'kubectl is the command-line tool for controlling Kubernetes clusters.',
-    editorial: `kubectl (pronounced "kube-control" or "kube-cuddle," depending on who you ask) is the primary CLI for interacting with any Kubernetes cluster. If you are deploying containers, managing microservices, or debugging a pod that will not start, kubectl is the tool you will reach for.
+    editorial: `kubectl (pronounced "kube-control" or "kube-cuddle," depending on who you ask) is the primary CLI for interacting with any Kubernetes cluster. If you are deploying containers, managing microservices, or debugging a pod that will not start, kubectl is the tool you will reach for. It is a prerequisite for every Kubernetes-related tool in your workflow, including Helm and Istio.
 
-Unlike most developer tools, kubectl is a single standalone binary with no installer, no registry entries, and no dependencies. You download the executable, place it in a directory on your PATH, and it is ready to use. Configuration comes from a kubeconfig file (typically at %USERPROFILE%\\.kube\\config) that stores cluster addresses, certificates, and authentication tokens.
+Unlike most developer tools, kubectl is a single standalone binary with no installer, no registry entries, and no dependencies. You download the executable, place it in a directory on your PATH, and it is ready to use. Configuration comes from a kubeconfig file (typically at %USERPROFILE%\\.kube\\config) that stores cluster addresses, certificates, and authentication tokens. This simplicity makes kubectl easy to install but also means there is no built-in auto-update mechanism — you need to manage version upgrades yourself or let DevTools Installer handle it.
 
 This guide covers kubectl 1.35.3 and also offers 1.34.x and 1.33.x for teams that need to match their cluster's Kubernetes version (kubectl supports a one-minor-version skew in either direction). We walk through both the automated installation and the manual process, plus post-install configuration and troubleshooting.`,
     category: 'Cloud & DevOps',
@@ -656,6 +703,13 @@ This guide covers kubectl 1.35.3 and also offers 1.34.x and 1.33.x for teams tha
       'Enable shell autocompletion for faster commands: for PowerShell, run "kubectl completion powershell | Out-String | Invoke-Expression".',
       'kubectl is a prerequisite for Helm and Istio. Install kubectl first before installing those tools.',
     ],
+    prerequisiteTools: [
+      {
+        id: 'docker-desktop',
+        name: 'A Kubernetes Cluster',
+        reason: 'kubectl is just a CLI — it needs a cluster to connect to. For local development, enable Kubernetes in Docker Desktop (Settings → Kubernetes → Enable Kubernetes) or install minikube.',
+      },
+    ],
     steps: {
       appSteps: [
         'Open DevTools Installer.',
@@ -674,8 +728,11 @@ This guide covers kubectl 1.35.3 and also offers 1.34.x and 1.33.x for teams tha
   },
   {
     id: 'awscli',
+    author: { name: 'Vishal Hulawale', slug: 'vishalhulawale' },
     name: 'AWS CLI',
     headline: 'How to Install AWS CLI on Windows',
+    lastReviewed: '2026-04-01',
+    relatedGuides: ['kubectl', 'helm', 'azurecli'],
     description:
       'AWS CLI is the command-line interface for managing Amazon Web Services resources.',
     editorial: `The AWS CLI is the Swiss Army knife for managing Amazon Web Services infrastructure from your terminal. Whether you need to upload files to S3, launch an EC2 instance, deploy a Lambda function, or query CloudWatch logs, the AWS CLI provides a consistent interface across all 200+ AWS services.
@@ -729,15 +786,18 @@ This guide installs AWS CLI v2, the current major version that includes auto-com
   },
   {
     id: 'azurecli',
+    author: { name: 'Vishal Hulawale', slug: 'vishalhulawale' },
     name: 'Azure CLI',
     headline: 'How to Install Azure CLI on Windows',
+    lastReviewed: '2026-04-01',
+    relatedGuides: ['kubectl', 'helm', 'awscli'],
     description:
       'Azure CLI is the command-line interface for managing Microsoft Azure resources.',
-    editorial: `Azure CLI is Microsoft's cross-platform command-line tool for creating and managing Azure resources. If your organization uses Azure for cloud hosting, AKS for Kubernetes, or Azure DevOps for CI/CD, the Azure CLI is the fastest way to interact with those services from your terminal.
+    editorial: `Azure CLI is Microsoft's cross-platform command-line tool for creating and managing Azure resources. If your organization uses Azure for cloud hosting, AKS for Kubernetes, or Azure DevOps for CI/CD, the Azure CLI is the fastest way to interact with those services from your terminal. It bridges the gap between the Azure Portal's browser-based interface and fully automated infrastructure-as-code deployments.
 
-Azure CLI uses a consistent "az <service> <command>" syntax that is easy to learn and script. It supports interactive login via the browser, service principal authentication for automation, and managed identity for workloads running inside Azure. Output can be formatted as JSON, table, or TSV, making it straightforward to pipe into other tools.
+Azure CLI uses a consistent "az <service> <command>" syntax that is easy to learn and script. It supports interactive login via the browser, service principal authentication for automation, and managed identity for workloads running inside Azure. Output can be formatted as JSON, table, or TSV, making it straightforward to pipe into other tools or parse in scripts. Combined with Azure Resource Manager templates or Bicep files, the Azure CLI enables fully reproducible cloud deployments from your Windows terminal.
 
-This guide installs the latest Azure CLI v2 on Windows using the official MSI installer from Microsoft. The installer configures PATH automatically, so you can start using "az" commands from any terminal immediately after installation.`,
+This guide installs the latest Azure CLI v2 on Windows using the official MSI installer from Microsoft. The installer configures PATH automatically, so you can start using "az" commands from any terminal immediately after installation. We also cover authentication setup, subscription switching, and common post-install issues.`,
     category: 'Cloud & DevOps',
     versions: ['2 (latest)'],
     defaultVersion: '2 (latest)',
@@ -784,8 +844,11 @@ This guide installs the latest Azure CLI v2 on Windows using the official MSI in
   },
   {
     id: 'helm',
+    author: { name: 'Vishal Hulawale', slug: 'vishalhulawale' },
     name: 'Helm',
     headline: 'How to Install Helm on Windows',
+    lastReviewed: '2026-04-01',
+    relatedGuides: ['kubectl', 'istio', 'awscli'],
     description:
       'Helm is the package manager for Kubernetes, used to manage charts and deploy applications to clusters.',
     editorial: `Helm is often described as "the package manager for Kubernetes," and the analogy is apt. Just as apt installs software on Linux or npm installs packages in Node.js, Helm installs pre-packaged applications (called charts) onto Kubernetes clusters. A single "helm install" command can deploy a complete application stack — pods, services, config maps, secrets, and ingress rules — that would otherwise require dozens of YAML files.
@@ -822,6 +885,9 @@ This guide covers Helm 4.1.3, the latest stable release. Helm 4.x operates entir
       'Helm 4.x dropped Tiller (the server-side component from v2) and operates fully client-side, improving security.',
       'Use "helm template <chart>" to render Kubernetes manifests locally without deploying — useful for reviewing what Helm will create.',
     ],
+    prerequisiteTools: [
+      { id: 'kubectl', name: 'kubectl', reason: 'Helm communicates with your Kubernetes cluster through kubectl\'s kubeconfig. Install kubectl first.' },
+    ],
     steps: {
       appSteps: [
         'Open DevTools Installer.',
@@ -841,8 +907,11 @@ This guide covers Helm 4.1.3, the latest stable release. Helm 4.x operates entir
   },
   {
     id: 'istio',
+    author: { name: 'Vishal Hulawale', slug: 'vishalhulawale' },
     name: 'Istio (istioctl)',
     headline: 'How to Install Istio on Windows',
+    lastReviewed: '2026-04-01',
+    relatedGuides: ['kubectl', 'helm', 'awscli'],
     description:
       'Istio is a service mesh that provides traffic management, security, and observability for microservices.',
     editorial: `Istio is the leading open-source service mesh for Kubernetes environments. If you are running a microservices architecture and need to add mutual TLS encryption between services, implement traffic splitting for canary deployments, or collect distributed traces across your system — all without modifying application code — Istio is the standard solution.
@@ -879,6 +948,10 @@ This guide covers istioctl 1.29.1, which you install locally on your Windows dev
       'The --remote=false flag in the verify command checks only the local CLI version without needing a cluster connection.',
       'For development and testing, "istioctl install --set profile=demo" installs Istio with all features enabled. For production, use the "default" or "minimal" profile.',
     ],
+    prerequisiteTools: [
+      { id: 'kubectl', name: 'kubectl', reason: 'Required to interact with Kubernetes clusters — Istio installs into a cluster via kubectl.' },
+      { id: 'helm', name: 'Helm', reason: 'Recommended: some Istio deployment methods use Helm charts for more granular configuration control.' },
+    ],
     steps: {
       appSteps: [
         'Open DevTools Installer.',
@@ -899,8 +972,11 @@ This guide covers istioctl 1.29.1, which you install locally on your Windows dev
   },
   {
     id: 'vscode',
+    author: { name: 'Priyanka Kasera', slug: 'priyankakasera' },
     name: 'Visual Studio Code',
     headline: 'How to Install VS Code on Windows',
+    lastReviewed: '2026-04-01',
+    relatedGuides: ['git', 'nodejs', 'python'],
     description:
       'VS Code is a lightweight but powerful source-code editor by Microsoft.',
     editorial: `Visual Studio Code has become the most popular code editor in the world, used by over 70% of developers according to Stack Overflow's annual survey. Its combination of speed, extensibility, and built-in features (Git integration, IntelliSense, integrated terminal, debugging) makes it the default choice for web development, Python scripting, and many other workflows.
@@ -937,6 +1013,13 @@ This guide installs the latest stable version of VS Code for Windows using the o
       'VS Code updates automatically by default. To stay on a specific version, disable auto-update in settings.',
       'For Java development, install the "Extension Pack for Java" by Microsoft — it includes language support, debugging, test runner, and Maven/Gradle integration.',
     ],
+    recommendedExtensions: [
+      { name: 'IntelliCode', publisher: 'VisualStudioExptTeam', desc: 'AI-assisted code completions trained on thousands of real-world open-source codebases — more context-aware than standard IntelliSense.' },
+      { name: 'GitLens', publisher: 'eamodio', desc: 'Supercharges Git with inline blame annotations, interactive history views, and rich side-by-side diff comparisons.' },
+      { name: 'Prettier', publisher: 'esbenp', desc: 'Opinionated code formatter that auto-formats on save for JavaScript, TypeScript, CSS, JSON, HTML, and more.' },
+      { name: 'ESLint', publisher: 'dbaeumer', desc: 'Integrates ESLint into the editor with real-time JavaScript and TypeScript linting and quick-fix suggestions.' },
+      { name: 'Python (Microsoft)', publisher: 'ms-python', desc: 'Full Python support: IntelliSense, linting, black formatting, debugging, and Jupyter notebook integration.' },
+    ],
     steps: {
       appSteps: [
         'Open DevTools Installer.',
@@ -954,8 +1037,11 @@ This guide installs the latest stable version of VS Code for Windows using the o
   },
   {
     id: 'intellij-idea',
+    author: { name: 'Vishal Hulawale', slug: 'vishalhulawale' },
     name: 'IntelliJ IDEA',
     headline: 'How to Install IntelliJ IDEA on Windows',
+    lastReviewed: '2026-04-01',
+    relatedGuides: ['java', 'maven', 'gradle'],
     description:
       'IntelliJ IDEA is a professional IDE for Java and Kotlin development by JetBrains.',
     editorial: `IntelliJ IDEA is widely regarded as the best IDE for Java and Kotlin development. Its deep code analysis, intelligent refactoring tools, and seamless integration with build systems like Maven and Gradle make it the preferred choice for enterprise Java developers and Android engineers alike (Android Studio is built on the same IntelliJ platform).
@@ -992,6 +1078,12 @@ This guide covers the straightforward installation process on Windows. IntelliJ 
       'IntelliJ works best with Maven or Gradle projects — import the pom.xml or build.gradle directly to auto-configure the project.',
       'Install the JDK before IntelliJ so the IDE can auto-detect it during first launch.',
     ],
+    recommendedPlugins: [
+      { name: 'Lombok', desc: 'Eliminates boilerplate Java code — automatically generates getters, setters, builders, and equals/hashCode implementations via annotations like @Data, @Builder, and @Value.' },
+      { name: 'SonarLint', desc: 'On-the-fly static analysis that catches bugs, security vulnerabilities, and code smells as you type, before they reach code review.' },
+      { name: 'Rainbow Brackets', desc: 'Colorizes matching bracket, parenthesis, and brace pairs in distinct colors — dramatically improves readability in deeply nested code.' },
+      { name: 'CheckStyle-IDEA', desc: 'Runs Checkstyle code style checks directly in the IDE, helping enforce consistent formatting across the entire team.' },
+    ],
     steps: {
       appSteps: [
         'Open DevTools Installer.',
@@ -1009,8 +1101,11 @@ This guide covers the straightforward installation process on Windows. IntelliJ 
   },
   {
     id: 'notepadpp',
+    author: { name: 'Priyanka Kasera', slug: 'priyankakasera' },
     name: 'Notepad++',
     headline: 'How to Install Notepad++ on Windows',
+    lastReviewed: '2026-04-01',
+    relatedGuides: ['vscode', 'git', 'python'],
     description:
       'Notepad++ is a free, lightweight source code editor and Notepad replacement.',
     editorial: `Notepad++ has been a Windows developer staple for over 20 years. It fills the gap between the bare-bones Windows Notepad and full-featured IDEs — perfect for when you need to quickly edit a config file, inspect a log, or make a small code change without waiting for a heavy IDE to load.
@@ -1064,8 +1159,11 @@ This guide installs Notepad++ 8.9.3, the latest stable release, using the offici
   },
   {
     id: 'postman',
+    author: { name: 'Priyanka Kasera', slug: 'priyankakasera' },
     name: 'Postman',
     headline: 'How to Install Postman on Windows',
+    lastReviewed: '2026-04-01',
+    relatedGuides: ['nodejs', 'git', 'vscode'],
     description:
       'Postman is an API platform for building, testing, and documenting APIs.',
     editorial: `Postman has evolved from a simple Chrome extension for testing HTTP requests into a comprehensive API development platform used by over 30 million developers worldwide. If you are building, testing, or documenting REST APIs, GraphQL endpoints, or WebSocket connections, Postman provides a visual interface that is far more productive than crafting curl commands by hand.
@@ -1101,6 +1199,12 @@ This guide installs the latest version of Postman for Windows. Unlike most tools
       'Use Postman Environments to manage variables like API base URLs and auth tokens across development, staging, and production.',
       'Export collections as JSON files to version-control your API tests alongside your source code.',
       'For CI/CD integration, use Newman (Postman\'s CLI runner): "npm install -g newman" and "newman run collection.json".',
+    ],
+    workflowTips: [
+      'Create a Postman Environment (top-right gear icon) and store variables like {{baseUrl}}, {{authToken}}, and {{apiKey}}. Switch between dev, staging, and production by changing the active Environment from a single dropdown.',
+      'Organise requests into Collections — export the Collection as a JSON file and commit it to your repository so the whole team shares the same API test suite and examples.',
+      'Use the Pre-request Script tab to generate or refresh auth tokens automatically before each request runs, eliminating the need to manually copy-paste JWT tokens.',
+      'The Tests tab accepts JavaScript assertions against the response (e.g., pm.response.to.have.status(200)). Run the full collection headlessly via the Newman CLI to execute API tests in your CI/CD pipeline.',
     ],
     steps: {
       appSteps: [
