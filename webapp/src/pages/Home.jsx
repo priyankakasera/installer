@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { Link } from 'react-router-dom'
-import { FiArrowRight } from 'react-icons/fi'
+import { FiArrowRight, FiCheckCircle } from 'react-icons/fi'
 import SEO from '../components/SEO'
 import { buildBreadcrumbJsonLd } from '../config/seo'
 import Hero from '../components/Hero'
@@ -39,6 +39,74 @@ export default function Home() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <AdUnit slot={SLOTS.HOME_BOTTOM} format="auto" />
       </div>
+
+      {/* Overview video */}
+      <Divider />
+      <section className="content-auto relative py-20 lg:py-28 overflow-hidden">
+        {/* Ambient glow backdrop */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(ellipse 70% 55% at 50% 50%, color-mix(in srgb, #10b981 8%, transparent), transparent 80%)',
+          }}
+        />
+
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="text-center mb-10">
+            <span className="section-label">Overview</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mt-4 mb-4 tracking-tight">
+              See It in Action
+            </h2>
+            <p className="text-gray-400 max-w-xl mx-auto leading-relaxed">
+              Watch a quick overview of how DevTools Installer sets up your
+              entire Windows development environment in minutes — no manual
+              configuration required.
+            </p>
+          </div>
+
+          {/* Video card */}
+          <div
+            className="rounded-2xl p-1"
+            style={{
+              background:
+                'linear-gradient(135deg, color-mix(in srgb, #10b981 30%, transparent), color-mix(in srgb, #06b6d4 20%, transparent))',
+            }}
+          >
+            <div className="rounded-xl overflow-hidden bg-dark-card" style={{ boxShadow: '0 0 60px color-mix(in srgb, #10b981 18%, transparent), 0 25px 50px rgba(0,0,0,0.6)' }}>
+              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                <iframe
+                  className="absolute inset-0 w-full h-full"
+                  src="https://www.youtube.com/embed/XI5mc804hbA"
+                  title="DevTools Installer Overview"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  loading="lazy"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Highlights row */}
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              { text: 'Install 20+ tools with one click' },
+              { text: 'Automatic PATH & env var setup' },
+              { text: 'Runs entirely on your local machine' },
+            ].map(({ text }) => (
+              <div
+                key={text}
+                className="flex items-center gap-3 bg-dark-card border border-dark-border rounded-xl px-4 py-3"
+              >
+                <FiCheckCircle className="w-4 h-4 shrink-0 text-primary-light" />
+                <span className="text-sm text-gray-300">{text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Guides teaser */}
       <Divider />
