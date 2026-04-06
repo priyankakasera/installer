@@ -440,6 +440,13 @@ jobs:
         working-directory: webapp
         run: npm ci
 
+      - name: Install system dependencies for prerendering
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -yqq \
+            libnss3 libatk-bridge2.0-0 libdrm2 libxkbcommon0 \
+            libgbm1 libasound2t64 libxshmfence1
+
       - name: Resolve release info
         id: release
         run: |

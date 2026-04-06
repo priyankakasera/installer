@@ -15,5 +15,5 @@ createRoot(document.getElementById('root')).render(
   </StrictMode>,
 )
 
-// Signal to vite-plugin-prerender that the page is ready to snapshot
+// Signal to prerender script that the page is ready to snapshot
 document.dispatchEvent(new Event('render-event'))
