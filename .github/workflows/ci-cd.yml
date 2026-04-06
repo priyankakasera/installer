@@ -154,10 +154,11 @@ jobs:
   build-desktop:
     name: Build Desktop App
     needs: [changes, version-bump]
-    if: |
-      always() &&
-      needs.changes.outputs.desktop == 'true' &&
-      (needs.version-bump.result == 'success' || needs.version-bump.result == 'skipped')
+    # if: |
+    #   always() &&
+    #   needs.changes.outputs.desktop == 'true' &&
+    #   (needs.version-bump.result == 'success' || needs.version-bump.result == 'skipped')
+    if: false
     runs-on: windows-latest
     timeout-minutes: 30
     outputs:
@@ -289,7 +290,7 @@ jobs:
           name: DevTools-Installer-Windows
           path: desktopapp/dist/*.exe
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 1
 
 # ────────────────────────────────────────────────────────────────
 # JOB 4 — Upload Installer to Firebase Storage
