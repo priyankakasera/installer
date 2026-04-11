@@ -1,10 +1,58 @@
 import { useParams, Navigate, Link } from 'react-router-dom'
 import { useState } from 'react'
-import { FiArrowLeft, FiArrowRight, FiDownload, FiCopy, FiCheck, FiExternalLink, FiTerminal, FiCalendar } from 'react-icons/fi'
+import { FiArrowLeft, FiArrowRight, FiDownload, FiCopy, FiCheck, FiTerminal, FiCalendar } from 'react-icons/fi'
 import SEO from '../components/SEO'
 import { buildBreadcrumbJsonLd, buildHowToJsonLd } from '../config/seo'
 import toolGuides from '../config/toolGuides'
 import AdUnit, { SLOTS } from '../components/AdUnit'
+
+function FactCard({ label, children }) {
+  return (
+    <div className="bg-dark-card border border-dark-border rounded-xl p-4">
+      <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">{label}</p>
+      <div className="text-sm text-white leading-relaxed">{children}</div>
+    </div>
+  )
+}
+
+function SectionHeading({ id, icon, title, description }) {
+  return (
+    <div id={id} className="scroll-mt-28 mb-5">
+      <h2 className="text-xl font-bold text-white flex items-center gap-2">
+        {icon}
+        {title}
+      </h2>
+      {description && (
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-400">{description}</p>
+      )}
+    </div>
+  )
+}
+
+function StepList({ steps, tone = 'primary' }) {
+  const numberClass =
+    tone === 'muted'
+      ? 'bg-dark-border text-gray-300'
+      : 'bg-primary/10 text-primary-light'
+
+  return (
+    <ol className="space-y-3">
+      {steps.map((step, i) => (
+        <li
+          key={i}
+          className="flex items-start gap-3 rounded-xl border border-dark-border bg-dark-card px-5 py-4"
+        >
+          <span className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${numberClass}`}>
+            {i + 1}
+          </span>
+          <span className="text-gray-300 leading-relaxed">
+            <Linkify>{step}</Linkify>
+          </span>
+        </li>
+      ))}
+    </ol>
+  )
+}
 
 function CodeBlock({ children }) {
   const [copied, setCopied] = useState(false)
@@ -38,7 +86,7 @@ function Linkify({ children }) {
   const urlRegex = /(https?:\/\/[^\s)]+)/g
   const parts = children.split(urlRegex)
   return parts.map((part, i) =>
-    urlRegex.test(part) ? (
+    part.startsWith('http://') || part.startsWith('https://') ? (
       <a key={i} href={part} target="_blank" rel="nofollow noopener noreferrer" className="text-primary-light hover:underline break-all">
         {part}
       </a>
@@ -74,6 +122,16 @@ export default function ToolGuide() {
   const combinedJsonLd = [breadcrumbJsonLd, howToJsonLd]
 
   const toolKeywords = `${tool.headline}, install ${tool.name} Windows, ${tool.name} PATH configuration, ${tool.name} setup guide, ${tool.name} download, ${tool.name} environment variables, DevTools Installer ${tool.name}`
+  const hasEnvSetup = Boolean(tool.envVars?.length || tool.pathEntries?.length)
+  const setupSummary = hasEnvSetup
+    ? [
+        tool.envVars?.length ? `${tool.envVars.length} environment ${tool.envVars.length === 1 ? 'variable' : 'variables'}` : null,
+        tool.pathEntries?.length ? `${tool.pathEntries.length} PATH ${tool.pathEntries.length === 1 ? 'entry' : 'entries'}` : null,
+      ]
+        .filter(Boolean)
+        .join(' + ')
+    : 'No PATH or environment variables required'
+
 
   return (
     <>
@@ -111,7 +169,7 @@ export default function ToolGuide() {
           <h1 className="text-3xl sm:text-4xl font-bold text-white mt-4 mb-3">
             {tool.headline}
           </h1>
-          <p className="text-gray-400 max-w-2xl">{tool.description}</p>
+          <p className="text-gray-400 max-w-2xl leading-relaxed">{tool.description}</p>
           <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-gray-500">
             {tool.author && (
               <span className="flex items-center gap-1.5">
@@ -131,35 +189,25 @@ export default function ToolGuide() {
         </div>
 
         {/* Quick facts */}
-        <div className="grid sm:grid-cols-3 gap-4 mb-6">
-          <div className="bg-dark-card border border-dark-border rounded-xl p-4">
-            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-              Supported Versions
-            </p>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+          <FactCard label="Supported Versions">
             <div className="flex flex-wrap gap-1.5">
               {tool.versions.map((v) => (
-                <span key={v} className="px-2 py-0.5 text-xs rounded bg-dark-lighter border border-dark-border text-white font-medium">
+                <span key={v} className="rounded border border-dark-border bg-dark-lighter px-2 py-0.5 text-xs font-medium text-white">
                   {v}
                 </span>
               ))}
             </div>
-          </div>
-          <div className="bg-dark-card border border-dark-border rounded-xl p-4">
-            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-              Source
-            </p>
-            <p className="text-white font-medium truncate">
-              {tool.downloadLabel}
-            </p>
-          </div>
-          <div className="bg-dark-card border border-dark-border rounded-xl p-4">
-            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-              Verify
-            </p>
-            <p className="text-white font-mono text-sm truncate">
-              {tool.verifyCommand}
-            </p>
-          </div>
+          </FactCard>
+          <FactCard label="Official Source">
+            <p className="font-medium">{tool.downloadLabel}</p>
+          </FactCard>
+          <FactCard label="Environment Setup">
+            <p>{setupSummary}</p>
+          </FactCard>
+          <FactCard label="Verify Step">
+            <p className="font-mono break-all">{tool.verifyCommand}</p>
+          </FactCard>
         </div>
 
         {/* Affiliation disclaimer */}
@@ -170,145 +218,125 @@ export default function ToolGuide() {
         {/* Ad slot — top of content, below disclaimer */}
         <AdUnit slot={SLOTS.GUIDE_HEADER} format="auto" className="mb-10" />
 
-        {/* Install via DevTools Installer */}
-        {tool.steps?.appSteps?.length > 0 && (
-          <section className="mb-12">
-            <h2 className="text-xl font-bold text-white mb-5 flex items-center gap-2">
-              <FiDownload className="w-5 h-5 text-primary-light" />
-              Install via DevTools Installer
-            </h2>
-            <ol className="space-y-3">
-              {tool.steps.appSteps.map((step, i) => (
-                <li
-                  key={i}
-                  className="flex items-start gap-3 bg-dark-card border border-dark-border rounded-xl px-5 py-4"
-                >
-                  <span className="w-6 h-6 rounded-full bg-primary/10 text-primary-light text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
-                    {i + 1}
-                  </span>
-                  <span className="text-gray-300 leading-relaxed">{step}</span>
-                </li>
-              ))}
-            </ol>
-          </section>
-        )}
-
-        {/* Download Source */}
-        <section className="mb-12">
-          <h2 className="text-xl font-bold text-white mb-5 flex items-center gap-2">
-            <FiExternalLink className="w-5 h-5 text-primary-light" />
-            Download Source
-          </h2>
-          <CodeBlock>{tool.downloadSource}</CodeBlock>
-          {tool.altSources?.length > 0 && (
-            <div className="mt-3 text-sm text-gray-500">
-              <span className="font-medium text-gray-400">
-                Alternative sources:{' '}
-              </span>
-              {tool.altSources.join(', ')}
-            </div>
-          )}
-        </section>
-
-        {/* PATH & Environment Variables */}
-        {(tool.envVars?.length > 0 || tool.pathEntries?.length > 0) && (
-          <section className="mb-12">
-            <h2 className="text-xl font-bold text-white mb-5 flex items-center gap-2">
-              <FiTerminal className="w-5 h-5 text-primary-light" />
-              PATH &amp; Environment Variables
-            </h2>
-            {tool.envVars?.length > 0 && (
-              <div className="mb-4">
-                <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
-                  Environment Variables
-                </h3>
-                <div className="space-y-2">
-                  {tool.envVars.map((v) => (
-                    <div key={v.name}>
-                      <CodeBlock>{`${v.name}=${v.value}`}</CodeBlock>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {tool.pathEntries?.length > 0 && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
-                  PATH Entries
-                </h3>
-                <div className="space-y-2">
-                  {tool.pathEntries.map((p, i) => (
-                    <CodeBlock key={i}>{p}</CodeBlock>
-                  ))}
-                </div>
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* Verify Installation */}
-        <section className="mb-12">
-          <h2 className="text-xl font-bold text-white mb-5 flex items-center gap-2">
-            <FiCheck className="w-5 h-5 text-primary-light" />
-            Verify Installation
-          </h2>
-          <CodeBlock>{tool.verifyCommand}</CodeBlock>
-          {tool.verifyOutput && (
-            <p className="mt-2 text-sm text-gray-500">
-              Expected output:{' '}
-              <code className="text-gray-400">{tool.verifyOutput}</code>
-            </p>
-          )}
-        </section>
-
-        {/* Ad slot — mid-content, after verify */}
-        <AdUnit slot={SLOTS.GUIDE_MID} format="fluid" layout="in-article" className="mb-12" />
-
-        {/* Manual Installation Steps */}
-        {tool.steps?.manualSteps?.length > 0 && (
-          <section className="mb-12">
-            <h2 className="text-xl font-bold text-white mb-5">
-              Manual Installation Steps
-            </h2>
-            <ol className="space-y-3">
-              {tool.steps.manualSteps.map((step, i) => (
-                <li
-                  key={i}
-                  className="flex items-start gap-3 bg-dark-card border border-dark-border rounded-xl px-5 py-4"
-                >
-                  <span className="w-6 h-6 rounded-full bg-dark-border text-gray-400 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
-                    {i + 1}
-                  </span>
-                  <span className="text-gray-300 leading-relaxed"><Linkify>{step}</Linkify></span>
-                </li>
-              ))}
-            </ol>
-          </section>
-        )}
-
         {/* Prerequisite Tools */}
         {tool.prerequisiteTools?.length > 0 && (
           <section className="mb-12">
-            <h2 className="text-xl font-bold text-white mb-5">Prerequisites</h2>
+            <SectionHeading
+              id="prerequisites"
+              icon={<FiTerminal className="w-5 h-5 text-primary-light" />}
+              title="Prerequisites"
+              description={`Install these tools first if you want ${tool.name} to work correctly.`}
+            />
             <div className="bg-amber-950/30 border border-amber-800/40 rounded-xl p-5">
-              <p className="text-amber-200/80 text-sm mb-4">
-                Install the following tools before proceeding — {tool.name} depends on them.
-              </p>
               <div className="flex flex-wrap gap-3">
                 {tool.prerequisiteTools.map((prereq) => (
                   <Link
                     key={prereq.id}
                     to={`/guides/${prereq.id}`}
-                    className="inline-flex flex-col px-4 py-3 bg-dark-card border border-amber-800/30 rounded-lg hover:border-primary/40 transition-colors"
+                    className="inline-flex flex-col rounded-lg border border-amber-800/30 bg-dark-card px-4 py-3 transition-colors hover:border-primary/40"
                   >
-                    <span className="text-white font-medium text-sm">{prereq.name}</span>
-                    <span className="text-xs text-gray-500 mt-0.5">{prereq.reason}</span>
+                    <span className="text-sm font-medium text-white">{prereq.name}</span>
+                    <span className="mt-0.5 text-xs text-gray-500">{prereq.reason}</span>
                   </Link>
                 ))}
               </div>
             </div>
           </section>
         )}
+
+        {/* Install via DevTools Installer */}
+        {tool.steps?.appSteps?.length > 0 && (
+          <section className="mb-12">
+            <SectionHeading
+              id="install-with-devtools-installer"
+              icon={<FiDownload className="w-5 h-5 text-primary-light" />}
+              title="Install With DevTools Installer"
+              description="Use this path if you want DevTools Installer to download the official package and handle the Windows setup for you."
+            />
+            <StepList steps={tool.steps.appSteps} />
+
+            {/* Download source used */}
+            <div className="mt-6 rounded-xl border border-dark-border bg-dark-card p-5">
+              <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">Download Source</h3>
+              <p className="text-sm text-gray-300 mb-2">
+                DevTools Installer downloads from the official publisher:
+              </p>
+              <CodeBlock>{tool.downloadSource}</CodeBlock>
+              {tool.altSources?.length > 0 && (
+                <div className="mt-3 text-sm text-gray-400">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Alternative sources</p>
+                  <div className="space-y-1">
+                    {tool.altSources.map((source) => (
+                      <p key={source} className="leading-relaxed"><Linkify>{source}</Linkify></p>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* PATH & environment variables set by the app */}
+            {(tool.envVars?.length > 0 || tool.pathEntries?.length > 0) && (
+              <div className="mt-4 rounded-xl border border-dark-border bg-dark-card p-5">
+                <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">PATH &amp; Environment Variables</h3>
+                <p className="text-sm text-gray-300 mb-3">
+                  DevTools Installer sets the following automatically:
+                </p>
+                {tool.envVars?.length > 0 && (
+                  <div className="mb-3">
+                    <p className="text-xs text-gray-500 mb-1">Environment variables</p>
+                    <div className="space-y-2">
+                      {tool.envVars.map((v) => (
+                        <CodeBlock key={v.name}>{`${v.name}=${v.value}`}</CodeBlock>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {tool.pathEntries?.length > 0 && (
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">PATH entries</p>
+                    <div className="space-y-2">
+                      {tool.pathEntries.map((p, i) => (
+                        <CodeBlock key={i}>{p}</CodeBlock>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Verification handled by the app */}
+            <div className="mt-4 rounded-xl border border-dark-border bg-dark-card p-5">
+              <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">Verification</h3>
+              <p className="text-sm text-gray-300 mb-2">
+                DevTools Installer verifies the install by running:
+              </p>
+              <CodeBlock>{tool.verifyCommand}</CodeBlock>
+              {tool.verifyOutput && (
+                <p className="mt-2 text-xs text-gray-500">Expected output: <span className="font-mono text-gray-300">{tool.verifyOutput}</span></p>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Manual Installation Steps */}
+        {tool.steps?.manualSteps?.length > 0 && (
+          <section className="mb-12">
+            <SectionHeading
+              id="manual-installation"
+              icon={<FiDownload className="w-5 h-5 text-primary-light" />}
+              title="Manual Installation Steps"
+              description={
+                hasEnvSetup
+                  ? 'Use these steps if you want to run the installer yourself and apply the Windows PATH or environment changes manually.'
+                  : 'Use these steps if you want to run the official installer yourself.'
+              }
+            />
+            <StepList steps={tool.steps.manualSteps} tone="muted" />
+          </section>
+        )}
+
+        {/* Ad slot — mid-content, after verify */}
+        <AdUnit slot={SLOTS.GUIDE_MID} format="fluid" layout="in-article" className="mb-12" />
 
         {/* Use Cases */}
         {tool.useCases?.length > 0 && (
@@ -423,17 +451,28 @@ export default function ToolGuide() {
         {/* Common Issues */}
         {tool.commonIssues?.length > 0 && (
           <section className="mb-12">
-            <h2 className="text-xl font-bold text-white mb-5">
-              Common Issues &amp; Fixes
-            </h2>
+            <SectionHeading
+              id="common-issues-and-fixes"
+              icon={<FiTerminal className="w-5 h-5 text-primary-light" />}
+              title="Common Issues And Fixes"
+              description="Check the problem and the exact fix before you reinstall anything. Some guides also include the reason the issue happens."
+            />
             <div className="space-y-4">
               {tool.commonIssues.map((issue, i) => (
                 <div
                   key={i}
                   className="bg-dark-card border border-dark-border rounded-xl p-5"
                 >
-                  <p className="text-white font-medium mb-2">{issue.problem}</p>
-                  <p className="text-gray-400 text-sm leading-relaxed">{issue.fix}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Problem</p>
+                  <p className="mt-2 text-white font-medium">{issue.problem}</p>
+                  {issue.why && (
+                    <>
+                      <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-gray-500">Why it happens</p>
+                      <p className="mt-2 text-sm leading-relaxed text-gray-400">{issue.why}</p>
+                    </>
+                  )}
+                  <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-gray-500">Exact fix</p>
+                  <p className="mt-2 text-sm leading-relaxed text-gray-300">{issue.fix}</p>
                 </div>
               ))}
             </div>

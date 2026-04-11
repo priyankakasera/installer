@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { FiArrowRight } from 'react-icons/fi'
+import { FiArrowRight, FiCheckCircle, FiDownload, FiTerminal } from 'react-icons/fi'
 import SEO from '../components/SEO'
 import { buildBreadcrumbJsonLd, buildItemListJsonLd } from '../config/seo'
 import toolGuides from '../config/toolGuides'
@@ -52,10 +52,44 @@ export default function Guides() {
             Developer Tool Installation Guides
           </h1>
           <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-            Step-by-step instructions to install each developer tool using
-            DevTools Installer — including download sources, PATH variables,
-            environment variables, and verification commands.
+            Follow step-by-step Windows install guides for each tool. Every
+            guide shows the official download source, the exact setup steps,
+            the PATH or environment variables that matter, and how to verify
+            the install worked.
           </p>
+          <div className="mt-8 grid gap-3 sm:grid-cols-3 text-left">
+            {[
+              {
+                icon: FiDownload,
+                title: 'Official Downloads',
+                copy: 'Each guide points to the publisher source used by DevTools Installer.',
+              },
+              {
+                icon: FiTerminal,
+                title: 'Windows Setup Details',
+                copy: 'See the PATH entries, environment variables, and install locations that actually matter.',
+              },
+              {
+                icon: FiCheckCircle,
+                title: 'Verify And Fix',
+                copy: 'Run one clear verification step and check the most common Windows-specific mistakes.',
+              },
+            ].map((item) => {
+              const Icon = item.icon
+              return (
+                <div
+                  key={item.title}
+                  className="rounded-2xl border border-dark-border bg-dark-card/80 p-4"
+                >
+                  <div className="mb-3 inline-flex rounded-xl border border-primary/20 bg-primary/10 p-2 text-primary-light">
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <h2 className="text-sm font-semibold text-white">{item.title}</h2>
+                  <p className="mt-2 text-sm leading-relaxed text-gray-500">{item.copy}</p>
+                </div>
+              )
+            })}
+          </div>
         </div>
       </section>
 
@@ -79,7 +113,7 @@ export default function Guides() {
                       {tool.name}
                       <FiArrowRight className="w-4 h-4 text-gray-600 group-hover:text-primary-light group-hover:translate-x-0.5 transition-all" />
                     </h3>
-                    <p className="text-sm text-gray-500 leading-relaxed line-clamp-2">
+                    <p className="text-sm text-gray-500 leading-relaxed min-h-[3rem]">
                       {tool.description}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-1.5">
@@ -114,8 +148,8 @@ export default function Guides() {
               Windows Environment Deep Dives
             </h2>
             <p className="text-gray-400 text-sm max-w-2xl">
-              Standalone articles explaining the Windows environment fundamentals that every
-              developer needs to understand — PATH, JAVA_HOME, and silent installation.
+              Use these reference articles when you need extra context on PATH,
+              JAVA_HOME, or silent installers before following a tool-specific guide.
             </p>
           </div>
           <div className="grid sm:grid-cols-3 gap-6">
