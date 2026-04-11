@@ -146,7 +146,7 @@ export default function ToolGuide() {
 
   const combinedJsonLd = [breadcrumbJsonLd, howToJsonLd]
 
-  const toolKeywords = `${tool.headline}, install ${tool.name} Windows, ${tool.name} PATH configuration, ${tool.name} setup guide, ${tool.name} download, ${tool.name} environment variables, DevTools Installer ${tool.name}`
+  const toolKeywords = `${tool.headline}, install ${tool.name} Windows, upgrade ${tool.name} Windows, downgrade ${tool.name}, uninstall ${tool.name} Windows, ${tool.name} PATH configuration, ${tool.name} setup guide, ${tool.name} download, ${tool.name} environment variables, DevTools Installer ${tool.name}`
   const hasEnvSetup = Boolean(tool.envVars?.length || tool.pathEntries?.length)
   const setupSummary = hasEnvSetup
     ? [
@@ -362,6 +362,14 @@ export default function ToolGuide() {
 
         {/* Ad slot — mid-content, after verify */}
         <AdUnit slot={SLOTS.GUIDE_MID} format="fluid" layout="in-article" className="mb-12" />
+
+        {/* Lifecycle callout — upgrade, downgrade, uninstall */}
+        <div className="mb-12 rounded-xl border border-primary/20 bg-primary/5 p-5">
+          <p className="text-sm font-semibold text-white mb-1">Need to upgrade, downgrade, or remove {tool.name}?</p>
+          <p className="text-sm text-gray-400 leading-relaxed">
+            DevTools Installer can also upgrade {tool.name} to a newer version, roll back to an older one, or cleanly uninstall it — including PATH entries and environment variables. No manual cleanup required.
+          </p>
+        </div>
 
         {/* Use Cases */}
         {tool.useCases?.length > 0 && (

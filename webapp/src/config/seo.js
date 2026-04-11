@@ -65,7 +65,7 @@ export function buildSoftwareApplicationJsonLd({
     ...(version && { softwareVersion: version }),
     ...(downloadUrl && { downloadUrl }),
     featureList:
-      'One-click install, One-click cleanup, Setup bundles, Automatic PATH configuration, Version selection, Official sources only',
+      'One-click install, Version upgrade, Version downgrade, Individual uninstall, Bulk uninstall, Setup bundles, Automatic PATH configuration, Version selection, Official sources only',
     screenshot: `${BASE_URL}/icons/og-image.png`,
   }
 }

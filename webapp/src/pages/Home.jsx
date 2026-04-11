@@ -21,9 +21,9 @@ export default function Home() {
   return (
     <>
       <SEO
-        title="Install Dev Tools on Windows in One Click — Free | DevTools Installer"
-        description="Set up Java, Node.js, Python, Maven, Git, VS Code, and 20+ tools on Windows with one click. Automatic PATH and environment variable configuration. Free, no manual setup."
-        keywords="how to install Java, setup Node.js, install Python Windows, one-click developer setup, setup bundle, cleanup Java, uninstall developer tools, install Maven, install Git Windows, configure PATH automatically, developer environment setup, install Docker Windows, free dev tools installer, Windows development tools, JDK installer, developer environment Windows, auto configure PATH, dev tools bundle"
+        title="Install, Upgrade &amp; Uninstall Dev Tools on Windows — Free | DevTools Installer"
+        description="Install, upgrade, downgrade, or uninstall Java, Node.js, Python, and 20+ tools on Windows with one click. Automatic PATH and environment variable configuration. Free."
+        keywords="how to install Java, setup Node.js, install Python Windows, one-click developer setup, upgrade Java version Windows, downgrade Node.js version, uninstall developer tools, bulk uninstall dev tools, switch tool versions Windows, cleanup Java, install Maven, install Git Windows, configure PATH automatically, developer environment setup, free dev tools installer, Windows development tools, JDK installer, developer environment Windows, dev tools bundle"
         path="/"
         jsonLd={breadcrumbJsonLd}
       />
@@ -93,8 +93,8 @@ export default function Home() {
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
               { text: 'Install 20+ tools with one click' },
+              { text: 'Upgrade, downgrade, or uninstall anytime' },
               { text: 'Automatic PATH & env var setup' },
-              { text: 'Runs entirely on your local machine' },
             ].map(({ text }) => (
               <div
                 key={text}
@@ -117,9 +117,9 @@ export default function Home() {
             Per-Tool Installation Guides
           </h2>
           <p className="text-gray-400 mb-8 max-w-xl mx-auto">
-            Need to install a specific tool manually? Browse our detailed guides
-            covering download sources, PATH configuration, environment
-            variables, and verification steps for all 20+ supported tools.
+            Need to install, upgrade, or remove a specific tool? Browse our
+            detailed guides covering download sources, PATH configuration,
+            environment variables, and verification steps for all 20+ supported tools.
           </p>
           <Link
             to="/guides"

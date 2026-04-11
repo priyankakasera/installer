@@ -19,7 +19,7 @@ export default function Hero() {
             {/* Pill badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 rounded-full bg-primary/10 border border-primary/20 text-sm text-primary-light">
               <span className="w-2 h-2 rounded-full bg-primary-light animate-pulse" />
-              One-click install &amp; cleanup for Windows
+              Install, upgrade, downgrade &amp; uninstall for Windows
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight tracking-tight">
@@ -30,8 +30,9 @@ export default function Hero() {
             </h1>
             <p className="mt-6 text-lg text-gray-400 max-w-xl mx-auto lg:mx-0 leading-relaxed">
               Skip the manual downloads and PATH headaches. DevTools Installer
-              sets up your entire development environment in minutes — and
-              cleanly removes tools when you no longer need them.
+              sets up your entire development environment in minutes — then
+              lets you upgrade, downgrade, or cleanly uninstall any tool
+              whenever you need to.
             </p>
 
             {/* Download button */}
@@ -59,10 +60,10 @@ export default function Hero() {
                 <FiCheck className="w-4 h-4 text-primary-light" /> One-Click Setup
               </span>
               <span className="flex items-center gap-1.5">
-                <FiCheck className="w-4 h-4 text-primary-light" /> 4 Quick Setup Bundles
+                <FiCheck className="w-4 h-4 text-primary-light" /> Upgrade &amp; Downgrade Versions
               </span>
               <span className="flex items-center gap-1.5">
-                <FiCheck className="w-4 h-4 text-primary-light" /> One-Click Cleanup
+                <FiCheck className="w-4 h-4 text-primary-light" /> Uninstall &amp; Bulk Cleanup
               </span>
               <span className="flex items-center gap-1.5">
                 <FiCheck className="w-4 h-4 text-primary-light" /> Official Sources

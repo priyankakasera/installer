@@ -37,9 +37,9 @@ export default function Guides() {
   return (
     <>
       <SEO
-        title="Install Java, Node.js, Python & More — Windows Guides (2026)"
-        description="Step-by-step guides to install 20+ developer tools on Windows. Official downloads, PATH config, environment variables, and verify commands — manual or 1-click."
-        keywords="how to install Java Windows, setup Node.js, install Python, install Maven, install Git, setup developer tools, PATH configuration, JAVA_HOME, one-click installation, install developer tools Windows, development environment guide"
+        title="Install, Upgrade & Remove Java, Node.js, Python & More — Windows Guides (2026)"
+        description="Step-by-step guides to install, upgrade, downgrade, or uninstall 20+ developer tools on Windows. Official downloads, PATH config, environment variables, and verify commands."
+        keywords="how to install Java Windows, upgrade Java version Windows, downgrade Node.js version, uninstall Python Windows, bulk uninstall developer tools, setup Node.js, install Maven, install Git, PATH configuration, JAVA_HOME, one-click installation, switch tool versions Windows, development environment guide"
         path="/guides"
         jsonLd={guidesJsonLd}
       />
@@ -49,13 +49,13 @@ export default function Guides() {
         <div className="max-w-3xl mx-auto px-4">
           <span className="section-label mb-4 inline-flex">Guides</span>
           <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-4 tracking-tight">
-            Developer Tool Installation Guides
+            Developer Tool Guides
           </h1>
           <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-            Follow step-by-step Windows install guides for each tool. Every
-            guide shows the official download source, the exact setup steps,
-            the PATH or environment variables that matter, and how to verify
-            the install worked.
+            Install, upgrade, downgrade, or remove any supported tool on
+            Windows. Every guide shows the official download source, the
+            exact setup steps, the PATH or environment variables that
+            matter, and how to verify the install worked.
           </p>
         </div>
       </section>

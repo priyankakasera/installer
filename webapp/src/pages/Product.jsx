@@ -4,19 +4,20 @@ import SEO from '../components/SEO'
 import { buildBreadcrumbJsonLd, buildSoftwareApplicationJsonLd } from '../config/seo'
 import {
   FiMousePointer, FiSettings, FiCheckCircle, FiShield, FiZap,
-  FiDownload, FiTrash2, FiLayers
+  FiDownload, FiTrash2, FiLayers, FiRefreshCw
 } from 'react-icons/fi'
 import { HiOutlineDesktopComputer } from 'react-icons/hi'
 
 const features = [
   { icon: FiMousePointer, title: 'One-Click Setup', desc: 'Select tools and hit install — everything is handled automatically.' },
-  { icon: FiTrash2, title: 'One-Click Cleanup', desc: 'Cleanly uninstall tools, remove PATH entries, and delete environment variables in one click.' },
+  { icon: FiRefreshCw, title: 'Upgrade & Downgrade', desc: 'Switch to a newer or older version of any tool. PATH and environment variables are updated automatically — no manual cleanup.' },
+  { icon: FiTrash2, title: 'Uninstall & Bulk Cleanup', desc: 'Remove a single tool or bulk uninstall every installed tool at once. Binaries, PATH entries, and environment variables are all cleaned up.' },
   { icon: FiLayers, title: 'Bundle Installation', desc: 'Pre-configured bundles for Java, Full-Stack, Frontend, and Cloud & DevOps workflows.' },
   { icon: FiSettings, title: 'Automatic Config', desc: 'PATH, JAVA_HOME, MAVEN_HOME, and all environment variables are set for you.' },
   { icon: FiCheckCircle, title: 'Hassle-Free', desc: 'Avoid setup errors, version conflicts, and manual configuration.' },
   { icon: FiShield, title: 'Safe & Secure', desc: 'Downloads directly from official sources. No bundled adware or telemetry.' },
   { icon: FiZap, title: 'Fast & Lightweight', desc: 'Small installer size with parallel downloads for maximum speed.' },
-  { icon: FiDownload, title: 'Version Selection', desc: 'Choose exactly which version of each tool you want to install.' },
+  { icon: FiDownload, title: 'Version Selection', desc: 'Choose exactly which version of each tool you want to install — and switch versions later without starting from scratch.' },
   { icon: HiOutlineDesktopComputer, title: 'Tested on Windows 11', desc: 'Built and tested on Windows 11 64-bit. Compatible with Windows 10 and 11.' },
 ]
 
@@ -55,9 +56,9 @@ export default function Product() {
   return (
     <>
       <SEO
-        title="20+ Dev Tools, One Installer — Features & Tools | DevTools Installer"
-        description="One-click setup, automatic PATH config, setup bundles, and clean uninstall for Java, Node.js, Python, Maven, Git, VS Code, and more on Windows 10 & 11."
-        keywords="DevTools Installer features, supported developer tools, one-click install Windows, automatic PATH configuration, Java installer, Node.js setup, Python installer, Maven setup, Git installer, VS Code installer, developer tool bundles, clean uninstall developer tools"
+        title="Install, Upgrade &amp; Uninstall 20+ Dev Tools — Features | DevTools Installer"
+        description="One-click install, upgrade, downgrade, and clean uninstall for Java, Node.js, Python, Maven, Git, VS Code, and more on Windows 10 &amp; 11. Bulk cleanup, automatic PATH config, and setup bundles."
+        keywords="DevTools Installer features, upgrade Java version Windows, downgrade Node.js version, bulk uninstall developer tools, switch tool versions Windows, one-click install Windows, automatic PATH configuration, Java installer, Node.js setup, Python installer, Maven setup, Git installer, VS Code installer, developer tool bundles, clean uninstall developer tools"
         path="/product"
         jsonLd={[
           buildBreadcrumbJsonLd([
@@ -66,7 +67,7 @@ export default function Product() {
           ]),
           buildSoftwareApplicationJsonLd({
             description:
-              'Free one-click installer for Java, Node.js, Python, Maven, Git, VS Code and 20+ developer tools on Windows. Automatic PATH configuration, setup bundles, and clean uninstall.',
+              'Free tool lifecycle manager for Windows. Install, upgrade, downgrade, or uninstall Java, Node.js, Python, Maven, Git, VS Code and 20+ developer tools with one click. Automatic PATH configuration, setup bundles, and bulk cleanup.',
           }),
         ]}
       />
@@ -76,7 +77,7 @@ export default function Product() {
         <div className="max-w-3xl mx-auto px-4">
           <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">Features &amp; Supported Developer Tools</h1>
           <p className="text-lg text-gray-400">
-            Everything you need to set up a professional development environment on Windows.
+            Install, upgrade, downgrade, and cleanly remove developer tools on Windows — all from one place.
           </p>
         </div>
       </section>
@@ -133,7 +134,8 @@ export default function Product() {
                   'Open System Properties → Advanced → Environment Variables',
                   'Create JAVA_HOME, MAVEN_HOME, GRADLE_HOME by hand',
                   'Restart terminal sessions after each change',
-                  'Debug "command not found" errors from typos in PATH',
+                  'Manually uninstall each tool and hunt for leftover PATH entries',
+                  'Cannot easily switch between tool versions',
                   'Repeat the entire process on every new machine',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
@@ -152,8 +154,9 @@ export default function Product() {
                   'Select tools and versions from a visual checklist',
                   'Click Install — downloads run in parallel',
                   'PATH and environment variables set automatically',
+                  'Upgrade to a newer version or downgrade to an older one anytime',
+                  'Uninstall a single tool or bulk remove everything at once',
                   'Each tool is verified with its version command',
-                  'Clean uninstall removes files, PATH, and env vars',
                   'Pre-built bundles for Java, Full-Stack, and Cloud workflows',
                   'Same process every time, on every machine',
                 ].map((item, i) => (

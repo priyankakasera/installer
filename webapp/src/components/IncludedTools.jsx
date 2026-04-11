@@ -100,8 +100,9 @@ export default function IncludedTools() {
           20+ Developer Tools, One Installer
         </h2>
         <p className="text-gray-400 text-center max-w-2xl mx-auto mb-14">
-          Install Java, setup Node.js, configure Python, and more — all
-          downloaded from official sources with automatic PATH configuration.
+          Install, upgrade, downgrade, or uninstall Java, Node.js, Python, and
+          more — all downloaded from official sources with automatic PATH
+          configuration.
         </p>
 
         {/* Tool categories */}

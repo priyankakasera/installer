@@ -25,8 +25,8 @@ const steps = [
   {
     num: '3',
     icon: FiMonitor,
-    title: 'Code in Minutes',
-    description: 'Everything is installed with correct PATH and environment variables. Open a terminal and start coding.',
+    title: 'Manage & Maintain',
+    description: 'Everything is installed with correct PATH and environment variables. Later, upgrade to a newer version, downgrade if something breaks, or uninstall tools you no longer need.',
   },
 ]
 
@@ -107,8 +107,9 @@ export default function HowItWorks() {
               <span className="w-7 h-7 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center">
                 <FiTrash2 className="w-3.5 h-3.5 text-red-400" />
               </span>
-              During Cleanup
+              During Cleanup &amp; Uninstall
             </h3>
+            <p className="text-xs text-gray-500 mb-4">Remove one tool or bulk uninstall everything at once.</p>
             <div className="space-y-3">
               {cleanupProcess.map((item, i) => (
                 <div key={i} className="flex items-center gap-3 text-sm">
