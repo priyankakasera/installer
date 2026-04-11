@@ -3,6 +3,7 @@
  * Replace XXXXXXXXXX values with real publisher ID and slot IDs from
  * your AdSense dashboard before enabling AdSenseLoader.
  */
+/* eslint-disable react-refresh/only-export-components */
 export const PUB_ID = 'ca-pub-XXXXXXXXXXXXXXXXX'
 
 export const SLOTS = {
@@ -24,7 +25,6 @@ export default function AdUnit({
   format = 'auto',
   layout,
   className = '',
-  label = true,
 }) {
   if (!slotsConfigured) return null
 

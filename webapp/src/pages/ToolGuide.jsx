@@ -81,19 +81,44 @@ function CodeBlock({ children }) {
   )
 }
 
+function InlineCode({ children }) {
+  const [copied, setCopied] = useState(false)
+  const copy = () => {
+    navigator.clipboard.writeText(children)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+  return (
+    <button
+      onClick={copy}
+      title="Click to copy"
+      className="inline-flex items-center gap-1 font-mono text-xs bg-dark-lighter border border-dark-border rounded px-1.5 py-0.5 text-primary-light hover:border-primary/40 transition-colors cursor-copy"
+    >
+      {children}
+      {copied
+        ? <FiCheck className="w-2.5 h-2.5 shrink-0" />
+        : <FiCopy className="w-2.5 h-2.5 shrink-0 opacity-40" />}
+    </button>
+  )
+}
+
 function Linkify({ children }) {
   if (typeof children !== 'string') return children
-  const urlRegex = /(https?:\/\/[^\s)]+)/g
-  const parts = children.split(urlRegex)
-  return parts.map((part, i) =>
-    part.startsWith('http://') || part.startsWith('https://') ? (
-      <a key={i} href={part} target="_blank" rel="nofollow noopener noreferrer" className="text-primary-light hover:underline break-all">
-        {part}
-      </a>
-    ) : (
-      <span key={i}>{part}</span>
-    )
-  )
+  const regex = /(`[^`]+`|https?:\/\/[^\s)]+)/g
+  const parts = children.split(regex)
+  return parts.map((part, i) => {
+    if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
+      return <InlineCode key={i}>{part.slice(1, -1)}</InlineCode>
+    }
+    if (part.startsWith('http://') || part.startsWith('https://')) {
+      return (
+        <a key={i} href={part} target="_blank" rel="nofollow noopener noreferrer" className="text-primary-light hover:underline break-all">
+          {part}
+        </a>
+      )
+    }
+    return <span key={i}>{part}</span>
+  })
 }
 
 export default function ToolGuide() {

@@ -4,7 +4,7 @@ import SEO from '../components/SEO'
 import { buildBreadcrumbJsonLd, buildSoftwareApplicationJsonLd } from '../config/seo'
 import {
   FiMousePointer, FiSettings, FiCheckCircle, FiShield, FiZap,
-  FiDownload, FiTrash2, FiLayers, FiList, FiMonitor
+  FiDownload, FiTrash2, FiLayers
 } from 'react-icons/fi'
 import { HiOutlineDesktopComputer } from 'react-icons/hi'
 
@@ -40,12 +40,6 @@ const tools = [
   { name: 'IntelliJ IDEA', logo: '/icons/intellij.webp', desc: 'Professional IDE for Java and Kotlin development' },
   { name: 'Notepad++', logo: '/icons/notepadpp.webp', desc: 'Free source code editor and Notepad replacement' },
   { name: 'Postman', logo: '/icons/postman.svg', desc: 'API platform for building, testing, and documenting APIs' },
-]
-
-const steps = [
-  { num: '1', icon: FiDownload, title: 'Download & Run', desc: 'Download the lightweight .exe installer and run it. No setup wizard needed.' },
-  { num: '2', icon: FiList, title: 'Select & Install', desc: 'Pick the tools and versions you need, then click Install.' },
-  { num: '3', icon: FiMonitor, title: 'Start Coding', desc: 'All tools are installed with correct PATH. Open a terminal and start coding.' },
 ]
 
 export default function Product() {

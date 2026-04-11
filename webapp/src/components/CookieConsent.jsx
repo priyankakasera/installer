@@ -1,13 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getConsent, setConsent } from '../utils/consent'
 
 export default function CookieConsent() {
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    if (!getConsent()) setVisible(true)
-  }, [])
+  const [visible, setVisible] = useState(() => !getConsent())
 
   function accept() {
     setConsent('accepted')

@@ -5,6 +5,7 @@ import SEO from '../components/SEO'
 import { buildBreadcrumbJsonLd, BASE_URL } from '../config/seo'
 import toolGuides from '../config/toolGuides'
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const teamMembers = [
   {
     slug: 'vishalhulawale',

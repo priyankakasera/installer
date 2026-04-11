@@ -7,6 +7,7 @@
  * Output uses the "clean URLs" convention (e.g. /guides/java → guides/java.html)
  * so Firebase Hosting can serve them with `"cleanUrls": true`.
  */
+/* global process */
 
 import {
   readFileSync,

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { FiArrowRight, FiCheckCircle, FiDownload, FiTerminal } from 'react-icons/fi'
+import { FiArrowRight } from 'react-icons/fi'
 import SEO from '../components/SEO'
 import { buildBreadcrumbJsonLd, buildItemListJsonLd } from '../config/seo'
 import toolGuides from '../config/toolGuides'
@@ -57,39 +57,6 @@ export default function Guides() {
             the PATH or environment variables that matter, and how to verify
             the install worked.
           </p>
-          <div className="mt-8 grid gap-3 sm:grid-cols-3 text-left">
-            {[
-              {
-                icon: FiDownload,
-                title: 'Official Downloads',
-                copy: 'Each guide points to the publisher source used by DevTools Installer.',
-              },
-              {
-                icon: FiTerminal,
-                title: 'Windows Setup Details',
-                copy: 'See the PATH entries, environment variables, and install locations that actually matter.',
-              },
-              {
-                icon: FiCheckCircle,
-                title: 'Verify And Fix',
-                copy: 'Run one clear verification step and check the most common Windows-specific mistakes.',
-              },
-            ].map((item) => {
-              const Icon = item.icon
-              return (
-                <div
-                  key={item.title}
-                  className="rounded-2xl border border-dark-border bg-dark-card/80 p-4"
-                >
-                  <div className="mb-3 inline-flex rounded-xl border border-primary/20 bg-primary/10 p-2 text-primary-light">
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <h2 className="text-sm font-semibold text-white">{item.title}</h2>
-                  <p className="mt-2 text-sm leading-relaxed text-gray-500">{item.copy}</p>
-                </div>
-              )
-            })}
-          </div>
         </div>
       </section>
 
@@ -113,7 +80,7 @@ export default function Guides() {
                       {tool.name}
                       <FiArrowRight className="w-4 h-4 text-gray-600 group-hover:text-primary-light group-hover:translate-x-0.5 transition-all" />
                     </h3>
-                    <p className="text-sm text-gray-500 leading-relaxed min-h-[3rem]">
+                    <p className="text-sm text-gray-500 line-clamp-2">
                       {tool.description}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-1.5">
