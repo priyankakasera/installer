@@ -130,8 +130,8 @@ export default function Support() {
   return (
     <>
       <SEO
-        title="Support & FAQ — DevTools Installer | Common Questions & Contact"
-        description="Frequently asked questions about DevTools Installer: compatibility, administrator privileges, tool selection, uninstalling, and more. Contact support for bug reports and feature requests."
+        title="Support & FAQ — DevTools Installer"
+        description="Common questions about DevTools Installer: compatibility, admin privileges, tool selection, uninstalling, and how to report bugs or request features."
         keywords="DevTools Installer support, DevTools Installer FAQ, developer tools help, Windows installer support, how to uninstall dev tools, DevTools Installer contact, developer setup help"
         path="/support"
         jsonLd={[
@@ -149,18 +149,6 @@ export default function Support() {
           <p className="text-lg text-gray-400">
             Find answers to common questions or get in touch with us.
           </p>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="py-16" id="faq">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-white mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-3">
-            {faqs.map((item) => (
-              <FAQItem key={item.q} {...item} />
-            ))}
-          </div>
         </div>
       </section>
 
@@ -238,6 +226,18 @@ export default function Support() {
               <p className="text-sm text-red-400 mt-2">{error}</p>
             )}
           </form>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-16" id="faq">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-white mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-3">
+            {faqs.map((item) => (
+              <FAQItem key={item.q} {...item} />
+            ))}
+          </div>
         </div>
       </section>
     </>

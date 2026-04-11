@@ -61,8 +61,8 @@ export default function Product() {
   return (
     <>
       <SEO
-        title="Features & Supported Tools — DevTools Installer | Java, Node.js, Python & 20+ Tools"
-        description="Explore all features of DevTools Installer: one-click setup, automatic PATH configuration, setup bundles, clean uninstall, and 20+ supported developer tools including Java, Node.js, Python, Maven, Git, VS Code."
+        title="20+ Dev Tools, One Installer — Features & Tools | DevTools Installer"
+        description="One-click setup, automatic PATH config, setup bundles, and clean uninstall for Java, Node.js, Python, Maven, Git, VS Code, and more on Windows 10 & 11."
         keywords="DevTools Installer features, supported developer tools, one-click install Windows, automatic PATH configuration, Java installer, Node.js setup, Python installer, Maven setup, Git installer, VS Code installer, developer tool bundles, clean uninstall developer tools"
         path="/product"
         jsonLd={[
@@ -175,68 +175,6 @@ export default function Product() {
         </div>
       </section>
 
-      {/* System Requirements */}
-      <section className="py-16" id="system-requirements">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-white text-center mb-12">System Requirements</h2>
-          <div className="bg-dark-card border border-dark-border rounded-2xl p-8">
-            <table className="w-full text-sm">
-              <tbody className="divide-y divide-dark-border">
-                {[
-                  ['Operating System', 'Windows 10 (64-bit) or Windows 11'],
-                  ['Processor', 'Any modern x86-64 CPU (Intel or AMD)'],
-                  ['RAM', '4 GB minimum (8 GB recommended)'],
-                  ['Disk Space', '500 MB for the installer + space for each tool you install'],
-                  ['Internet', 'Required for downloading tools from official sources'],
-                  ['Permissions', 'Administrator privileges (for PATH and environment variable changes)'],
-                  ['Dependencies', 'None — the installer is fully self-contained'],
-                ].map(([label, value]) => (
-                  <tr key={label}>
-                    <td className="py-3 pr-4 text-gray-400 font-medium whitespace-nowrap">{label}</td>
-                    <td className="py-3 text-white">{value}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      {/* What Happens Under the Hood */}
-      <section className="py-16" id="how-it-works">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-white text-center mb-4">What Happens Under the Hood</h2>
-          <p className="text-gray-400 text-center max-w-2xl mx-auto mb-12">
-            A transparent look at exactly what DevTools Installer does on your machine.
-          </p>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-dark-card border border-dark-border rounded-2xl p-7">
-              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-                <FiDownload className="w-5 h-5 text-primary-light" /> Installation Process
-              </h3>
-              <ol className="space-y-3 text-sm text-gray-400 list-decimal list-inside">
-                <li>Downloads the selected tool's binary or archive from its <strong className="text-gray-300">official publisher</strong> (e.g., oracle.com, nodejs.org).</li>
-                <li>Extracts the contents to a standard directory (typically under <code className="text-xs bg-white/5 px-1 py-0.5 rounded">C:\Program Files</code>).</li>
-                <li>Adds the tool's <code className="text-xs bg-white/5 px-1 py-0.5 rounded">bin</code> directory to the <strong className="text-gray-300">system PATH</strong> so it's available from any terminal.</li>
-                <li>Sets required environment variables (e.g., <code className="text-xs bg-white/5 px-1 py-0.5 rounded">JAVA_HOME</code>, <code className="text-xs bg-white/5 px-1 py-0.5 rounded">MAVEN_HOME</code>).</li>
-                <li>Runs the tool's verification command (e.g., <code className="text-xs bg-white/5 px-1 py-0.5 rounded">java --version</code>) to confirm success.</li>
-              </ol>
-            </div>
-            <div className="bg-dark-card border border-dark-border rounded-2xl p-7">
-              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-                <FiTrash2 className="w-5 h-5 text-primary-light" /> Uninstallation Process
-              </h3>
-              <ol className="space-y-3 text-sm text-gray-400 list-decimal list-inside">
-                <li>Removes the tool's files and directories from disk.</li>
-                <li>Removes the tool's <code className="text-xs bg-white/5 px-1 py-0.5 rounded">bin</code> path from the system PATH variable.</li>
-                <li>Deletes any environment variables that were created during installation.</li>
-                <li>Cleans up the Windows Registry uninstall entry (Apps &amp; Features).</li>
-                <li>No leftover configuration — your system is returned to its pre-install state.</li>
-              </ol>
-            </div>
-          </div>
-        </div>
-      </section>
     </>
   )
 }

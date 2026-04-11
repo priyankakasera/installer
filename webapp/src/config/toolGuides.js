@@ -9,6 +9,8 @@ const toolGuides = [
     author: { name: 'Vishal Hulawale', slug: 'vishalhulawale' },
     name: 'Java (JDK)',
     headline: 'How to Install Java on Windows',
+    seoTitle: 'Install Java JDK on Windows — JAVA_HOME Done Right (2026)',
+    seoDescription: 'Set up Java JDK 21, 17, or 11 on Windows with JAVA_HOME and PATH configured automatically. Step-by-step guide — works on Windows 10 & 11.',
     lastReviewed: '2026-04-01',
     relatedGuides: ['maven', 'gradle', 'intellij-idea'],
     description:
@@ -77,6 +79,8 @@ We support Oracle JDK 21 (the current long-term support release) as well as Adop
     author: { name: 'Priyanka Kasera', slug: 'priyankakasera' },
     name: 'Node.js',
     headline: 'How to Install Node.js on Windows',
+    seoTitle: 'Install Node.js on Windows — npm Ready in 2 Min (2026)',
+    seoDescription: 'Download and install Node.js on Windows 10/11. Official MSI, automatic PATH setup, version selection from 18 to 25. Includes npm — no manual config.',
     lastReviewed: '2026-04-01',
     relatedGuides: ['yarn', 'vscode', 'git'],
     description:
@@ -137,6 +141,8 @@ Choosing the right version matters more than most people realize. Even-numbered 
     author: { name: 'Priyanka Kasera', slug: 'priyankakasera' },
     name: 'Python',
     headline: 'How to Install Python on Windows',
+    seoTitle: 'Install Python on Windows — Fix the Store Redirect (2026)',
+    seoDescription: 'Install Python 3.14–3.10 on Windows 10/11 the right way. Disable the Microsoft Store redirect, configure PATH, and verify pip — step-by-step.',
     lastReviewed: '2026-04-01',
     relatedGuides: ['miniconda', 'vscode', 'git'],
     description:
@@ -202,6 +208,8 @@ We support Python 3.14 through 3.10. This guide shows you how to disable the Win
     author: { name: 'Vishal Hulawale', slug: 'vishalhulawale' },
     name: 'Apache Maven',
     headline: 'How to Install Maven on Windows',
+    seoTitle: 'Install Maven on Windows — Fix MAVEN_HOME Fast (2026)',
+    seoDescription: 'Step-by-step Maven setup on Windows with MAVEN_HOME, M2_HOME, and PATH done correctly. Official download, beginner-friendly, no config errors.',
     lastReviewed: '2026-04-01',
     relatedGuides: ['java', 'gradle', 'intellij-idea'],
     description:
@@ -265,6 +273,8 @@ This guide covers the full Maven 3.9.14 installation process on Windows. We hand
     author: { name: 'Priyanka Kasera', slug: 'priyankakasera' },
     name: 'Git',
     headline: 'How to Install Git on Windows',
+    seoTitle: 'Install Git on Windows — Setup Guide (2026)',
+    seoDescription: 'Download Git for Windows and get Git Bash, credential manager, and PATH set up in 3 steps. Official installer, works on Windows 10 & 11.',
     lastReviewed: '2026-04-01',
     relatedGuides: ['github-desktop', 'vscode', 'nodejs'],
     description:
@@ -331,6 +341,8 @@ This guide installs Git 2.53 and covers essential post-install configuration —
     author: { name: 'Priyanka Kasera', slug: 'priyankakasera' },
     name: 'GitHub Desktop',
     headline: 'How to Install GitHub Desktop on Windows',
+    seoTitle: 'Install GitHub Desktop on Windows — No Admin Needed',
+    seoDescription: 'Download and install GitHub Desktop on Windows. No admin required, no PATH setup. Visual Git client with built-in diff viewer and credential manager.',
     lastReviewed: '2026-04-01',
     relatedGuides: ['git', 'vscode', 'nodejs'],
     description:
@@ -392,6 +404,8 @@ GitHub Desktop works with any Git repository, not just GitHub-hosted ones. You c
     author: { name: 'Vishal Hulawale', slug: 'vishalhulawale' },
     name: 'Gradle',
     headline: 'How to Install Gradle on Windows',
+    seoTitle: 'Install Gradle on Windows — GRADLE_HOME Setup (2026)',
+    seoDescription: 'Set up Gradle on Windows with proper GRADLE_HOME and PATH. Requires JDK 17+. Covers wrapper usage, build cache, and common "Could not determine Java version" fix.',
     lastReviewed: '2026-04-01',
     relatedGuides: ['java', 'maven', 'intellij-idea'],
     description:
@@ -457,6 +471,8 @@ This guide installs Gradle 9.4.1 and covers environment variable setup, wrapper 
     author: { name: 'Priyanka Kasera', slug: 'priyankakasera' },
     name: 'Yarn',
     headline: 'How to Install Yarn on Windows',
+    seoTitle: 'Install Yarn on Windows — Step-by-Step (2026)',
+    seoDescription: 'Install Yarn on Windows with the official MSI. Automatic PATH, works with any Node.js project. Deterministic builds and offline cache out of the box.',
     lastReviewed: '2026-04-01',
     relatedGuides: ['nodejs', 'git', 'vscode'],
     description:
@@ -517,6 +533,8 @@ A quick note on versioning: Yarn 2+ (codenamed Berry) is a completely different 
     author: { name: 'Priyanka Kasera', slug: 'priyankakasera' },
     name: 'Chocolatey',
     headline: 'How to Install Chocolatey on Windows',
+    seoTitle: 'Install Chocolatey on Windows — Full Guide (2026)',
+    seoDescription: 'Install Chocolatey package manager on Windows via MSI or PowerShell. Automate software installs from the command line — 9,000+ packages available.',
     lastReviewed: '2026-04-01',
     relatedGuides: ['git', 'nodejs', 'vscode'],
     description:
@@ -577,6 +595,8 @@ Many teams use Chocolatey alongside DevTools Installer: our tool handles the cor
     author: { name: 'Priyanka Kasera', slug: 'priyankakasera' },
     name: 'Miniconda',
     headline: 'How to Install Miniconda on Windows',
+    seoTitle: 'Install Miniconda on Windows — Conda Environments (2026)',
+    seoDescription: 'Set up Miniconda on Windows for isolated Python environments. Handles native dependencies that pip cannot. Includes conda init and PATH troubleshooting.',
     lastReviewed: '2026-04-01',
     relatedGuides: ['python', 'vscode', 'git'],
     description:
@@ -646,6 +666,8 @@ This guide installs Miniconda for all users on Windows and adds the three requir
     name: 'Docker Desktop',
     hidden: true,
     headline: 'How to Install Docker Desktop on Windows',
+    seoTitle: 'Install Docker Desktop on Windows — WSL 2 Setup (2026)',
+    seoDescription: 'Install Docker Desktop on Windows with WSL 2 and Hyper-V support. Includes Docker Engine, CLI, Compose, and GUI — official installer.',
     description:
       'Docker Desktop includes Docker Engine, CLI, Compose, and a GUI for container management.',
     category: 'Cloud & DevOps',
@@ -679,6 +701,8 @@ This guide installs Miniconda for all users on Windows and adds the three requir
     author: { name: 'Vishal Hulawale', slug: 'vishalhulawale' },
     name: 'kubectl',
     headline: 'How to Install kubectl on Windows',
+    seoTitle: 'Install kubectl on Windows — Quick Setup (2026)',
+    seoDescription: 'Download kubectl for Windows from kubernetes.io. One binary, add to PATH, connect to your cluster. Supports version matching for K8s 1.33–1.35.',
     lastReviewed: '2026-04-01',
     relatedGuides: ['helm', 'istio', 'awscli'],
     description:
@@ -745,6 +769,8 @@ This guide installs kubectl 1.35.3 and offers 1.34.x and 1.33.x for version comp
     author: { name: 'Vishal Hulawale', slug: 'vishalhulawale' },
     name: 'AWS CLI',
     headline: 'How to Install AWS CLI on Windows',
+    seoTitle: 'Install AWS CLI v2 on Windows — Official MSI (2026)',
+    seoDescription: 'Install AWS CLI v2 on Windows using the official MSI. Auto PATH setup, credential config walkthrough, and multi-profile tips. No dependencies needed.',
     lastReviewed: '2026-04-01',
     relatedGuides: ['kubectl', 'helm', 'azurecli'],
     description:
@@ -807,6 +833,8 @@ The MSI installer from Amazon handles PATH configuration automatically. This gui
     author: { name: 'Vishal Hulawale', slug: 'vishalhulawale' },
     name: 'Azure CLI',
     headline: 'How to Install Azure CLI on Windows',
+    seoTitle: 'Install Azure CLI on Windows — Official MSI Guide (2026)',
+    seoDescription: 'Install Azure CLI v2 on Windows with the official MSI. Automatic PATH, az login walkthrough, and multi-subscription tips. No dependencies.',
     lastReviewed: '2026-04-01',
     relatedGuides: ['kubectl', 'helm', 'awscli'],
     description:
@@ -869,6 +897,8 @@ This guide installs the latest Azure CLI v2 on Windows using the official MSI fr
     author: { name: 'Vishal Hulawale', slug: 'vishalhulawale' },
     name: 'Helm',
     headline: 'How to Install Helm on Windows',
+    seoTitle: 'Install Helm on Windows — K8s Package Manager (2026)',
+    seoDescription: 'Set up Helm on Windows in 3 steps — download, extract, add to PATH. Includes chart repo setup and troubleshooting. Requires kubectl.',
     lastReviewed: '2026-04-01',
     relatedGuides: ['kubectl', 'istio', 'awscli'],
     description:
@@ -932,6 +962,8 @@ Helm 4 (the version this guide installs) operates entirely client-side — the s
     author: { name: 'Vishal Hulawale', slug: 'vishalhulawale' },
     name: 'Istio (istioctl)',
     headline: 'How to Install Istio on Windows',
+    seoTitle: 'Install Istio (istioctl) on Windows — Service Mesh CLI (2026)',
+    seoDescription: 'Install istioctl on Windows to manage your Kubernetes service mesh. Single binary, add to PATH, connect to your cluster. Requires kubectl.',
     lastReviewed: '2026-04-01',
     relatedGuides: ['kubectl', 'helm', 'awscli'],
     description:
@@ -997,6 +1029,8 @@ The istioctl binary you install here is the CLI for managing the Istio control p
     author: { name: 'Priyanka Kasera', slug: 'priyankakasera' },
     name: 'Visual Studio Code',
     headline: 'How to Install VS Code on Windows',
+    seoTitle: 'Install VS Code on Windows — Editor + PATH Setup (2026)',
+    seoDescription: 'Download and install Visual Studio Code on Windows. Adds the "code" command to PATH automatically. Official Microsoft installer for Windows 10 & 11.',
     lastReviewed: '2026-04-01',
     relatedGuides: ['git', 'nodejs', 'python'],
     description:
@@ -1062,6 +1096,8 @@ The Windows installer adds the "code" command to your PATH, which is arguably th
     author: { name: 'Vishal Hulawale', slug: 'vishalhulawale' },
     name: 'IntelliJ IDEA',
     headline: 'How to Install IntelliJ IDEA on Windows',
+    seoTitle: 'Install IntelliJ IDEA on Windows — Free Community Ed. (2026)',
+    seoDescription: 'Install IntelliJ IDEA Community Edition on Windows. Official JetBrains installer with Maven/Gradle integration. Best for Java and Kotlin development.',
     lastReviewed: '2026-04-01',
     relatedGuides: ['java', 'maven', 'gradle'],
     description:
@@ -1126,6 +1162,8 @@ IntelliJ works best when a JDK is already installed on the system, because it au
     author: { name: 'Priyanka Kasera', slug: 'priyankakasera' },
     name: 'Notepad++',
     headline: 'How to Install Notepad++ on Windows',
+    seoTitle: 'Install Notepad++ on Windows — Lightweight Editor (2026)',
+    seoDescription: 'Download and install Notepad++ on Windows. Fast, lightweight code editor with syntax highlighting for 80+ languages. Official 64-bit installer.',
     lastReviewed: '2026-04-01',
     relatedGuides: ['vscode', 'git', 'python'],
     description:
@@ -1188,6 +1226,8 @@ This guide installs Notepad++ 8.9.3 using the official 64-bit installer. DevTool
     author: { name: 'Priyanka Kasera', slug: 'priyankakasera' },
     name: 'Postman',
     headline: 'How to Install Postman on Windows',
+    seoTitle: 'Install Postman on Windows — API Testing Tool (2026)',
+    seoDescription: 'Install Postman on Windows to test, document, and automate APIs. No admin needed, no PATH config. Includes collections, environments, and Newman CLI tips.',
     lastReviewed: '2026-04-01',
     relatedGuides: ['nodejs', 'git', 'vscode'],
     description:

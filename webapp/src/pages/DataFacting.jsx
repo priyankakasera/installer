@@ -39,8 +39,8 @@ export default function DataFacting() {
   return (
     <>
       <SEO
-        title="Data Practices — DevTools Installer | No Collection, No Telemetry, Fully Offline"
-        description="Learn how DevTools Installer handles your data: no collection, no telemetry, fully offline. Every tool is downloaded from official sources with zero tracking."
+        title="Data Practices — No Telemetry, Fully Offline | DevTools Installer"
+        description="How DevTools Installer handles your data: zero collection, zero telemetry, fully offline. Every tool downloads from official sources with no tracking."
         keywords="DevTools Installer data practices, no data collection, no telemetry, offline installer, secure developer tools, open source installer"
         path="/data-practices"
         jsonLd={buildBreadcrumbJsonLd([

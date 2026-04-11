@@ -133,8 +133,26 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://devtoolsinstaller.com/guides/windows-path-explained</loc>
+    <lastmod>2026-04-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://devtoolsinstaller.com/guides/java-home-explained</loc>
+    <lastmod>2026-04-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtoolsinstaller.com/guides/windows-silent-install</loc>
+    <lastmod>2026-04-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://devtoolsinstaller.com/support</loc>
-    <lastmod>2026-03-20</lastmod>
+    <lastmod>2026-04-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -146,62 +164,14 @@
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/privacy</loc>
-    <lastmod>2026-03-01</lastmod>
+    <lastmod>2026-04-11</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://devtoolsinstaller.com/terms</loc>
-    <lastmod>2026-03-01</lastmod>
+    <lastmod>2026-04-11</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://devtoolsinstaller.com/data-practices</loc>
-    <lastmod>2026-03-15</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://devtoolsinstaller.com/guides/windows-path-explained</loc>
-    <lastmod>2026-03-25</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://devtoolsinstaller.com/cookie-policy</loc>
-    <lastmod>2026-03-01</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://devtoolsinstaller.com/disclaimer</loc>
-    <lastmod>2026-04-07</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://devtoolsinstaller.com/guides/java-home-explained</loc>
-    <lastmod>2026-04-06</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://devtoolsinstaller.com/guides/windows-silent-install</loc>
-    <lastmod>2026-04-06</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://devtoolsinstaller.com/authors/vishalhulawale</loc>
-    <lastmod>2026-04-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://devtoolsinstaller.com/authors/priyankakasera</loc>
-    <lastmod>2026-04-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
   </url>
 </urlset>

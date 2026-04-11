@@ -5,8 +5,8 @@ export default function CookiePolicy() {
   return (
     <>
       <SEO
-        title="Cookie Policy — DevTools Installer | What Cookies We Use"
-        description="Cookie policy for the DevTools Installer website. Learn about the cookies we use, including Google AdSense advertising cookies, and how to manage your preferences."
+        title="Cookie Policy — DevTools Installer"
+        description="Cookie policy for DevTools Installer. Learn about the cookies we use, including advertising cookies, and how to manage your preferences."
         keywords="DevTools Installer cookies, cookie policy, advertising cookies, Google AdSense cookies, cookie consent, GDPR cookies"
         path="/cookie-policy"
         jsonLd={buildBreadcrumbJsonLd([

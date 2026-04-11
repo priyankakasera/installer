@@ -6,7 +6,7 @@ export default function NotFound() {
     <>
       <SEO
         title="Page Not Found — DevTools Installer"
-        description="The page you are looking for does not exist. Browse our developer tool installation guides or return to the home page."
+        description="This page does not exist. Browse our developer tool installation guides or return to the home page."
         path="/404"
         noindex
       />

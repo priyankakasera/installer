@@ -5,8 +5,8 @@ export default function Privacy() {
   return (
     <>
       <SEO
-        title="Privacy Policy — DevTools Installer | No Data Collection, No Telemetry"
-        description="Privacy policy for DevTools Installer. No personal data collected, no analytics, no telemetry. The desktop application runs entirely offline on your local Windows machine."
+        title="Privacy Policy — DevTools Installer"
+        description="DevTools Installer privacy policy. No personal data collected, no telemetry. The desktop app runs fully offline on your Windows machine."
         keywords="DevTools Installer privacy, developer tools privacy policy, no telemetry installer, offline developer tools, data privacy developer tools"
         path="/privacy"
         jsonLd={buildBreadcrumbJsonLd([

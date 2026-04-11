@@ -8,8 +8,8 @@ export default function WindowsPathGuide() {
   return (
     <>
       <SEO
-        title="Windows PATH Variable Explained — What It Is, How to Edit It, and Common Mistakes"
-        description="A complete guide to the Windows PATH environment variable. Learn what PATH does, how to view and edit it on Windows 10 and 11, common mistakes to avoid, and how DevTools Installer manages PATH automatically."
+        title="Windows PATH Variable Explained — Edit & Fix It (2026)"
+        description="What the Windows PATH variable does, how to view and edit it on Windows 10 & 11, and the most common mistakes that cause 'command not found' errors."
         keywords="Windows PATH variable, edit PATH Windows 10, edit PATH Windows 11, environment variables Windows, add to PATH, PATH not working, command not found Windows, configure PATH developer tools"
         path="/guides/windows-path-explained"
         jsonLd={buildBreadcrumbJsonLd([

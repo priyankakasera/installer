@@ -6,8 +6,8 @@ export default function Disclaimer() {
   return (
     <>
       <SEO
-        title="Disclaimer — DevTools Installer | System Modifications & Third-Party Software"
-        description="Important disclaimer for DevTools Installer. Understand the system-level changes the application makes, third-party software responsibilities, and limitations of liability."
+        title="Disclaimer — DevTools Installer"
+        description="Disclaimer for DevTools Installer. Understand system-level changes, third-party software responsibilities, and limitations of liability."
         keywords="DevTools Installer disclaimer, system modifications disclaimer, developer tools disclaimer, PATH changes disclaimer, environment variables disclaimer"
         path="/disclaimer"
         jsonLd={buildBreadcrumbJsonLd([

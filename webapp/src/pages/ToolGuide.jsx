@@ -78,8 +78,8 @@ export default function ToolGuide() {
   return (
     <>
       <SEO
-        title={`${tool.headline} — Step-by-Step Guide | DevTools Installer`}
-        description={`Step-by-step guide: ${tool.headline}. Download source, PATH configuration, environment variables, and verify commands for ${tool.versions.join(', ')}.`}
+        title={tool.seoTitle || `${tool.headline} — Step-by-Step (2026)`}
+        description={tool.seoDescription || `${tool.headline} on Windows 10 & 11. Official download, PATH setup, environment variables, and verify command. Step-by-step.`}
         keywords={toolKeywords}
         path={`/guides/${tool.id}`}
         type="article"
@@ -129,15 +129,6 @@ export default function ToolGuide() {
             )}
           </div>
         </div>
-
-        {/* Editorial intro */}
-        {tool.editorial && (
-          <div className="mb-12 space-y-4 text-gray-300 leading-relaxed max-w-3xl">
-            {tool.editorial.split('\n\n').map((para, i) => (
-              <p key={i}>{para}</p>
-            ))}
-          </div>
-        )}
 
         {/* Quick facts */}
         <div className="grid sm:grid-cols-3 gap-4 mb-6">

@@ -22,8 +22,8 @@ export default function SilentInstallGuide() {
   return (
     <>
       <SEO
-        title="Silent Install on Windows Explained — MSI, EXE, NSIS, Inno Setup | DevTools Installer"
-        description="A complete guide to Windows silent installation switches. Learn how MSI /quiet, NSIS /S, and Inno Setup /VERYSILENT work, how to automate any installer from the command line, and how DevTools Installer uses silent installs internally."
+        title="Windows Silent Install Explained — MSI, EXE, NSIS, Inno (2026)"
+        description="How Windows silent install switches work for MSI /quiet, NSIS /S, and Inno Setup /VERYSILENT. Automate any installer from the command line — with examples."
         keywords="Windows silent install, MSI quiet install, NSIS silent install, Inno Setup silent, /quiet msiexec, unattended install Windows, silent exe install, automated software installation Windows, batch install Windows, PowerShell silent install"
         path="/guides/windows-silent-install"
         jsonLd={jsonLd}

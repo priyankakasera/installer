@@ -6,8 +6,8 @@ export default function Terms() {
   return (
     <>
       <SEO
-        title="Terms & Conditions — DevTools Installer | Usage Terms"
-        description="Terms and conditions for using DevTools Installer, the free one-click developer tool setup application for Windows. Read our usage terms, disclaimers, and intellectual property notices."
+        title="Terms & Conditions — DevTools Installer"
+        description="Terms and conditions for using DevTools Installer, the free one-click developer tool setup application for Windows."
         keywords="DevTools Installer terms, terms and conditions, developer tools terms of use, software usage terms"
         path="/terms"
         jsonLd={buildBreadcrumbJsonLd([

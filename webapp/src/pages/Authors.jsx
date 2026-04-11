@@ -29,8 +29,8 @@ export default function Authors() {
   return (
     <>
       <SEO
-        title="About Us — DevTools Installer | Our Mission, Team & Story"
-        description="Learn about DevTools Installer — who we are, why we built a free one-click developer tool setup for Windows, and how our team maintains 20+ tool integrations."
+        title="About Us — Team & Mission | DevTools Installer"
+        description="Meet the team behind DevTools Installer. Why we built a free 1-click developer tool setup for Windows and how we maintain 20+ tool integrations."
         keywords="DevTools Installer team, DevTools Installer about, developer tools contributors, open source developer tools, who made DevTools Installer"
         path="/authors"
         jsonLd={[

@@ -56,8 +56,8 @@ export default function JavaHomeExplained() {
   return (
     <>
       <SEO
-        title="What Is JAVA_HOME and Why Does It Matter? — Complete Guide | DevTools Installer"
-        description="A complete explanation of the JAVA_HOME environment variable on Windows. Learn what it is, why Maven and Gradle require it, how to set it correctly, and how to avoid the most common configuration mistakes."
+        title="JAVA_HOME Explained — Set It Correctly on Windows (2026)"
+        description="What is JAVA_HOME, why Maven and Gradle need it, and how to set it on Windows without mistakes. Covers JDK vs JRE, multi-version setups, and common errors."
         keywords="JAVA_HOME, set JAVA_HOME Windows, JAVA_HOME environment variable, Maven JAVA_HOME, Gradle JAVA_HOME, Java environment variables, configure Java Windows, JAVA_HOME not set, Java PATH configuration"
         path="/guides/java-home-explained"
         jsonLd={jsonLd}

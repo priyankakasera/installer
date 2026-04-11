@@ -136,6 +136,30 @@ export default function Footer() {
               ))}
             </ul>
           </div>
+
+          {/* Learn */}
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
+              Learn
+            </p>
+            <ul className="space-y-2.5">
+              <li>
+                <FooterLink to="/guides/java-home-explained">
+                  What is JAVA_HOME?
+                </FooterLink>
+              </li>
+              <li>
+                <FooterLink to="/guides/windows-path-explained">
+                  Windows PATH Guide
+                </FooterLink>
+              </li>
+              <li>
+                <FooterLink to="/guides/windows-silent-install">
+                  Silent Install Guide
+                </FooterLink>
+              </li>
+            </ul>
+          </div>
         </div>
 
         <div className="section-divider mt-10 mb-6" />
