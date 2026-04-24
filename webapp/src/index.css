@@ -110,5 +110,66 @@ h1, h2, h3, h4 {
 }
 
 /* -------------------------------------------------------
+   Guide Light Theme (Medium-style)
+------------------------------------------------------- */
+.guide-light {
+  background-color: #f9fafb; /* Soft off-white */
+  color: #1f2937; /* High contrast dark gray */
+  line-height: 1.8;
+}
+
+.guide-light h1, .guide-light h2, .guide-light h3, .guide-light h4 {
+  color: #111827;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.guide-light .prose {
+  max-width: 740px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.guide-light code {
+  background-color: #f3f4f6;
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+  color: #ef4444;
+}
+
+.guide-light pre {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+}
+
+.guide-light pre code {
+  background-color: transparent;
+  padding: 0;
+  color: inherit;
+  font-size: 0.875rem;
+}
+
+.guide-light .feature-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.guide-light a {
+  color: #10b981;
+  text-decoration: none;
+}
+
+.guide-light a:hover {
+  text-decoration: underline;
+}
+
+/* -------------------------------------------------------
    AdSense — placeholder styling (no script loaded yet)
 ------------------------------------------------------- */
