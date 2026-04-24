@@ -8,6 +8,7 @@ const Guides = lazy(() => import('./pages/Guides'))
 const ToolGuide = lazy(() => import('./pages/ToolGuide'))
 const WindowsPathGuide = lazy(() => import('./pages/WindowsPathGuide'))
 const JavaHomeExplained = lazy(() => import('./pages/JavaHomeExplained'))
+const Java26Features = lazy(() => import('./pages/Java26Features'))
 const SilentInstallGuide = lazy(() => import('./pages/SilentInstallGuide'))
 const AuthorProfile = lazy(() => import('./pages/AuthorProfile'))
 const DataFacting = lazy(() => import('./pages/DataFacting'))
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/guides" element={<Guides />} />
           <Route path="/guides/windows-path-explained" element={<WindowsPathGuide />} />
           <Route path="/guides/java-home-explained" element={<JavaHomeExplained />} />
+          <Route path="/guides/java-26-new-features" element={<Java26Features />} />
           <Route path="/guides/windows-silent-install" element={<SilentInstallGuide />} />
           <Route path="/guides/:toolId" element={<ToolGuide />} />
           <Route path="/data-practices" element={<DataFacting />} />

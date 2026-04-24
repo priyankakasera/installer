@@ -139,6 +139,12 @@ export default function Guides() {
                 desc: 'How MSI /quiet, NSIS /S, Inno Setup /VERYSILENT, and Squirrel --silent flags work, and how DevTools Installer uses them to automate installs without any click-through wizards.',
                 tag: 'Automation',
               },
+              {
+                to: '/guides/java-26-new-features',
+                label: 'Java 26 New Features',
+                desc: 'Explore the latest features in Java 26, including HTTP/3 support, Lazy Constants, and performance boosts for G1 GC.',
+                tag: 'Java',
+              },
             ].map((article) => (
               <Link
                 key={article.to}
