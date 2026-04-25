@@ -20,31 +20,47 @@
   --color-primary-light: #34d399;
   --color-primary-dark: #059669;
   --color-accent: #06b6d4;
-  --color-dark: #0a0f0d;
-  --color-dark-lighter: #0f1612;
-  --color-dark-card: #121a16;
-  --color-dark-border: #1a2820;
+  --color-dark: var(--bg-base);
+  --color-dark-lighter: var(--bg-sidebar);
+  --color-dark-card: var(--bg-surface);
+  --color-dark-border: var(--border-main);
+}
+
+:root {
+  --bg-base: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-sidebar: #f1f5f9;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --border-main: #e2e8f0;
+}
+
+.dark {
+  --bg-base: #0a0f0d;
+  --bg-surface: #121a16;
+  --bg-sidebar: #0f1612;
+  --text-main: #e2e8f0;
+  --text-muted: #94a3b8;
+  --border-main: #1a2820;
 }
 
 html {
   scroll-behavior: smooth;
-  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--color-dark);
-  color: #c2d4cc;
+  background-color: var(--bg-base);
+  color: var(--text-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.7;
-  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 /* Smooth transition for all major layout elements */
 *, *::before, *::after {
   transition-property: background-color, border-color, color;
-  transition-duration: 0.2s;
+  transition-duration: 0.25s;
   transition-timing-function: ease;
 }
 
@@ -57,6 +73,7 @@ body {
 h1, h2, h3, h4 {
   line-height: 1.25;
   letter-spacing: -0.01em;
+  color: var(--text-main);
 }
 
 /* Section spacing utility */
@@ -124,24 +141,15 @@ h1, h2, h3, h4 {
    Guide Light Theme (Medium-style)
 ------------------------------------------------------- */
 .guide-light {
-  background-color: #f9fafb; /* Soft off-white */
-  color: #1f2937; /* High contrast dark gray */
+  background-color: var(--bg-base);
+  color: var(--text-main);
   line-height: 1.8;
 }
 
-.dark .guide-light {
-  background-color: #0a0f0d;
-  color: #c2d4cc;
-}
-
 .guide-light h1, .guide-light h2, .guide-light h3, .guide-light h4 {
-  color: #111827;
+  color: var(--text-main);
   font-weight: 700;
   letter-spacing: -0.02em;
-}
-
-.dark .guide-light h1, .dark .guide-light h2, .dark .guide-light h3, .dark .guide-light h4 {
-  color: #ffffff;
 }
 
 .guide-light .prose {
@@ -151,30 +159,24 @@ h1, h2, h3, h4 {
 }
 
 .guide-light code {
-  background-color: #f3f4f6;
+  background-color: var(--bg-sidebar);
   padding: 0.2em 0.4em;
   border-radius: 4px;
   font-size: 0.9em;
-  color: #b91c1c; /* clear red, visible on light bg */
+  color: #b91c1c;
 }
 
 .dark .guide-light code {
-  background-color: #1e2d25;
-  color: #86efac; /* green, clearly visible on dark bg */
+  color: #86efac;
 }
 
 .guide-light pre {
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-main);
   border-radius: 12px;
   padding: 1.5rem;
   margin: 1.5rem 0;
   overflow-x: auto;
-}
-
-.dark .guide-light pre {
-  background-color: #0f1612;
-  border-color: #1a2820;
 }
 
 .guide-light pre code {
@@ -185,15 +187,10 @@ h1, h2, h3, h4 {
 }
 
 .guide-light .feature-card {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-main);
   border-radius: 16px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-
-.dark .guide-light .feature-card {
-  background: #121a16;
-  border-color: #1a2820;
 }
 
 .guide-light a {
@@ -205,6 +202,55 @@ h1, h2, h3, h4 {
   text-decoration: underline;
 }
 
+
 /* -------------------------------------------------------
-   AdSense — placeholder styling (no script loaded yet)
+   Light Mode Overrides for Hardcoded Dark Utilities
 ------------------------------------------------------- */
+html:not(.dark) .text-white {
+  color: var(--text-main) !important;
+}
+html:not(.dark) .text-gray-400 {
+  color: var(--text-muted) !important;
+}
+html:not(.dark) .text-gray-300 {
+  color: var(--text-muted) !important;
+}
+html:not(.dark) .text-gray-200 {
+  color: var(--text-muted) !important;
+}
+html:not(.dark) .text-gray-100 {
+  color: var(--text-muted) !important;
+}
+
+/* Preserve white text on strong backgrounds/accents */
+html:not(.dark) .bg-primary .text-white,
+html:not(.dark) .bg-primary.text-white,
+html:not(.dark) .bg-primary-dark .text-white,
+html:not(.dark) .bg-primary-dark.text-white,
+html:not(.dark) .bg-accent .text-white,
+html:not(.dark) .bg-accent.text-white,
+html:not(.dark) .bg-gradient-to-r .text-white,
+html:not(.dark) .bg-gradient-to-r.text-white,
+html:not(.dark) [class*="from-"] .text-white,
+html:not(.dark) [class*="from-"].text-white,
+html:not(.dark) .btn .text-white,
+html:not(.dark) .btn.text-white,
+html:not(.dark) .bg-red-500 .text-white,
+html:not(.dark) .bg-red-500.text-white,
+html:not(.dark) .bg-green-500 .text-white,
+html:not(.dark) .bg-green-500.text-white {
+  color: #ffffff !important;
+}
+
+/* Subtle soft shadows for cards in Light Mode */
+html:not(.dark) .bg-dark-card {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Git white icon inversion for light mode visibility */
+html:not(.dark) img[src*="github.svg"] {
+  filter: invert(1) brightness(0.2) !important;
+}
+
+
+

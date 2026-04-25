@@ -89,6 +89,8 @@ const bundles = [
   },
 ]
 
+
+
 export default function IncludedTools() {
   return (
     <section className="content-auto py-20 lg:py-28 bg-dark-lighter/50" id="tools">
@@ -139,10 +141,10 @@ export default function IncludedTools() {
         </div>
 
         {/* Setup bundles */}
-        <h3 className="text-2xl font-bold text-white text-center mb-2">
+        <h3 className="text-2xl font-bold text-slate-900 dark:text-white text-center mb-2">
           One-Click Setup Bundles
         </h3>
-        <p className="text-gray-400 text-center max-w-xl mx-auto mb-8">
+        <p className="text-slate-600 dark:text-slate-400 text-center max-w-xl mx-auto mb-8">
           Pre-configured bundles for common workflows. Select a bundle and
           install everything you need in one click.
         </p>
@@ -150,15 +152,22 @@ export default function IncludedTools() {
           {bundles.map((b) => (
             <div
               key={b.name}
-              className={`bg-gradient-to-br ${b.color} border ${b.border} rounded-2xl p-5 hover:-translate-y-1 transition-all duration-300`}
+              className={`bg-gradient-to-br ${b.color} border ${b.border} rounded-2xl p-5 hover:-translate-y-1 transition-all duration-300 shadow-sm`}
             >
-              <h4 className="text-white font-semibold mb-2">{b.name}</h4>
-              <p className="text-sm text-gray-400 leading-relaxed">
+              <h4 className="text-slate-900 dark:text-white text-lg font-bold mb-2">
+                {b.name}
+              </h4>
+              <p className="text-sm text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
                 {b.tools}
               </p>
             </div>
           ))}
         </div>
+
+
+
+
+
       </div>
     </section>
   )

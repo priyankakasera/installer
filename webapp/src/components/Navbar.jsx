@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { HiMenu, HiX, HiChevronDown } from 'react-icons/hi'
-import { FiDownload } from 'react-icons/fi'
+import { FiDownload, FiSun, FiMoon } from 'react-icons/fi'
+import { useTheme } from './ThemeProvider'
 import release from '../config/release'
 
 const guideCategories = [
@@ -36,7 +37,9 @@ const guideCategories = [
 
 export default function Navbar() {
   const location = useLocation()
-  const isGuidePage = location.pathname.startsWith('/guides/')
+  const { theme, toggleTheme } = useTheme()
+  const isLight = theme === 'light'
+
   const [mobileOpen, setMobileOpen] = useState(false)
   const [guidesOpen, setGuidesOpen] = useState(false)
   const menuRef = useRef(null)
@@ -54,7 +57,7 @@ export default function Navbar() {
 
   return (
     <header className={`sticky top-0 z-50 backdrop-blur-xl border-b transition-all duration-300 ${
-      isGuidePage 
+      isLight 
         ? 'bg-white/90 border-gray-200 shadow-sm' 
         : 'bg-dark/80 border-dark-border'
     }`}>
@@ -68,7 +71,7 @@ export default function Navbar() {
               className="w-8 h-8 rounded-lg shadow-lg shadow-primary/20"
             />
             <span className={`font-semibold text-lg hidden sm:block tracking-tight transition-colors ${
-              isGuidePage ? 'text-gray-900' : 'text-white'
+              isLight ? 'text-gray-900' : 'text-white'
             }`}>
               DevTools Installer
             </span>
@@ -77,12 +80,12 @@ export default function Navbar() {
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-1">
             <NavLink to="/" className={({ isActive }) => `px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-              isGuidePage 
+              isLight 
                 ? (isActive ? 'text-primary bg-gray-100' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100')
                 : (isActive ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5')
             }`}>Home</NavLink>
             <NavLink to="/product" className={({ isActive }) => `px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-              isGuidePage 
+              isLight 
                 ? (isActive ? 'text-primary bg-gray-100' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100')
                 : (isActive ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5')
             }`}>Product</NavLink>
@@ -93,7 +96,7 @@ export default function Navbar() {
                 onClick={() => setGuidesOpen(!guidesOpen)}
                 onMouseEnter={() => setGuidesOpen(true)}
                 className={`flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  isGuidePage 
+                  isLight 
                     ? (guidesOpen ? 'text-primary bg-gray-100' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100')
                     : (guidesOpen ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5')
                 }`}
@@ -106,7 +109,7 @@ export default function Navbar() {
               {guidesOpen && (
                 <div 
                   className={`absolute left-1/2 -translate-x-1/2 mt-2 w-[600px] border rounded-2xl shadow-2xl overflow-hidden animate-fadeInUp ${
-                    isGuidePage ? 'bg-white border-gray-200' : 'bg-dark-lighter border-dark-border'
+                    isLight ? 'bg-white border-gray-200' : 'bg-dark-lighter border-dark-border'
                   }`}
                   onMouseLeave={() => setGuidesOpen(false)}
                 >
@@ -121,7 +124,8 @@ export default function Navbar() {
                               <Link 
                                 to={link.to} 
                                 className={`text-sm hover:translate-x-1 transition-all inline-block ${
-                                    isGuidePage ? 'text-gray-700 hover:text-primary' : 'text-gray-300 hover:text-white'
+                                    isLight ? 'text-gray-700 hover:text-primary' : 'text-gray-300 hover:text-white'
+
                                 }`}
                                 onClick={() => setGuidesOpen(false)}
                               >
@@ -133,7 +137,7 @@ export default function Navbar() {
                       </div>
                     ))}
                   </div>
-                  <div className={`p-4 flex justify-center border-t ${isGuidePage ? 'bg-gray-50 border-gray-200' : 'bg-white/5 border-dark-border'}`}>
+                  <div className={`p-4 flex justify-center border-t ${isLight ? 'bg-gray-50 border-gray-200' : 'bg-white/5 border-dark-border'}`}>
                     <Link to="/guides" className="text-xs text-primary font-medium hover:underline" onClick={() => setGuidesOpen(false)}>
                       View All Guides →
                     </Link>
@@ -143,12 +147,12 @@ export default function Navbar() {
             </div>
 
             <NavLink to="/authors" className={({ isActive }) => `px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-              isGuidePage 
+              isLight 
                 ? (isActive ? 'text-primary bg-gray-100' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100')
                 : (isActive ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5')
             }`}>About</NavLink>
             <NavLink to="/support" className={({ isActive }) => `px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-              isGuidePage 
+              isLight 
                 ? (isActive ? 'text-primary bg-gray-100' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100')
                 : (isActive ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5')
             }`}>Support</NavLink>
@@ -168,9 +172,18 @@ export default function Navbar() {
             </div>
           )}
 
+          {/* Theme Toggle Button */}
+          <button
+            onClick={toggleTheme}
+            className={`p-2 mr-1 rounded-lg transition-colors ${isLight ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+            aria-label="Toggle dark mode"
+          >
+            {theme === 'dark' ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
+          </button>
+
           {/* Mobile toggle */}
           <button
-            className={`md:hidden p-2 transition-colors ${isGuidePage ? 'text-gray-600 hover:text-gray-900' : 'text-gray-300 hover:text-white'}`}
+            className={`md:hidden p-2 transition-colors ${isLight ? 'text-gray-600 hover:text-gray-900' : 'text-gray-300 hover:text-white'}`}
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
@@ -184,21 +197,21 @@ export default function Navbar() {
 
         {/* Mobile nav */}
         {mobileOpen && (
-          <div className={`md:hidden py-4 border-t max-h-[80vh] overflow-y-auto ${isGuidePage ? 'border-gray-200' : 'border-dark-border'}`}>
+          <div className={`md:hidden py-4 border-t max-h-[80vh] overflow-y-auto ${isLight ? 'border-gray-200' : 'border-dark-border'}`}>
             <div className="flex flex-col gap-1">
-              <Link to="/" className={`px-3 py-2 text-sm ${isGuidePage ? 'text-gray-600' : 'text-gray-300'}`} onClick={() => setMobileOpen(false)}>Home</Link>
-              <Link to="/product" className={`px-3 py-2 text-sm ${isGuidePage ? 'text-gray-600' : 'text-gray-300'}`} onClick={() => setMobileOpen(false)}>Product</Link>
+              <Link to="/" className={`px-3 py-2 text-sm ${isLight ? 'text-gray-600' : 'text-gray-300'}`} onClick={() => setMobileOpen(false)}>Home</Link>
+              <Link to="/product" className={`px-3 py-2 text-sm ${isLight ? 'text-gray-600' : 'text-gray-300'}`} onClick={() => setMobileOpen(false)}>Product</Link>
               
               <div className="px-3 py-2">
                 <p className="text-xs font-bold text-primary uppercase tracking-widest mb-2">Guides</p>
                 <div className="pl-4 space-y-4">
                   {guideCategories.map(cat => (
                     <div key={cat.name}>
-                      <p className={`text-[10px] font-bold uppercase mb-1 ${isGuidePage ? 'text-gray-400' : 'text-gray-500'}`}>{cat.name}</p>
+                      <p className={`text-[10px] font-bold uppercase mb-1 ${isLight ? 'text-gray-400' : 'text-gray-500'}`}>{cat.name}</p>
                       <ul className="space-y-1">
                         {cat.links.map(link => (
                           <li key={link.to}>
-                            <Link to={link.to} className={`text-sm block py-0.5 ${isGuidePage ? 'text-gray-600' : 'text-gray-300'}`} onClick={() => setMobileOpen(false)}>{link.label}</Link>
+                            <Link to={link.to} className={`text-sm block py-0.5 ${isLight ? 'text-gray-600' : 'text-gray-300'}`} onClick={() => setMobileOpen(false)}>{link.label}</Link>
                           </li>
                         ))}
                       </ul>
@@ -207,8 +220,9 @@ export default function Navbar() {
                 </div>
               </div>
 
-              <Link to="/authors" className={`px-3 py-2 text-sm ${isGuidePage ? 'text-gray-600' : 'text-gray-300'}`} onClick={() => setMobileOpen(false)}>About</Link>
-              <Link to="/support" className={`px-3 py-2 text-sm ${isGuidePage ? 'text-gray-600' : 'text-gray-300'}`} onClick={() => setMobileOpen(false)}>Support</Link>
+              <Link to="/authors" className={`px-3 py-2 text-sm ${isLight ? 'text-gray-600' : 'text-gray-300'}`} onClick={() => setMobileOpen(false)}>About</Link>
+              <Link to="/support" className={`px-3 py-2 text-sm ${isLight ? 'text-gray-600' : 'text-gray-300'}`} onClick={() => setMobileOpen(false)}>Support</Link>
+
               
               {release.downloadUrl && (
                 <a

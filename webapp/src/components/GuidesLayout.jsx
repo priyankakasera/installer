@@ -4,21 +4,8 @@ import { HiMenu, HiX } from 'react-icons/hi'
 import { FiArrowLeft } from 'react-icons/fi'
 import { guideCategories } from '../config/guidesData'
 
-import { ThemeProvider, useTheme } from './ThemeProvider'
-import { FiSun, FiMoon } from 'react-icons/fi'
 
-function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme()
-  return (
-    <button
-      onClick={toggleTheme}
-      className="flex items-center gap-2 px-3 py-2 mt-auto text-sm font-semibold text-gray-700 hover:bg-gray-100 rounded-lg dark:text-gray-300 dark:hover:bg-gray-800 transition-colors w-full"
-    >
-      {theme === 'dark' ? <FiSun className="w-4 h-4" /> : <FiMoon className="w-4 h-4" />}
-      {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-    </button>
-  )
-}
+
 
 export default function GuidesLayout() {
   const { pathname } = useLocation()
@@ -36,8 +23,8 @@ export default function GuidesLayout() {
   const isCategory = guideCategories.some(c => c.id === currentSlug)
 
   return (
-    <ThemeProvider>
-    <div className="min-h-screen flex flex-col md:flex-row bg-dark dark:bg-[#0a0f0d]">
+    <div className="min-h-screen flex flex-col md:flex-row">
+
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-[#0a0f0d] border-b border-gray-200 dark:border-gray-800 sticky top-16 z-30">
         <span className="font-bold text-gray-900 dark:text-white">Guides Menu</span>
@@ -82,11 +69,9 @@ export default function GuidesLayout() {
             ))}
             </nav>
             
-            <div className="mt-auto pt-4 border-t border-gray-200 dark:border-gray-800">
-              <ThemeToggle />
-            </div>
           </div>
         </aside>
+
       )}
 
       {/* Main Content Area */}
@@ -102,6 +87,5 @@ export default function GuidesLayout() {
         />
       )}
     </div>
-    </ThemeProvider>
   )
 }
