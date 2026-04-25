@@ -7,7 +7,7 @@ import release from '../config/release'
 const guideCategories = [
   {
     name: 'Java',
-    description: 'Core Runtimes & JDKs',
+    description: 'Conceptual & JDK Setup',
     links: [
       { label: 'Java 26 Features', to: '/guides/java-26-new-features' },
       { label: 'JAVA_HOME Explained', to: '/guides/java-home-explained' },
@@ -15,21 +15,21 @@ const guideCategories = [
     ]
   },
   {
-    name: 'Automation',
-    description: 'Deployment & Setup',
+    name: 'Runtimes',
+    description: 'Node.js, Python & Conda',
     links: [
-      { label: 'Silent Install Guide', to: '/guides/windows-silent-install' },
-      { label: 'PATH Configuration', to: '/guides/windows-path-explained' },
-      { label: 'Maven Setup', to: '/guides/maven' },
+      { label: 'Node.js Setup', to: '/guides/nodejs' },
+      { label: 'Python Setup', to: '/guides/python' },
+      { label: 'Miniconda Guide', to: '/guides/miniconda' },
     ]
   },
   {
-    name: 'Web & Tools',
-    description: 'Frontend & Environment',
+    name: 'Tools & Automation',
+    description: 'Git, Maven & Silent Installs',
     links: [
-      { label: 'Node.js Setup', to: '/guides/nodejs' },
       { label: 'Git Installation', to: '/guides/git' },
-      { label: 'VS Code Setup', to: '/guides/vscode' },
+      { label: 'Maven Setup', to: '/guides/maven' },
+      { label: 'Silent Install Guide', to: '/guides/windows-silent-install' },
     ]
   }
 ]

@@ -1,3 +1,6 @@
+import { Link } from 'react-router-dom'
+import { FiArrowRight } from 'react-icons/fi'
+import CodeBlock from '../components/CodeBlock'
 import GuideLayout from '../components/GuideLayout'
 import { buildBreadcrumbJsonLd } from '../config/seo'
 import AdUnit, { SLOTS } from '../components/AdUnit'
@@ -20,7 +23,7 @@ function SubSection({ title, children, type = "default" }) {
   const styles = {
     problem: "border-l-4 border-red-200 pl-6 py-1",
     solution: "border-l-4 border-primary pl-6 py-1",
-    howItWorks: "bg-gray-50 rounded-xl p-6 border border-gray-100",
+    howItWorks: "bg-gray-50 dark:bg-[#0f1612] rounded-xl p-6 border border-gray-100 dark:border-gray-800",
     default: ""
   }
 
@@ -32,14 +35,14 @@ function SubSection({ title, children, type = "default" }) {
         {type === 'howItWorks' && <span>⚙️ How It Works</span>}
         {!['problem', 'solution', 'howItWorks'].includes(type) && title}
       </h3>
-      <div className="text-gray-700 leading-relaxed">
+      <div className="text-gray-700 dark:text-gray-300 leading-relaxed">
         {children}
       </div>
     </div>
   )
 }
 
-export default function Java26Features() {
+export default function Java26Features({ isEmbedded = false }) {
   const jsonLd = [
     buildBreadcrumbJsonLd([
       { name: 'Home', url: '/' },
@@ -56,8 +59,9 @@ export default function Java26Features() {
       path="/guides/java-26-features"
       jsonLd={jsonLd}
       readTime="15 min read"
+      isEmbedded={isEmbedded}
     >
-      <p className="text-xl text-gray-600 mb-12 leading-relaxed italic">
+      <p className="text-xl text-gray-600 dark:text-gray-300 mb-12 leading-relaxed italic">
         "Java 26 marks a turning point in the platform's performance story, bridging the gap between 
         network modernization and internal runtime efficiency."
       </p>
@@ -80,18 +84,18 @@ export default function Java26Features() {
         </SubSection>
 
         <SubSection type="solution">
-            Java 26 adds native support for HTTP/3 to the <code className="!text-gray-900">java.net.http.HttpClient</code>. 
+            Java 26 adds native support for HTTP/3 to the <code>java.net.http.HttpClient</code>. 
             By using the UDP-based QUIC protocol, it enables independent streams where one lost packet 
             only affects its specific stream, not the entire connection.
         </SubSection>
 
         <SubSection type="howItWorks">
-            The implementation is transparent and opt-in. When you specify <code className="!text-gray-900">Version.HTTP_3</code>, 
+            The implementation is transparent and opt-in. When you specify <code>Version.HTTP_3</code>, 
             the client uses a QUIC transport. If the server doesn't support it or UDP is blocked by a 
             firewall, it gracefully downgrades to HTTP/2.
         </SubSection>
 
-        <pre><code>{`import java.net.URI;
+        <CodeBlock>{`import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -111,7 +115,7 @@ try (HttpClient client = HttpClient.newBuilder()
         request, HttpResponse.BodyHandlers.ofString());
 
     System.out.println("Actual Protocol: " + response.version());
-}`}</code></pre>
+}`}</CodeBlock>
       </FeatureSection>
 
       <AdUnit slot={SLOTS.ARTICLE_MID} format="fluid" layout="in-article" />
@@ -121,22 +125,22 @@ try (HttpClient client = HttpClient.newBuilder()
             Initializing expensive objects safely in a multi-threaded environment usually requires 
             "Holder Classes" or "Double-Checked Locking." These patterns are boilerplate-heavy 
             and, more importantly, the JVM cannot optimize the resulting fields as true constants 
-            because they are not <code className="!text-gray-900">static final</code> at initialization time.
+            because they are not <code>static final</code> at initialization time.
         </SubSection>
 
         <SubSection type="solution">
-            Introduces <code className="!text-gray-900">java.lang.LazyConstant&lt;T&gt;</code>. It provides 
+            Introduces <code>java.lang.LazyConstant&lt;T&gt;</code>. It provides 
             a clean API for deferred, one-time initialization that is natively understood by the 
             JVM's JIT compiler.
         </SubSection>
 
         <SubSection type="howItWorks">
-            Once a <code className="!text-gray-900">LazyConstant</code> is computed, the JIT compiler 
+            Once a <code>LazyConstant</code> is computed, the JIT compiler 
             can perform "constant folding." This means it treats the value as if it were a 
             literal constant, potentially inlining it directly into machine code for maximum speed.
         </SubSection>
 
-        <pre><code>{`import java.lang.LazyConstant;
+        <CodeBlock>{`import java.lang.LazyConstant;
 
 public class AppConfig {
     // Defines an uninitialized constant
@@ -148,30 +152,30 @@ public class AppConfig {
         // Subsequent calls are as fast as reading a final field
         DB.get().connect();
     }
-}`}</code></pre>
+}`}</CodeBlock>
       </FeatureSection>
 
       <FeatureSection title="Structured Concurrency" jep="525">
         <SubSection type="problem">
-            Unstructured concurrency (using <code className="!text-gray-900">ExecutorService</code>) 
+            Unstructured concurrency (using <code>ExecutorService</code>) 
             leads to "orphaned threads." If a main task fails, its subtasks often keep running 
             blindly, wasting resources and making debugging a nightmare because stack traces 
             don't show the relationship between parent and child tasks.
         </SubSection>
 
         <SubSection type="solution">
-            Java 26 refines <code className="!text-gray-900">StructuredTaskScope</code> (6th Preview). 
+            Java 26 refines <code>StructuredTaskScope</code> (6th Preview). 
             It treats groups of related tasks as a single unit. If the scope closes, 
             all subtasks are guaranteed to be terminated.
         </SubSection>
 
         <SubSection type="howItWorks">
-            The scope creates a strict hierarchy. In Java 26, a new <code className="!text-gray-900">onTimeout()</code> 
+            The scope creates a strict hierarchy. In Java 26, a new <code>onTimeout()</code> 
             callback was added, allowing custom joiners to handle partial results when a 
             time limit is reached, rather than just throwing an exception.
         </SubSection>
 
-        <pre><code>{`import java.util.concurrent.StructuredTaskScope;
+        <CodeBlock>{`import java.util.concurrent.StructuredTaskScope;
 
 try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
     // Fork subtasks
@@ -183,20 +187,20 @@ try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
 
     // If one fails, the other is automatically cancelled
     return new Dashboard(userTask.get(), orderTask.get());
-}`}</code></pre>
+}`}</CodeBlock>
       </FeatureSection>
 
       <FeatureSection title="Primitive Types in Patterns" jep="530">
         <SubSection type="problem">
             Pattern matching in Java previously only worked with Reference types (Objects). 
-            If you wanted to check if an <code className="!text-gray-900">int</code> was actually a 
-            <code className="!text-gray-900">byte</code>, you had to manually cast and check 
+            If you wanted to check if an <code>int</code> was actually a 
+            <code>byte</code>, you had to manually cast and check 
             ranges, which is error-prone and verbose.
         </SubSection>
 
         <SubSection type="solution">
-            Allows primitive types in <code className="!text-gray-900">instanceof</code> and 
-            <code className="!text-gray-900">switch</code> patterns. It provides safe, 
+            Allows primitive types in <code>instanceof</code> and 
+            <code>switch</code> patterns. It provides safe, 
             lossless conversion and binding in one step.
         </SubSection>
 
@@ -206,7 +210,7 @@ try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
             information (no truncation).
         </SubSection>
 
-        <pre><code>{`public void process(int value) {
+        <CodeBlock>{`public void process(int value) {
     // Safe binding: only matches if value fits in a byte
     if (value instanceof byte b) {
         System.out.println("It's a small number: " + b);
@@ -219,7 +223,7 @@ try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
         case double val when val > 0 -> System.out.println("Positive");
         default -> System.out.println("Negative");
     }
-}`}</code></pre>
+}`}</CodeBlock>
       </FeatureSection>
 
       <FeatureSection title="G1 GC: Contention Reduction" jep="522">
@@ -241,36 +245,42 @@ try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
             gain for write-intensive applications like large caches.
         </SubSection>
 
-        <pre><code>{`// No code changes needed! Just run on JDK 26
+        <CodeBlock>{`// No code changes needed! Just run on JDK 26
 // Throughput gains are automatic for G1
-java -XX:+UseG1GC -Xmx16g -jar my-big-app.jar`}</code></pre>
+java -XX:+UseG1GC -Xmx16g -jar my-big-app.jar`}</CodeBlock>
       </FeatureSection>
 
-      <section className="bg-gray-50 rounded-2xl p-8 mb-16 border border-gray-100">
+      <section className="bg-gray-50 dark:bg-[#0f1612] rounded-2xl p-8 mb-16 border border-gray-100 dark:border-gray-800">
         <h2 className="text-xl font-bold mb-4">Other notable removals and additions</h2>
-        <ul className="list-disc list-inside space-y-3 text-gray-700">
-            <li><strong className="text-gray-900">PEM API (JEP 524):</strong> Finally, a standard way to read <code className="!text-gray-900">.pem</code> certificates without BouncyCastle.</li>
-            <li><strong className="text-gray-900">Applet Removal (JEP 504):</strong> The <code className="!text-gray-900">java.applet</code> package is officially gone.</li>
-            <li><strong className="text-gray-900">AOT for ZGC (JEP 516):</strong> Ahead-of-Time object caching now works with the low-latency ZGC.</li>
+        <ul className="list-disc list-inside space-y-3 text-gray-700 dark:text-gray-300">
+            <li><strong className="text-gray-900 dark:text-white">PEM API (JEP 524):</strong> Finally, a standard way to read <code>.pem</code> certificates without BouncyCastle.</li>
+            <li><strong className="text-gray-900 dark:text-white">Applet Removal (JEP 504):</strong> The <code>java.applet</code> package is officially gone.</li>
+            <li><strong className="text-gray-900 dark:text-white">AOT for ZGC (JEP 516):</strong> Ahead-of-Time object caching now works with the low-latency ZGC.</li>
         </ul>
       </section>
 
       <AdUnit slot={SLOTS.ARTICLE_BOTTOM} format="auto" />
 
-      <section className="mt-16">
-        <h2 className="text-2xl font-bold mb-8">Related Documentation</h2>
-        <div className="grid sm:grid-cols-2 gap-6">
+      <section className="mb-12 mt-16">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-5">Related Guides</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
-            { to: '/guides/java-home-explained', label: 'JAVA_HOME Explained', desc: 'Step-by-step setup for Windows 11.' },
-            { to: '/guides/windows-silent-install', label: 'Silent Install Guide', desc: 'Automate JDK deployments.' },
-          ].map((link) => (
+            { to: '/guides/java-home-explained', name: 'JAVA_HOME Explained', description: 'Why Maven and Gradle need JAVA_HOME separate from PATH, and how to set it correctly on Windows.' },
+            { to: '/guides/windows-silent-install', name: 'Silent Install Guide', description: 'Automate JDK deployments using MSI, NSIS, and Inno Setup silent install flags.' },
+            { to: '/guides/java', name: 'All Java Guides', description: 'Browse all Java conceptual tutorials and deep dives on this platform.' },
+          ].map((rel) => (
             <Link
-              key={link.to}
-              to={link.to}
-              className="group p-6 bg-white border border-gray-200 rounded-2xl hover:border-primary transition-all shadow-sm hover:shadow-md"
+              key={rel.to}
+              to={rel.to}
+              className="group bg-white dark:bg-[#121a16] shadow-sm border border-gray-200 dark:border-gray-800 rounded-xl p-5 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-200 !no-underline"
             >
-              <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">{link.label}</h3>
-              <p className="text-sm text-gray-500">{link.desc}</p>
+              <h3 className="text-gray-900 dark:text-white font-medium mb-1 flex items-center justify-between">
+                {rel.name}
+                <FiArrowRight className="w-4 h-4 text-gray-600 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2">
+                {rel.description}
+              </p>
             </Link>
           ))}
         </div>

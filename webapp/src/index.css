@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Font-display fallback to prevent CLS from web font loading */
 @font-face {
   font-family: 'Inter';
@@ -26,6 +28,7 @@
 
 html {
   scroll-behavior: smooth;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 body {
@@ -35,6 +38,14 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.7;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Smooth transition for all major layout elements */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color;
+  transition-duration: 0.2s;
+  transition-timing-function: ease;
 }
 
 ::selection {
@@ -118,10 +129,19 @@ h1, h2, h3, h4 {
   line-height: 1.8;
 }
 
+.dark .guide-light {
+  background-color: #0a0f0d;
+  color: #c2d4cc;
+}
+
 .guide-light h1, .guide-light h2, .guide-light h3, .guide-light h4 {
   color: #111827;
   font-weight: 700;
   letter-spacing: -0.02em;
+}
+
+.dark .guide-light h1, .dark .guide-light h2, .dark .guide-light h3, .dark .guide-light h4 {
+  color: #ffffff;
 }
 
 .guide-light .prose {
@@ -135,7 +155,12 @@ h1, h2, h3, h4 {
   padding: 0.2em 0.4em;
   border-radius: 4px;
   font-size: 0.9em;
-  color: #ef4444;
+  color: #b91c1c; /* clear red, visible on light bg */
+}
+
+.dark .guide-light code {
+  background-color: #1e2d25;
+  color: #86efac; /* green, clearly visible on dark bg */
 }
 
 .guide-light pre {
@@ -145,6 +170,11 @@ h1, h2, h3, h4 {
   padding: 1.5rem;
   margin: 1.5rem 0;
   overflow-x: auto;
+}
+
+.dark .guide-light pre {
+  background-color: #0f1612;
+  border-color: #1a2820;
 }
 
 .guide-light pre code {
@@ -159,6 +189,11 @@ h1, h2, h3, h4 {
   border: 1px solid #e5e7eb;
   border-radius: 16px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.dark .guide-light .feature-card {
+  background: #121a16;
+  border-color: #1a2820;
 }
 
 .guide-light a {

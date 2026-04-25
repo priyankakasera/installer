@@ -1,15 +1,11 @@
 import { lazy, Suspense } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import Home from './pages/Home'
 
 const Product = lazy(() => import('./pages/Product'))
-const Guides = lazy(() => import('./pages/Guides'))
-const ToolGuide = lazy(() => import('./pages/ToolGuide'))
-const WindowsPathGuide = lazy(() => import('./pages/WindowsPathGuide'))
-const JavaHomeExplained = lazy(() => import('./pages/JavaHomeExplained'))
-const Java26Features = lazy(() => import('./pages/Java26Features'))
-const SilentInstallGuide = lazy(() => import('./pages/SilentInstallGuide'))
+const GuidesLayout = lazy(() => import('./components/GuidesLayout'))
+const GuideDispatcher = lazy(() => import('./pages/GuideDispatcher'))
 const AuthorProfile = lazy(() => import('./pages/AuthorProfile'))
 const DataFacting = lazy(() => import('./pages/DataFacting'))
 const Support = lazy(() => import('./pages/Support'))
@@ -27,12 +23,10 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/product" element={<Product />} />
-          <Route path="/guides" element={<Guides />} />
-          <Route path="/guides/windows-path-explained" element={<WindowsPathGuide />} />
-          <Route path="/guides/java-home-explained" element={<JavaHomeExplained />} />
-          <Route path="/guides/java-26-new-features" element={<Java26Features />} />
-          <Route path="/guides/windows-silent-install" element={<SilentInstallGuide />} />
-          <Route path="/guides/:toolId" element={<ToolGuide />} />
+          <Route path="/guides" element={<GuidesLayout />}>
+            <Route index element={<Navigate to="/guides/java-guides" replace />} />
+            <Route path=":slug" element={<GuideDispatcher />} />
+          </Route>
           <Route path="/data-practices" element={<DataFacting />} />
           <Route path="/support" element={<Support />} />
           <Route path="/authors" element={<Authors />} />

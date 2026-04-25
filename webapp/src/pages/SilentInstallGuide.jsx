@@ -1,8 +1,11 @@
+import { Link } from 'react-router-dom'
+import { FiArrowRight } from 'react-icons/fi'
 import GuideLayout from '../components/GuideLayout'
+import CodeBlock from '../components/CodeBlock'
 import { buildBreadcrumbJsonLd } from '../config/seo'
 import AdUnit, { SLOTS } from '../components/AdUnit'
 
-export default function SilentInstallGuide() {
+export default function SilentInstallGuide({ isEmbedded = false }) {
   const jsonLd = buildBreadcrumbJsonLd([
     { name: 'Home', url: '/' },
     { name: 'Guides', url: '/guides' },
@@ -16,8 +19,10 @@ export default function SilentInstallGuide() {
       keywords="Windows silent install, MSI quiet install, NSIS silent install, Inno Setup silent, /quiet msiexec, unattended install Windows, silent exe install, automated software installation Windows, batch install Windows, PowerShell silent install"
       path="/guides/windows-silent-install"
       jsonLd={jsonLd}
+      isEmbedded={isEmbedded}
+      backTo="/guides/general"
     >
-      <p className="text-xl text-gray-600 mb-12 leading-relaxed">
+      <p className="text-xl text-gray-600 dark:text-gray-300 mb-12 leading-relaxed">
         How MSI, NSIS, Inno Setup, and EXE installers can be made to run without any
         user interaction — and how DevTools Installer uses these techniques to automate
         the setup of 20+ developer tools.
@@ -26,7 +31,7 @@ export default function SilentInstallGuide() {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">What Is a Silent Install?</h2>
         <p>
-            A <strong className="text-gray-900">silent install</strong> (also called an
+            A <strong className="text-gray-900 dark:text-white">silent install</strong> (also called an
             unattended install or quiet install) is an installation that runs to completion
             without displaying any graphical wizard, dialog boxes, or progress screens. The
             installer runs in the background, makes all its decisions based on default
@@ -38,12 +43,12 @@ export default function SilentInstallGuide() {
         <h2 className="text-2xl font-bold mb-4">MSI Installers (msiexec)</h2>
         <p>
             MSI (Microsoft Software Installer) is the native Windows technology. 
-            They are run via <code className="!text-gray-900">msiexec.exe</code>.
+            They are run via <code>msiexec.exe</code>.
         </p>
-        <pre><code>{`msiexec /i package.msi /quiet /norestart`}</code></pre>
+        <CodeBlock>{`msiexec /i package.msi /quiet /norestart`}</CodeBlock>
         <p className="mt-4">
-            The <code className="!text-gray-900">/quiet</code> flag suppresses all UI. 
-            You can also pass public properties like <code className="!text-gray-900">INSTALLDIR="C:\Java"</code>.
+            The <code>/quiet</code> flag suppresses all UI. 
+            You can also pass public properties like <code>INSTALLDIR="C:\Java"</code>.
         </p>
       </section>
 
@@ -54,8 +59,8 @@ export default function SilentInstallGuide() {
         <p>
             Common for EXE installers like Miniconda or Git. The flag is case-sensitive:
         </p>
-        <pre><code>installer.exe /S</code></pre>
-        <p className="mt-4 text-sm text-gray-500 italic">
+        <CodeBlock>installer.exe /S</CodeBlock>
+        <p className="mt-4 text-sm text-gray-500 dark:text-gray-400 italic">
             Note: An uppercase /S is required for NSIS installers.
         </p>
       </section>
@@ -65,35 +70,35 @@ export default function SilentInstallGuide() {
         <p>
             Used by Gradle and Notepad++. It uses a different set of flags:
         </p>
-        <pre><code>{`installer.exe /VERYSILENT /SUPPRESSMSGBOXES`}</code></pre>
+        <CodeBlock>{`installer.exe /VERYSILENT /SUPPRESSMSGBOXES`}</CodeBlock>
       </section>
 
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Quick Reference Table</h2>
         <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse border border-gray-200">
-                <thead className="bg-gray-50">
+            <table className="w-full text-sm border-collapse border border-gray-200 dark:border-gray-800">
+                <thead className="bg-gray-50 dark:bg-[#0f1612]">
                     <tr>
-                        <th className="text-left py-3 px-4 border-b border-gray-200 font-bold text-gray-900">Framework</th>
-                        <th className="text-left py-3 px-4 border-b border-gray-200 font-bold text-gray-900">Silent Flag</th>
+                        <th className="text-left py-3 px-4 border-b border-gray-200 dark:border-gray-800 font-bold text-gray-900 dark:text-white">Framework</th>
+                        <th className="text-left py-3 px-4 border-b border-gray-200 dark:border-gray-800 font-bold text-gray-900 dark:text-white">Silent Flag</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td className="py-3 px-4 border-b border-gray-200 text-gray-700">MSI (msiexec)</td>
-                        <td className="py-3 px-4 border-b border-gray-200 font-mono text-primary">/quiet</td>
+                        <td className="py-3 px-4 border-b border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300">MSI (msiexec)</td>
+                        <td className="py-3 px-4 border-b border-gray-200 dark:border-gray-800 font-mono text-primary">/quiet</td>
                     </tr>
                     <tr>
-                        <td className="py-3 px-4 border-b border-gray-200 text-gray-700">NSIS</td>
-                        <td className="py-3 px-4 border-b border-gray-200 font-mono text-primary">/S</td>
+                        <td className="py-3 px-4 border-b border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300">NSIS</td>
+                        <td className="py-3 px-4 border-b border-gray-200 dark:border-gray-800 font-mono text-primary">/S</td>
                     </tr>
                     <tr>
-                        <td className="py-3 px-4 border-b border-gray-200 text-gray-700">Inno Setup</td>
-                        <td className="py-3 px-4 border-b border-gray-200 font-mono text-primary">/VERYSILENT</td>
+                        <td className="py-3 px-4 border-b border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300">Inno Setup</td>
+                        <td className="py-3 px-4 border-b border-gray-200 dark:border-gray-800 font-mono text-primary">/VERYSILENT</td>
                     </tr>
                     <tr>
-                        <td className="py-3 px-4 border-b border-gray-200 text-gray-700">Squirrel (VS Code)</td>
-                        <td className="py-3 px-4 border-b border-gray-200 font-mono text-primary">--silent</td>
+                        <td className="py-3 px-4 border-b border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300">Squirrel (VS Code)</td>
+                        <td className="py-3 px-4 border-b border-gray-200 dark:border-gray-800 font-mono text-primary">--silent</td>
                     </tr>
                 </tbody>
             </table>
@@ -101,6 +106,30 @@ export default function SilentInstallGuide() {
       </section>
 
       <AdUnit slot={SLOTS.ARTICLE_BOTTOM} format="auto" />
+      <section className="mb-12 mt-16">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-5">Related Guides</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[
+            { to: '/guides/java-home-explained', name: 'JAVA_HOME Explained', description: 'Why Maven and Gradle need JAVA_HOME separate from PATH, and how to set it correctly on Windows.' },
+            { to: '/guides/windows-path-explained', name: 'Windows PATH Explained', description: 'Master the PATH environment variable and fix "command not found" errors.' },
+            { to: '/guides/installations', name: 'All Installations', description: 'Browse all tool installation guides.' },
+          ].map((rel) => (
+            <Link
+              key={rel.to}
+              to={rel.to}
+              className="group bg-white dark:bg-[#121a16] shadow-sm border border-gray-200 dark:border-gray-800 rounded-xl p-5 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-200 !no-underline"
+            >
+              <h3 className="text-gray-900 dark:text-white font-medium mb-1 flex items-center justify-between">
+                {rel.name}
+                <FiArrowRight className="w-4 h-4 text-gray-600 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2">
+                {rel.description}
+              </p>
+            </Link>
+          ))}
+        </div>
+      </section>
     </GuideLayout>
   )
 }
