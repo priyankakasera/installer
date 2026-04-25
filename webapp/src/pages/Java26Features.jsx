@@ -47,7 +47,7 @@ export default function Java26Features({ isEmbedded = false }) {
     buildBreadcrumbJsonLd([
       { name: 'Home', url: '/' },
       { name: 'Guides', url: '/guides' },
-      { name: 'Java 26 New Features', url: '/guides/java-26-features' },
+      { name: 'Java 26 New Features', url: '/guides/java-26-new-features' },
     ]),
   ]
 
@@ -56,7 +56,7 @@ export default function Java26Features({ isEmbedded = false }) {
       title="Java 26 New Features — Practical Examples & Guide (2026)"
       description="Deep dive into Java 26 (JDK 26) new features. Learn about HTTP/3, Lazy Constants, and Structured Concurrency with real-world examples and internal concepts."
       keywords="Java 26, JDK 26 features, HTTP/3 Java, Lazy Constants, Structured Concurrency, Java 26 tutorial, G1 GC optimization"
-      path="/guides/java-26-features"
+      path="/guides/java-26-new-features"
       jsonLd={jsonLd}
       readTime="15 min read"
       isEmbedded={isEmbedded}
