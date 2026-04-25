@@ -3,9 +3,10 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import Home from './pages/Home'
 
+import GuidesLayout from './components/GuidesLayout'
+import GuideDispatcher from './pages/GuideDispatcher'
+
 const Product = lazy(() => import('./pages/Product'))
-const GuidesLayout = lazy(() => import('./components/GuidesLayout'))
-const GuideDispatcher = lazy(() => import('./pages/GuideDispatcher'))
 const AuthorProfile = lazy(() => import('./pages/AuthorProfile'))
 const DataFacting = lazy(() => import('./pages/DataFacting'))
 const Support = lazy(() => import('./pages/Support'))
@@ -16,12 +17,14 @@ const CookiePolicy = lazy(() => import('./pages/CookiePolicy'))
 const Disclaimer = lazy(() => import('./pages/Disclaimer'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 
+
 export default function App() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-dark" />}>
+    <Suspense fallback={<div className="min-h-screen bg-white dark:bg-[#0d1117]" />}>
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
+
           <Route path="/product" element={<Product />} />
           <Route path="/guides" element={<GuidesLayout />}>
             <Route index element={<Navigate to="/guides/java-guides" replace />} />
